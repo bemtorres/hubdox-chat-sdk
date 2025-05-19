@@ -1,0 +1,19 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8" />
+<title>Prueba Hubdox Chat SDK</title>
+</head>
+<body>
+  <script src="https://cdn.jsdelivr.net/npm/hubdox-chat-sdk@0.1.0"></script>
+<!-- <script src="../src/index.js"></script> -->
+<script>
+  const chat = new ChatBot({
+    apiCall: 'https://tuapi.com/chat',
+    user: { name: 'Benjamín', photo: "https://res.cloudinary.com/dienilw2p/image/upload/v1747635921/hubdox/lgvqg0648leq6meeusid.png" },
+    bot: { name: 'Boti', img: "https://res.cloudinary.com/dienilw2p/image/upload/v1747635921/hubdox/xevgjbvb1ri3ytpletzk.png"  },
+    mode: 'popup',
+  });
+</script>
+</body>
+</html>
