@@ -44,7 +44,7 @@ unpkg
 <script src="path/to/hubdox-chat-sdk.js"></script>
 
 <script>
-  const chat = new HubdoxChatSDK({
+  const chat = new ChatBot({
     apiCall: 'https://yourapi.com/chat',
     user: { name: 'Benjamin', photo: '/images/default-user.png' },
     bot: { name: 'Bot', img: '/images/bot-avatar.png' },
