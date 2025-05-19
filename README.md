@@ -27,9 +27,15 @@ This library allows you to quickly add a chat bot interface to your website or w
 ```cmd
 npm i hubdox-chat-sdk
 ```
-## 
+##  CDN
+jsdelivr
 ```js
 <script src="https://cdn.jsdelivr.net/npm/hubdox-chat-sdk@0.1.0"></script>
+
+```
+unpkg
+```js
+<script src="https://unpkg.com/hubdox-chat-sdk@0.1.0/src/index.js"></script>
 ```
 
 ### Quick integration with script tag
