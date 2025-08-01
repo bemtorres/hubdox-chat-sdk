@@ -1,0 +1,411 @@
+<!DOCTYPE html>
+<html lang="en" class="scroll-smooth">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Hubdox Chat SDK - Interactive Documentation & Showcase</title>
+  <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;900&display=swap" rel="stylesheet">
+  <style>
+    body {
+      font-family: 'Inter', sans-serif;
+    }
+    .chat-preview-container {
+      position: sticky;
+      top: 2rem; /* Adjust as needed */
+      height: calc(100vh - 4rem); /* Adjust as needed */
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      background-color: #f0f0f0;
+      border-radius: 0.5rem;
+      overflow: hidden;
+    }
+    .chat-preview-container #chatbot-container {
+      width: 100%;
+      height: 100%;
+      position: relative;
+    }
+    .prose table {
+        width: 100%;
+        border-collapse: collapse;
+    }
+    .prose th, .prose td {
+        padding: 0.5rem;
+        border: 1px solid #e5e7eb;
+        text-align: left;
+    }
+    .prose thead th {
+        background-color: #f9fafb;
+        font-weight: 600;
+    }
+    .prose pre {
+        background-color: #1f2937;
+        color: #f9fafb;
+        padding: 1rem;
+        border-radius: 0.375rem;
+        overflow-x: auto;
+    }
+  </style>
+</head>
+<body class="bg-gray-50 text-gray-800">
+
+  <!-- Header -->
+  <header class="bg-white shadow-sm">
+    <div class="container mx-auto px-6 py-4">
+      <h1 class="text-2xl font-bold text-gray-900">Hubdox Chat SDK</h1>
+    </div>
+  </header>
+
+  <main class="container mx-auto p-6">
+    <!-- Hero Section -->
+    <section class="text-center py-16">
+      <h2 class="text-4xl lg:text-5xl font-extrabold text-gray-900">The simplest way to add a chat widget to your site.</h2>
+      <p class="mt-4 text-lg text-gray-600 max-w-2xl mx-auto">A lightweight, customizable, and developer-friendly chat SDK that integrates with any backend.</p>
+      <div class="mt-8">
+        <a href="#documentation" class="bg-blue-600 text-white font-semibold px-6 py-3 rounded-md hover:bg-blue-700 transition">Explore Documentation</a>
+      </div>
+    </section>
+
+    <!-- Main Content Area -->
+    <div class="lg:grid lg:grid-cols-3 lg:gap-8">
+      
+      <!-- Documentation Column (Left) -->
+      <div id="documentation" class="lg:col-span-2 space-y-8">
+        
+        <!-- Features Section -->
+        <div class="bg-white p-6 rounded-lg shadow-md prose max-w-none">
+          <h3 class="text-2xl font-bold text-gray-800 border-b pb-2 mb-4">🚀 Features</h3>
+          <ul class="grid grid-cols-1 sm:grid-cols-2 gap-4 list-none p-0">
+            <li class="flex items-start"><span class="text-green-500 mr-2">✔️</span> Floating widget & full-screen mode</li>
+            <li class="flex items-start"><span class="text-green-500 mr-2">✔️</span> Conversational registration flow</li>
+            <li class="flex items-start"><span class="text-green-500 mr-2">✔️</span> Highly customizable UI</li>
+            <li class="flex items-start"><span class="text-green-500 mr-2">✔️</span> Automatic configuration from API</li>
+            <li class="flex items-start"><span class="text-green-500 mr-2">✔️</span> Built-in caching and test mode</li>
+            <li class="flex items-start"><span class="text-green-500 mr-2">✔️</span> Public methods for external control</li>
+          </ul>
+        </div>
+
+        <!-- Installation Section -->
+        <div class="bg-white p-6 rounded-lg shadow-md prose max-w-none">
+          <h3 class="text-2xl font-bold text-gray-800 border-b pb-2 mb-4">📦 Installation</h3>
+          <p>The easiest way to get started is by using the CDN link. No build step required.</p>
+          <pre class="bg-gray-800 text-white p-4 rounded-md"><code class="language-html">&lt;script src="https://cdn.jsdelivr.net/npm/hubdox-chat-sdk@1"&gt;&lt;/script&gt;</code></pre>
+          <p class="mt-4">Alternatively, you can install via NPM:</p>
+          <pre class="bg-gray-800 text-white p-4 rounded-md"><code class="language-bash">npm install hubdox-chat-sdk</code></pre>
+        </div>
+
+        <!-- Basic Usage Section -->
+        <div class="bg-white p-6 rounded-lg shadow-md prose max-w-none">
+          <h3 class="text-2xl font-bold text-gray-800 border-b pb-2 mb-4">🛠️ Basic Usage</h3>
+          <p>Instantiate the chatbot with your required credentials. The chatbot will appear automatically.</p>
+          <pre class="bg-gray-800 text-white p-4 rounded-md"><code class="language-javascript">const chat = new ChatBot({
+  baseUrl: 'https://your-api.com',
+  apiKey: 'your-api-key',
+  tenant: 'your-tenant'
+});</code></pre>
+        </div>
+
+        <!-- Configuration Section -->
+        <div class="bg-white p-6 rounded-lg shadow-md prose max-w-none">
+            <h3 class="text-2xl font-bold text-gray-800 border-b pb-2 mb-4">⚙️ Configuration</h3>
+            <p>The SDK is configured by passing an object to the constructor. Here are the main properties:</p>
+            
+            <h4>Required Options</h4>
+            <table>
+                <thead><tr><th>Parameter</th><th>Type</th><th>Description</th></tr></thead>
+                <tbody>
+                    <tr><td><code>baseUrl</code></td><td>string</td><td>Base URL of your chat API</td></tr>
+                    <tr><td><code>apiKey</code></td><td>string</td><td>API Key for authentication</td></tr>
+                    <tr><td><code>tenant</code></td><td>string</td><td>Identifier for your organization</td></tr>
+                </tbody>
+            </table>
+
+            <h4 class="mt-6">Optional `options` Object</h4>
+            <table>
+                <thead><tr><th>Parameter</th><th>Type</th><th>Default</th><th>Description</th></tr></thead>
+                <tbody>
+                    <tr><td><code>register</code></td><td>boolean</td><td><code>false</code></td><td>Enables conversational user registration</td></tr>
+                    <tr><td><code>testMode</code></td><td>boolean</td><td><code>false</code></td><td>Enables test mode with mock responses</td></tr>
+                    <tr><td><td><code>cache</code></td><td>boolean</td><td><code>true</code></td><td>Enables session and message caching</td></tr>
+                </tbody>
+            </table>
+
+            <h4 class="mt-6">Optional `custom` Object</h4>
+            <p>Used for deep UI customization.</p>
+            <table>
+                <thead><tr><th>Parameter</th><th>Type</th><th>Description</th></tr></thead>
+                <tbody>
+                    <tr><td><code>primaryColor</code></td><td>string</td><td>Main accent color for the widget</td></tr>
+                    <tr><td><code>headerBgColor</code></td><td>string</td><td>Background color of the chat header</td></tr>
+                    <tr><td><code>botName</code></td><td>string</td><td>Display name for the bot in the header</td></tr>
+                    <tr><td><code>position</code></td><td>object</td><td>Sets the position (e.g., <code>{ bottom: '24px', left: '24px' }</code>)</td></tr>
+                    <tr><td><code>iconButton</code></td><td>string</td><td>URL for a custom floating button icon</td></tr>
+                    <tr><td><code>sendButtonText</code></td><td>string</td><td>Custom text for the send message button</td></tr>
+                </tbody>
+            </table>
+        </div>
+
+        <!-- Examples Section -->
+        <div class="bg-white p-6 rounded-lg shadow-md prose max-w-none">
+          <h3 class="text-2xl font-bold text-gray-800 border-b pb-2 mb-4">✨ Live Examples</h3>
+          <p>Scroll through these examples to see the chatbot update in real-time on the right.</p>
+
+          <!-- Design Card: Default Minimal -->
+          <div class="design-card bg-gray-50 p-6 rounded-lg shadow-inner mb-6" data-config='{
+            "baseUrl": "https://api.example.com",
+            "apiKey": "your-api-key",
+            "tenant": "your-tenant",
+            "options": {
+              "testMode": true
+            }
+          }'>
+            <h4 class="text-xl font-bold text-gray-800 mb-2">Default Minimal</h4>
+            <p class="text-gray-600">The chatbot with its default settings. Clean and simple.</p>
+            <pre class="bg-gray-800 text-white p-4 rounded-md mt-4"><code class="language-javascript">new ChatBot({
+  baseUrl: 'https://api.example.com',
+  apiKey: 'your-api-key',
+  tenant: 'your-tenant',
+  options: {
+    testMode: true
+  }
+});</code></pre>
+          </div>
+
+          <!-- Design Card: Custom Colors -->
+          <div class="design-card bg-gray-50 p-6 rounded-lg shadow-inner mb-6" data-config='{
+            "baseUrl": "https://api.example.com",
+            "apiKey": "your-api-key",
+            "tenant": "your-tenant",
+            "options": {
+              "testMode": true
+            },
+            "custom": {
+              "primaryColor": "#ff6b35",
+              "headerBgColor": "#2c3e50",
+              "headerTextColor": "#ecf0f1",
+              "botName": "Orange Bot"
+            }
+          }'>
+            <h4 class="text-xl font-bold text-gray-800 mb-2">Custom Colors</h4>
+            <p class="text-gray-600">Change the primary color, header background, and text color to match your brand.</p>
+            <pre class="bg-gray-800 text-white p-4 rounded-md mt-4"><code class="language-javascript">new ChatBot({
+  // ...
+  custom: {
+    primaryColor: '#ff6b35',
+    headerBgColor: '#2c3e50',
+    headerTextColor: '#ecf0f1',
+    botName: 'Orange Bot'
+  }
+});</code></pre>
+          </div>
+
+          <!-- Design Card: Custom Position (Bottom Left) -->
+          <div class="design-card bg-gray-50 p-6 rounded-lg shadow-inner mb-6" data-config='{
+            "baseUrl": "https://api.example.com",
+            "apiKey": "your-api-key",
+            "tenant": "your-tenant",
+            "options": {
+              "testMode": true
+            },
+            "custom": {
+              "position": {
+                "bottom": "24px",
+                "left": "24px",
+                "right": "auto"
+              }
+            }
+          }'>
+            <h4 class="text-xl font-bold text-gray-800 mb-2">Custom Position (Bottom Left)</h4>
+            <p class="text-gray-600">Move the floating button to a different corner of the screen.</p>
+            <pre class="bg-gray-800 text-white p-4 rounded-md mt-4"><code class="language-javascript">new ChatBot({
+  // ...
+  custom: {
+    position: {
+      bottom: '24px',
+      left: '24px',
+      right: 'auto'
+    }
+  }
+});</code></pre>
+          </div>
+
+          <!-- Design Card: Custom Position (Top Right) -->
+          <div class="design-card bg-gray-50 p-6 rounded-lg shadow-inner mb-6" data-config='{
+            "baseUrl": "https://api.example.com",
+            "apiKey": "your-api-key",
+            "tenant": "your-tenant",
+            "options": {
+              "testMode": true
+            },
+            "custom": {
+              "position": {
+                "top": "24px",
+                "right": "24px",
+                "bottom": "auto"
+              }
+            }
+          }'>
+            <h4 class="text-xl font-bold text-gray-800 mb-2">Custom Position (Top Right)</h4>
+            <p class="text-gray-600">Another example of custom floating button placement.</p>
+            <pre class="bg-gray-800 text-white p-4 rounded-md mt-4"><code class="language-javascript">new ChatBot({
+  // ...
+  custom: {
+    position: {
+      top: '24px',
+      right: '24px',
+      bottom: 'auto'
+    }
+  }
+});</code></pre>
+          </div>
+
+          <!-- Design Card: Registration Flow -->
+          <div class="design-card bg-gray-50 p-6 rounded-lg shadow-inner mb-6" data-config='{
+            "baseUrl": "https://api.example.com",
+            "apiKey": "your-api-key",
+            "tenant": "your-tenant",
+            "options": {
+              "register": true,
+              "testMode": true
+            }
+          }'>
+            <h4 class="text-xl font-bold text-gray-800 mb-2">Conversational Registration</h4>
+            <p class="text-gray-600">Enable the built-in conversational registration flow to collect user information.</p>
+            <pre class="bg-gray-800 text-white p-4 rounded-md mt-4"><code class="language-javascript">new ChatBot({
+  // ...
+  options: {
+    register: true,
+    testMode: true
+  }
+});</code></pre>
+          </div>
+
+          <!-- Design Card: Custom Button Icon -->
+          <div class="design-card bg-gray-50 p-6 rounded-lg shadow-inner mb-6" data-config='{
+            "baseUrl": "https://api.example.com",
+            "apiKey": "your-api-key",
+            "tenant": "your-tenant",
+            "options": {
+              "testMode": true
+            },
+            "custom": {
+              "iconButton": "https://www.svgrepo.com/show/508699/chat-bubble.svg"
+            }
+          }'>
+            <h4 class="text-xl font-bold text-gray-800 mb-2">Custom Floating Button Icon</h4>
+            <p class="text-gray-600">Use your own image for the floating chat button.</p>
+            <pre class="bg-gray-800 text-white p-4 rounded-md mt-4"><code class="language-javascript">new ChatBot({
+  // ...
+  custom: {
+    iconButton: 'https://www.svgrepo.com/show/508699/chat-bubble.svg'
+  }
+});</code></pre>
+          </div>
+
+          <!-- Design Card: Custom Send Button Text -->
+          <div class="design-card bg-gray-50 p-6 rounded-lg shadow-inner mb-6" data-config='{
+            "baseUrl": "https://api.example.com",
+            "apiKey": "your-api-key",
+            "tenant": "your-tenant",
+            "options": {
+              "testMode": true
+            },
+            "custom": {
+              "sendButtonText": "Send Now!"
+            }
+          }'>
+            <h4 class="text-xl font-bold text-gray-800 mb-2">Custom Send Button Text</h4>
+            <p class="text-gray-600">Change the text displayed on the message send button.</p>
+            <pre class="bg-gray-800 text-white p-4 rounded-md mt-4"><code class="language-javascript">new ChatBot({
+  // ...
+  custom: {
+    sendButtonText: 'Send Now!'
+  }
+});</code></pre>
+          </div>
+
+          <!-- Design Card: No Cache -->
+          <div class="design-card bg-gray-50 p-6 rounded-lg shadow-inner mb-6" data-config='{
+            "baseUrl": "https://api.example.com",
+            "apiKey": "your-api-key",
+            "tenant": "your-tenant",
+            "options": {
+              "testMode": true,
+              "cache": false
+            }
+          }'>
+            <h4 class="text-xl font-bold text-gray-800 mb-2">No Cache</h4>
+            <p class="text-gray-600">Disable the chat history caching. Each refresh will start a new session.</p>
+            <pre class="bg-gray-800 text-white p-4 rounded-md mt-4"><code class="language-javascript">new ChatBot({
+  // ...
+  options: {
+    testMode: true,
+    cache: false
+  }
+});</code></pre>
+          </div>
+
+        </div>
+
+      </div>
+
+      <!-- Chatbot Preview Column (Right) -->
+      <div class="lg:col-span-1">
+        <div class="chat-preview-container shadow-lg">
+          <div id="chatbot-container"></div>
+        </div>
+      </div>
+
+    </div>
+  </main>
+
+  <section class="container mx-auto p-6 text-center bg-white rounded-lg shadow-md mt-8 mb-8">
+    <h3 class="text-2xl font-bold text-gray-800 mb-4">More Examples</h3>
+    <p class="text-gray-600 mb-4">Explore additional examples demonstrating various functionalities and setups.</p>
+    <div class="flex flex-wrap justify-center gap-4">
+      <a href="./example/options-menu-tailwind.html" class="bg-blue-500 text-white px-4 py-2 rounded-md hover:bg-blue-600 transition">Options Menu (Tailwind)</a>
+      <a href="./example/options-menu.html" class="bg-blue-500 text-white px-4 py-2 rounded-md hover:bg-blue-600 transition">Options Menu (Bootstrap)</a>
+      <a href="./example/control-panel.html" class="bg-blue-500 text-white px-4 py-2 rounded-md hover:bg-blue-600 transition">Control Panel</a>
+      <a href="./example/text.html" class="bg-blue-500 text-white px-4 py-2 rounded-md hover:bg-blue-600 transition">Basic Text Example</a>
+    </div>
+  </section>
+
+  <script src="./src/index.js"></script>
+  <script>
+    let currentChatInstance = null;
+
+    function initializeChat(config) {
+      if (currentChatInstance) {
+        currentChatInstance.destroy();
+      }
+      currentChatInstance = new ChatBot(config);
+    }
+
+    const designCards = document.querySelectorAll('.design-card');
+
+    const observer = new IntersectionObserver((entries) => {
+      entries.forEach(entry => {
+        if (entry.isIntersecting) {
+          const config = JSON.parse(entry.target.dataset.config);
+          initializeChat(config);
+        }
+      });
+    }, {
+      threshold: 0.5 // Trigger when 50% of the card is visible
+    });
+
+    designCards.forEach(card => {
+      observer.observe(card);
+    });
+
+    // Initialize with the first card's config on page load
+    if (designCards.length > 0) {
+      const initialConfig = JSON.parse(designCards[0].dataset.config);
+      initializeChat(initialConfig);
+    }
+  </script>
+</body>
+</html>

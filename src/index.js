@@ -105,6 +105,7 @@ class ChatBot {
     };
     
     // Inicialización
+    this._boundHandleResize = this._handleResize.bind(this);
     this._loadBootstrapCSS().then(() => {
       this._loadBootstrapJS().then(() => {
         this._renderFloatingButton();
@@ -1398,6 +1399,24 @@ class ChatBot {
         email: this.user.email
       }
     };
+  }
+
+  destroy() {
+    // Remove DOM elements
+    if (this.floatingBtn) this.floatingBtn.remove();
+    if (this.chatPanel) this.chatPanel.remove();
+    if (this.modal) this.modal.remove();
+
+    // Remove event listeners
+    window.removeEventListener('resize', this._boundHandleResize);
+
+    // Nullify references
+    for (const key in this) {
+      if (Object.prototype.hasOwnProperty.call(this, key)) {
+        this[key] = null;
+      }
+    }
+    console.log('ChatBot instance destroyed');
   }
 }
 
