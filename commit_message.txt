@@ -1,1 +1,1 @@
-fix: Load Bootstrap JS to enable modal functionality
+chore: Remove temporary commit message file
