@@ -1,0 +1,25 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Custom Colors ChatBot Example</title>
+</head>
+<body>
+  <h1>Custom Colors ChatBot Example</h1>
+
+  <script src="../../src/index.js"></script>
+  <script>
+    new ChatBot({
+      baseUrl: 'https://api.example.com',
+      apiKey: 'your-api-key',
+      tenant: 'your-tenant',
+      custom: {
+        primaryColor: '#e74c3c',
+        headerBgColor: '#2c3e50',
+        headerTextColor: '#ffffff',
+      }
+    });
+  </script>
+</body>
+</html>

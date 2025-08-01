@@ -3,6 +3,9 @@
 [![Versión](https://img.shields.io/badge/version-0.1.0-blue.svg)](https://www.npmjs.com/package/hubdox-chat-sdk)
 [![Licencia](https://img.shields.io/badge/license-ISC-green.svg)](LICENSE)
 
+
+Desarrollado por [Bemtorres](https://github.com/bemtorres)
+
 Un SDK de JavaScript ligero y fácil de usar para integrar un chatbot flotante en cualquier sitio web. El widget de chat es altamente personalizable y se integra a la perfección con las API de chat existentes.
 
 ## 🚀 Características
@@ -28,7 +31,12 @@ Un SDK de JavaScript ligero y fácil de usar para integrar un chatbot flotante e
 ### CDN (Recomendado)
 
 ```html
-<script src="https://cdn.jsdelivr.net/npm/hubdox-chat-sdk@0.1.0"></script>
+<script src="https://cdn.jsdelivr.net/npm/hubdox-chat-sdk@1"></script>
+```
+
+las versiones disponibles son:
+```html
+<script src="https://cdn.jsdelivr.net/npm/hubdox-chat-sdk"></script>
 ```
 
 ### NPM

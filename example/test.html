@@ -51,6 +51,7 @@
               <button class="btn btn-outline-secondary" id="send-message">Send Message</button>
             </div>
             <button class="btn btn-danger" id="clear-cache">Clear Cache</button>
+            <button class="btn btn-danger" id="clear-history">Clear History</button>
             <button class="btn btn-info" id="reload-cache">Reload from Cache</button>
             <button class="btn btn-warning" id="get-cache-status">Get Cache Status</button>
             <button class="btn btn-success" id="get-reg-status">Get Registration Status</button>
@@ -103,6 +104,10 @@
 
     document.getElementById('clear-cache').addEventListener('click', () => {
       if (chat) chat.clearCache();
+    });
+
+    document.getElementById('clear-history').addEventListener('click', () => {
+      if (chat) chat.clearHistory();
     });
 
     document.getElementById('reload-cache').addEventListener('click', () => {

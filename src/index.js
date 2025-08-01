@@ -106,9 +106,25 @@ class ChatBot {
     
     // Inicialización
     this._loadBootstrapCSS().then(() => {
-      this._renderFloatingButton();
-      this._handleResize();
-      this._initializeChat();
+      this._loadBootstrapJS().then(() => {
+        this._renderFloatingButton();
+        this._handleResize();
+        this._initializeChat();
+      });
+    });
+  }
+
+  _loadBootstrapJS() {
+    return new Promise((resolve, reject) => {
+      if (document.querySelector('script[src*="bootstrap.bundle.min.js"]')) {
+        resolve();
+        return;
+      }
+      const script = document.createElement('script');
+      script.src = 'https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js';
+      script.onload = () => resolve();
+      script.onerror = () => reject(new Error('Error loading Bootstrap JS'));
+      document.body.appendChild(script);
     });
   }
 
@@ -654,6 +670,12 @@ class ChatBot {
           <h5 class="mb-0">${this.botName}</h5>
         </div>
         <div class="d-flex align-items-center">
+          <button type="button" class="btn btn-sm text-white" id="clear-history-btn" title="Clear History">
+              <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-trash" viewBox="0 0 16 16">
+                <path d="M5.5 5.5A.5.5 0 0 1 6 6v6a.5.5 0 0 1-1 0V6a.5.5 0 0 1 .5-.5zm2.5 0a.5.5 0 0 1 .5.5v6a.5.5 0 0 1-1 0V6a.5.5 0 0 1 .5-.5zm3 .5a.5.5 0 0 0-1 0v6a.5.5 0 0 0 1 0V6z"/>
+                <path fill-rule="evenodd" d="M14.5 3a1 1 0 0 1-1 1H13v9a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V4h-.5a1 1 0 0 1-1-1V2a1 1 0 0 1 1-1H6a1 1 0 0 1 1-1h2a1 1 0 0 1 1 1h3.5a1 1 0 0 1 1 1v1zM4.118 4 4 4.059V13a1 1 0 0 0 1 1h6a1 1 0 0 0 1-1V4.059L11.882 4H4.118zM2.5 3V2h11v1h-11z"/>
+              </svg>
+            </button>
           ${this.fullscreenEnabled ? `
             <button type="button" class="btn btn-sm text-secondary" id="fullscreen-toggle" title="${this.isFullscreen ? 'Minimizar' : 'Pantalla completa'}">
               <svg class="w-6 h-6 text-gray-800 dark:text-white" aria-hidden="true" xmlns="http://www.w3.org/2000/svg" width="24" height="24" fill="none" viewBox="0 0 24 24">
@@ -701,7 +723,10 @@ class ChatBot {
     this.input = this.chatPanel.querySelector("#chat-input");
     this.sendButton = this.chatPanel.querySelector("#chat-send");
     this.closeBtn = this.chatPanel.querySelector(".btn-close");
+    this.clearHistoryBtn = this.chatPanel.querySelector("#clear-history-btn");
     
+    this._renderConfirmationModal();
+
     if (this.fullscreenEnabled) {
       this.fullscreenToggle = this.chatPanel.querySelector("#fullscreen-toggle");
       if (this.fullscreenToggle) {
@@ -721,6 +746,52 @@ class ChatBot {
     });
 
     this.closeBtn.addEventListener("click", () => this._hideChatPanel());
+    this.clearHistoryBtn.addEventListener("click", () => this._showConfirmationModal());
+  }
+
+  _renderConfirmationModal() {
+    this.modal = document.createElement("div");
+    this.modal.className = "modal fade";
+    this.modal.tabIndex = -1;
+    this.modal.innerHTML = `
+      <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content">
+          <div class="modal-header">
+            <h5 class="modal-title">Confirm Deletion</h5>
+            <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+          </div>
+          <div class="modal-body">
+            <p>Are you sure you want to delete the entire chat history? This action cannot be undone.</p>
+          </div>
+          <div class="modal-footer">
+            <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+            <button type="button" class="btn btn-danger" id="confirm-clear-history">Delete</button>
+          </div>
+        </div>
+      </div>
+    `;
+    document.body.appendChild(this.modal);
+
+    this.modal.querySelector("#confirm-clear-history").addEventListener("click", () => {
+      this.clearHistory();
+      this._hideConfirmationModal();
+    });
+
+    this.modal.addEventListener("hidden.bs.modal", () => {
+      this._hideConfirmationModal();
+    });
+  }
+
+  _showConfirmationModal() {
+    const modal = new bootstrap.Modal(this.modal);
+    modal.show();
+  }
+
+  _hideConfirmationModal() {
+    const modal = bootstrap.Modal.getInstance(this.modal);
+    if (modal) {
+      modal.hide();
+    }
   }
 
   _toggleFullscreen() {
@@ -809,9 +880,147 @@ class ChatBot {
 
   _addMessage(from, text, isRegistration = false) {
     const time = this._getCurrentTime();
-    this.messages.push({ from, text, time, isRegistration });
-    this._renderMessages();
+    const message = { from, text, time, isRegistration };
+    this.messages.push(message);
+
+    const messageElement = this._createMessageElement(message);
+    this.messagesContainer.appendChild(messageElement);
+    this.messagesContainer.scrollTop = this.messagesContainer.scrollHeight;
+
     this._saveToCache();
+  }
+
+  _createMessageElement(msg) {
+    // Si es mensaje de bienvenida, renderizar de forma especial
+    if (msg.isWelcome) {
+      const welcomeWrapper = document.createElement("div");
+      welcomeWrapper.className = "text-center mb-4";
+      welcomeWrapper.style.marginTop = "20px";
+      
+      const botImage = document.createElement("img");
+      botImage.src = this.bot.img;
+      botImage.alt = this.bot.name;
+      botImage.className = "rounded-circle mb-3";
+      botImage.style.width = "80px";
+      botImage.style.height = "80px";
+      botImage.style.objectFit = "cover";
+      botImage.style.margin = "0 auto";
+      botImage.style.display = "block";
+      
+      const welcomeText = document.createElement("div");
+      welcomeText.className = "bg-light rounded-3 p-3 mx-auto";
+      welcomeText.style.maxWidth = "80%";
+      welcomeText.innerHTML = `
+        <p class="mb-0 fw-bold">${this.botName}</p>
+        <p class="mb-0 text-muted small">${msg.time}</p>
+        <p class="mb-0 mt-2">${msg.text}</p>
+      `;
+      
+      welcomeWrapper.appendChild(botImage);
+      welcomeWrapper.appendChild(welcomeText);
+      return welcomeWrapper;
+    }
+
+    // Si es mensaje de error con reintento, renderizar de forma especial
+    if (msg.isError && msg.showRetry) {
+      const errorWrapper = document.createElement("div");
+      errorWrapper.className = "text-center mb-4";
+      errorWrapper.style.marginTop = "20px";
+      
+      const botImage = document.createElement("img");
+      botImage.src = this.bot.img;
+      botImage.alt = this.bot.name;
+      botImage.className = "rounded-circle mb-3";
+      botImage.style.width = "60px";
+      botImage.style.height = "60px";
+      botImage.style.objectFit = "cover";
+      botImage.style.margin = "0 auto";
+      botImage.style.display = "block";
+      
+      const errorText = document.createElement("div");
+      errorText.className = "bg-light rounded-3 p-3 mx-auto";
+      errorText.style.maxWidth = "90%";
+      errorText.innerHTML = `
+        <p class="mb-0 fw-bold text-danger">${this.botName}</p>
+        <p class="mb-0 mt-2" style="font-size: 12px;">${msg.text}</p>
+      `;
+      
+      const retryButton = document.createElement("button");
+      retryButton.className = "btn btn-primary mt-3 btn-sm rounded-pill";
+      retryButton.textContent = "Intentar nuevamente";
+      retryButton.addEventListener("click", () => {
+        this._retryConnection();
+      });
+      
+      errorWrapper.appendChild(botImage);
+      errorWrapper.appendChild(errorText);
+      errorWrapper.appendChild(retryButton);
+      return errorWrapper;
+    }
+    
+    const msgWrapper = document.createElement("div");
+    msgWrapper.classList.add("d-flex", "mb-3");
+    msgWrapper.classList.add(
+      msg.from === "user" ? "justify-content-end" : "justify-content-start"
+    );
+
+    const avatar = document.createElement("img");
+    avatar.src = msg.from === "user" ? this.user.photo : this.bot.img;
+    avatar.alt = msg.from === "user" ? this.user.name : this.bot.name;
+    avatar.className = "rounded-circle";
+    avatar.style.width = "40px";
+    avatar.style.height = "40px";
+    avatar.style.objectFit = "cover";
+
+    const bubble = document.createElement("div");
+    bubble.className = [
+      "px-3",
+      "py-2",
+      "mx-2",
+      "rounded-3",
+      "position-relative",
+      "w-auto",
+    ].join(" ");
+
+    bubble.style.maxWidth = "75%";
+
+    if (msg.from === "user") {
+      bubble.style.backgroundColor = this.primaryColor;
+      bubble.style.color = "white";
+    } else {
+      bubble.classList.add("bg-light", "text-dark");
+    }
+
+    const info = document.createElement("small");
+    info.className = "fw-bold d-block mb-1";
+    info.innerHTML = `${msg.from === "user" ? this.user.name : this.botName} <span class="text-muted fs-7 ms-2" style="font-size:0.75rem;">${msg.time}</span>`;
+
+    const textP = document.createElement("p");
+    textP.className = "mb-0";
+    textP.style.whiteSpace = "pre-wrap";
+    textP.textContent = msg.text;
+
+    bubble.appendChild(info);
+    bubble.appendChild(textP);
+
+    const tail = document.createElement("span");
+    tail.style.position = "absolute";
+    tail.style.bottom = "0";
+    tail.style.width = "0";
+    tail.style.height = "0";
+    tail.style.borderStyle = "solid";
+
+    if (msg.from === "user") {
+      tail.style.borderColor = `transparent transparent transparent ${this.primaryColor}`;
+    } else {
+      tail.style.borderColor = "transparent #f8f9fa transparent transparent";
+    }
+
+    bubble.appendChild(tail);
+
+    msgWrapper.appendChild(avatar);
+    msgWrapper.appendChild(bubble);
+    return msgWrapper;
   }
 
   _renderMessages() {
@@ -819,158 +1028,9 @@ class ChatBot {
     this.messagesContainer.innerHTML = "";
 
     this.messages.forEach((msg) => {
-      // Si es mensaje de bienvenida, renderizar de forma especial
-      if (msg.isWelcome) {
-        const welcomeWrapper = document.createElement("div");
-        welcomeWrapper.className = "text-center mb-4";
-        welcomeWrapper.style.marginTop = "20px";
-        
-        // Imagen del bot centrada y más grande
-        const botImage = document.createElement("img");
-        botImage.src = this.bot.img;
-        botImage.alt = this.bot.name;
-        botImage.className = "rounded-circle mb-3";
-        botImage.style.width = "80px";
-        botImage.style.height = "80px";
-        botImage.style.objectFit = "cover";
-        botImage.style.margin = "0 auto";
-        botImage.style.display = "block";
-        
-        // Mensaje de bienvenida
-        const welcomeText = document.createElement("div");
-        welcomeText.className = "bg-light rounded-3 p-3 mx-auto";
-        welcomeText.style.maxWidth = "80%";
-        welcomeText.innerHTML = `
-          <p class="mb-0 fw-bold">${this.botName}</p>
-          <p class="mb-0 text-muted small">${msg.time}</p>
-          <p class="mb-0 mt-2">${msg.text}</p>
-        `;
-        
-        welcomeWrapper.appendChild(botImage);
-        welcomeWrapper.appendChild(welcomeText);
-        frag.appendChild(welcomeWrapper);
-        return;
-      }
-
-      // Si es mensaje de error con reintento, renderizar de forma especial
-      if (msg.isError && msg.showRetry) {
-        const errorWrapper = document.createElement("div");
-        errorWrapper.className = "text-center mb-4";
-        errorWrapper.style.marginTop = "20px";
-        
-        // Imagen del bot centrada
-        const botImage = document.createElement("img");
-        botImage.src = this.bot.img;
-        botImage.alt = this.bot.name;
-        botImage.className = "rounded-circle mb-3";
-        botImage.style.width = "60px";
-        botImage.style.height = "60px";
-        botImage.style.objectFit = "cover";
-        botImage.style.margin = "0 auto";
-        botImage.style.display = "block";
-        
-        // Mensaje de error
-        const errorText = document.createElement("div");
-        errorText.className = "bg-light rounded-3 p-3 mx-auto";
-        errorText.style.maxWidth = "90%";
-        //<p class="mb-0 text-muted small" style="font-size: 12px;">${msg.time}</p>
-        errorText.innerHTML = `
-          <p class="mb-0 fw-bold text-danger">${this.botName}</p>
-          <p class="mb-0 mt-2" style="font-size: 12px;">${msg.text}</p>
-        `;
-        
-        // Botón de reintento
-        const retryButton = document.createElement("button");
-        retryButton.className = "btn btn-primary mt-3 btn-sm rounded-pill";
-        retryButton.textContent = "Intentar nuevamente";
-        retryButton.addEventListener("click", () => {
-          this._retryConnection();
-        });
-        
-        errorWrapper.appendChild(botImage);
-        errorWrapper.appendChild(errorText);
-        errorWrapper.appendChild(retryButton);
-        frag.appendChild(errorWrapper);
-        return;
-      }
-      
-      const msgWrapper = document.createElement("div");
-      msgWrapper.classList.add("d-flex", "mb-3");
-      msgWrapper.classList.add(
-        msg.from === "user" ? "justify-content-end" : "justify-content-start"
-      );
-
-      const avatar = document.createElement("img");
-      avatar.src = msg.from === "user" ? this.user.photo : this.bot.img;
-      avatar.alt = msg.from === "user" ? this.user.name : this.bot.name;
-      avatar.className = "rounded-circle";
-      avatar.style.width = "40px";
-      avatar.style.height = "40px";
-      avatar.style.objectFit = "cover";
-
-      const bubble = document.createElement("div");
-      bubble.className = [
-        "px-3",
-        "py-2",
-        "mx-2",
-        "rounded-3",
-        "position-relative",
-        "w-auto",
-      ].join(" ");
-
-      bubble.style.maxWidth = "75%";
-
-      if (msg.from === "user") {
-        bubble.style.backgroundColor = this.primaryColor;
-        bubble.style.color = "white";
-      } else {
-        bubble.classList.add("bg-light", "text-dark");
-      }
-
-      const info = document.createElement("small");
-      info.className = "fw-bold d-block mb-1";
-      info.innerHTML = `${msg.from === "user" ? this.user.name : this.botName} <span class="text-muted fs-7 ms-2" style="font-size:0.75rem;">${msg.time}</span>`;
-
-      const textP = document.createElement("p");
-      textP.className = "mb-0";
-      textP.style.whiteSpace = "pre-wrap";
-      textP.textContent = msg.text;
-
-      bubble.appendChild(info);
-      bubble.appendChild(textP);
-
-      // Cola burbuja simple
-      const tail = document.createElement("span");
-      tail.style.position = "absolute";
-      tail.style.bottom = "0";
-      tail.style.width = "0";
-      tail.style.height = "0";
-      tail.style.borderStyle = "solid";
-
-      if (msg.from === "user") {
-        tail.style.borderColor = `transparent transparent transparent ${this.primaryColor}`;
-      } else {
-        tail.style.borderColor = "transparent #f8f9fa transparent transparent";
-      }
-
-      bubble.appendChild(tail);
-
-      msgWrapper.appendChild(avatar);
-      msgWrapper.appendChild(bubble);
-      frag.appendChild(msgWrapper);
+      const messageElement = this._createMessageElement(msg);
+      frag.appendChild(messageElement);
     });
-
-    // if (this.loading) {
-    //   const loadingDiv = document.createElement("div");
-    //   loadingDiv.className = "text-center text-muted fst-italic";
-    //   loadingDiv.innerHTML = `
-    //     <div class="spinner-border spinner-border-sm text-primary mb-1" role="status">
-    //       <span class="visually-hidden">Loading...</span>
-    //     </div>
-    //     ${this.botName} está escribiendo...
-    //   `;
-    //   frag.appendChild(loadingDiv);
-    // }
 
     this.messagesContainer.appendChild(frag);
     this.messagesContainer.scrollTop = this.messagesContainer.scrollHeight;
@@ -1071,7 +1131,6 @@ class ChatBot {
     this.sendButton.disabled = true;
 
     this.loading = true;
-    this._renderMessages();
     
     // Mostrar indicador de "está escribiendo..."
     this._showTypingIndicator();
@@ -1275,6 +1334,13 @@ class ChatBot {
   clearCache() {
     this._clearCache();
     console.log('Caché limpiado');
+  }
+
+  clearHistory() {
+    this.messages = [];
+    this.messagesContainer.innerHTML = '';
+    this._saveToCache();
+    console.log('Historial de chat limpiado');
   }
 
   reloadFromCache() {
