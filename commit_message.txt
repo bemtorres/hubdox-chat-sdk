@@ -1,1 +1,1 @@
-chore: Clean up temporary files and update example/text.html and src/index.js
+chore: Remove temporary commit message file
