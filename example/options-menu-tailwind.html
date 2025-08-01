@@ -1,0 +1,720 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Administrador de Opciones - Hubdox Chat SDK (Tailwind)</title>
+<script src="https://cdn.tailwindcss.com"></script>
+<script>
+  tailwind.config = {
+    theme: {
+      extend: {
+        colors: {
+          primary: {
+            50: '#eff6ff',
+            100: '#dbeafe',
+            200: '#bfdbfe',
+            300: '#93c5fd',
+            400: '#60a5fa',
+            500: '#3b82f6',
+            600: '#2563eb',
+            700: '#1d4ed8',
+            800: '#1e40af',
+            900: '#1e3a8a',
+          }
+        }
+      }
+    }
+  }
+</script>
+<style>
+  .gradient-bg {
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  }
+  
+  .glass-effect {
+    background: rgba(255, 255, 255, 0.1);
+    backdrop-filter: blur(10px);
+    border: 1px solid rgba(255, 255, 255, 0.2);
+  }
+  
+  .card-hover {
+    transition: all 0.3s ease;
+  }
+  
+  .card-hover:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
+  }
+  
+  .input-focus:focus {
+    border-color: #3b82f6;
+    box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
+  }
+  
+  .btn-primary {
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    transition: all 0.3s ease;
+  }
+  
+  .btn-primary:hover {
+    transform: translateY(-1px);
+    box-shadow: 0 10px 20px rgba(102, 126, 234, 0.3);
+  }
+  
+  .tooltip {
+    position: relative;
+  }
+  
+  .tooltip .tooltip-text {
+    visibility: hidden;
+    width: 200px;
+    background-color: #1f2937;
+    color: white;
+    text-align: center;
+    border-radius: 6px;
+    padding: 8px;
+    position: absolute;
+    z-index: 1;
+    bottom: 125%;
+    left: 50%;
+    margin-left: -100px;
+    opacity: 0;
+    transition: opacity 0.3s;
+    font-size: 12px;
+  }
+  
+  .tooltip:hover .tooltip-text {
+    visibility: visible;
+    opacity: 1;
+  }
+</style>
+</head>
+<body class="gradient-bg min-h-screen">
+  <!-- Header -->
+  <div class="glass-effect">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+      <div class="text-center">
+        <h1 class="text-4xl md:text-5xl font-bold text-white mb-4">
+          🎛️ Administrador de Opciones
+        </h1>
+        <p class="text-xl text-white/90">
+          Configura y personaliza tu chatbot Hubdox con Tailwind CSS
+        </p>
+      </div>
+    </div>
+  </div>
+
+  <!-- Main Content -->
+  <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+    <div class="grid grid-cols-1 lg:grid-cols-2 xl:grid-cols-3 gap-8">
+      
+      <!-- Configuración Básica -->
+      <div class="bg-white rounded-2xl shadow-xl p-6 card-hover">
+        <div class="flex items-center mb-6">
+          <div class="w-12 h-12 bg-blue-100 rounded-xl flex items-center justify-center mr-4">
+            <span class="text-2xl">🔧</span>
+          </div>
+          <h3 class="text-xl font-bold text-gray-800">Configuración Básica</h3>
+        </div>
+        
+        <!-- API y Conexión -->
+        <div class="mb-6">
+          <h4 class="text-lg font-semibold text-gray-700 mb-4 flex items-center">
+            <span class="w-2 h-2 bg-blue-500 rounded-full mr-2"></span>
+            API y Conexión
+          </h4>
+          
+          <div class="space-y-4">
+            <div>
+              <label class="block text-sm font-medium text-gray-700 mb-2">
+                Base URL
+                <span class="tooltip ml-1">ℹ️<span class="tooltip-text">URL base de la API del chatbot</span></span>
+              </label>
+              <input type="url" id="baseUrl" value="https://hubdocs.test" 
+                     class="w-full px-4 py-3 border border-gray-300 rounded-lg input-focus focus:outline-none"
+                     placeholder="https://api.ejemplo.com">
+            </div>
+            
+            <div>
+              <label class="block text-sm font-medium text-gray-700 mb-2">
+                API Key
+                <span class="tooltip ml-1">ℹ️<span class="tooltip-text">Clave de autenticación para la API</span></span>
+              </label>
+              <input type="text" id="apiKey" value="Ae812043-87ed-4bde-ba4a-0daaff8aadad" 
+                     class="w-full px-4 py-3 border border-gray-300 rounded-lg input-focus focus:outline-none"
+                     placeholder="Tu API Key">
+            </div>
+            
+            <div>
+              <label class="block text-sm font-medium text-gray-700 mb-2">
+                Tenant
+                <span class="tooltip ml-1">ℹ️<span class="tooltip-text">Identificador del inquilino/cliente</span></span>
+              </label>
+              <input type="text" id="tenant" value="nomed" 
+                     class="w-full px-4 py-3 border border-gray-300 rounded-lg input-focus focus:outline-none"
+                     placeholder="nombre-tenant">
+            </div>
+          </div>
+        </div>
+
+        <!-- Opciones Principales -->
+        <div>
+          <h4 class="text-lg font-semibold text-gray-700 mb-4 flex items-center">
+            <span class="w-2 h-2 bg-green-500 rounded-full mr-2"></span>
+            Opciones Principales
+          </h4>
+          
+          <div class="space-y-3">
+            <label class="flex items-center cursor-pointer">
+              <input type="checkbox" id="show" checked class="w-4 h-4 text-blue-600 rounded focus:ring-blue-500">
+              <span class="ml-3 text-sm text-gray-700">Mostrar chat automáticamente</span>
+            </label>
+            
+            <label class="flex items-center cursor-pointer">
+              <input type="checkbox" id="register" checked class="w-4 h-4 text-blue-600 rounded focus:ring-blue-500">
+              <span class="ml-3 text-sm text-gray-700">Habilitar registro de usuario</span>
+            </label>
+            
+            <label class="flex items-center cursor-pointer">
+              <input type="checkbox" id="cache" checked class="w-4 h-4 text-blue-600 rounded focus:ring-blue-500">
+              <span class="ml-3 text-sm text-gray-700">Habilitar caché local</span>
+            </label>
+            
+            <label class="flex items-center cursor-pointer">
+              <input type="checkbox" id="testMode" class="w-4 h-4 text-blue-600 rounded focus:ring-blue-500">
+              <span class="ml-3 text-sm text-gray-700">Modo de prueba (respuestas automáticas)</span>
+            </label>
+          </div>
+        </div>
+      </div>
+
+      <!-- Configuración de Usuario -->
+      <div class="bg-white rounded-2xl shadow-xl p-6 card-hover">
+        <div class="flex items-center mb-6">
+          <div class="w-12 h-12 bg-purple-100 rounded-xl flex items-center justify-center mr-4">
+            <span class="text-2xl">👤</span>
+          </div>
+          <h3 class="text-xl font-bold text-gray-800">Configuración de Usuario</h3>
+        </div>
+        
+        <div class="space-y-4">
+          <div>
+            <label class="block text-sm font-medium text-gray-700 mb-2">Nombre del Usuario</label>
+            <input type="text" id="userName" value="Benjamín" 
+                   class="w-full px-4 py-3 border border-gray-300 rounded-lg input-focus focus:outline-none"
+                   placeholder="Nombre del usuario">
+          </div>
+          
+          <div>
+            <label class="block text-sm font-medium text-gray-700 mb-2">Email del Usuario</label>
+            <input type="email" id="userEmail" value="benja@hubdox.com" 
+                   class="w-full px-4 py-3 border border-gray-300 rounded-lg input-focus focus:outline-none"
+                   placeholder="usuario@ejemplo.com">
+          </div>
+          
+          <div>
+            <label class="block text-sm font-medium text-gray-700 mb-2">URL de Foto del Usuario</label>
+            <input type="url" id="userPhoto" value="https://res.cloudinary.com/dienilw2p/image/upload/v1747635921/hubdox/lgvqg0648leq6meeusid.png" 
+                   class="w-full px-4 py-3 border border-gray-300 rounded-lg input-focus focus:outline-none"
+                   placeholder="https://ejemplo.com/foto.jpg">
+          </div>
+        </div>
+      </div>
+
+      <!-- Configuración del Bot -->
+      <div class="bg-white rounded-2xl shadow-xl p-6 card-hover">
+        <div class="flex items-center mb-6">
+          <div class="w-12 h-12 bg-green-100 rounded-xl flex items-center justify-center mr-4">
+            <span class="text-2xl">🤖</span>
+          </div>
+          <h3 class="text-xl font-bold text-gray-800">Configuración del Bot</h3>
+        </div>
+        
+        <div class="space-y-4">
+          <div>
+            <label class="block text-sm font-medium text-gray-700 mb-2">Nombre del Bot</label>
+            <input type="text" id="botName" value="Boti" 
+                   class="w-full px-4 py-3 border border-gray-300 rounded-lg input-focus focus:outline-none"
+                   placeholder="Nombre del bot">
+          </div>
+          
+          <div>
+            <label class="block text-sm font-medium text-gray-700 mb-2">URL de Foto del Bot</label>
+            <input type="url" id="botPhoto" value="https://res.cloudinary.com/dienilw2p/image/upload/v1747635921/hubdox/xevgjbvb1ri3ytpletzk.png" 
+                   class="w-full px-4 py-3 border border-gray-300 rounded-lg input-focus focus:outline-none"
+                   placeholder="https://ejemplo.com/bot.jpg">
+          </div>
+          
+          <div>
+            <label class="block text-sm font-medium text-gray-700 mb-2">Nombre de Visualización</label>
+            <input type="text" id="botDisplayName" value="Social Media" 
+                   class="w-full px-4 py-3 border border-gray-300 rounded-lg input-focus focus:outline-none"
+                   placeholder="Nombre que se muestra en el chat">
+          </div>
+        </div>
+      </div>
+
+      <!-- Personalización Visual -->
+      <div class="bg-white rounded-2xl shadow-xl p-6 card-hover">
+        <div class="flex items-center mb-6">
+          <div class="w-12 h-12 bg-pink-100 rounded-xl flex items-center justify-center mr-4">
+            <span class="text-2xl">🎨</span>
+          </div>
+          <h3 class="text-xl font-bold text-gray-800">Personalización Visual</h3>
+        </div>
+        
+        <div class="space-y-4">
+          <div>
+            <label class="block text-sm font-medium text-gray-700 mb-2">Color Principal</label>
+            <div class="flex items-center space-x-3">
+              <input type="color" id="primaryColor" value="#000000" 
+                     class="w-12 h-12 border border-gray-300 rounded-lg cursor-pointer">
+              <input type="text" id="primaryColorText" value="#000000" 
+                     class="flex-1 px-4 py-3 border border-gray-300 rounded-lg input-focus focus:outline-none"
+                     placeholder="#000000">
+            </div>
+          </div>
+          
+          <div>
+            <label class="block text-sm font-medium text-gray-700 mb-2">Color de Fondo del Header</label>
+            <div class="flex items-center space-x-3">
+              <input type="color" id="headerBgColor" value="#000000" 
+                     class="w-12 h-12 border border-gray-300 rounded-lg cursor-pointer">
+              <input type="text" id="headerBgColorText" value="#000000" 
+                     class="flex-1 px-4 py-3 border border-gray-300 rounded-lg input-focus focus:outline-none"
+                     placeholder="#000000">
+            </div>
+          </div>
+          
+          <div>
+            <label class="block text-sm font-medium text-gray-700 mb-2">Color de Texto del Header</label>
+            <div class="flex items-center space-x-3">
+              <input type="color" id="headerTextColor" value="#ffffff" 
+                     class="w-12 h-12 border border-gray-300 rounded-lg cursor-pointer">
+              <input type="text" id="headerTextColorText" value="#ffffff" 
+                     class="flex-1 px-4 py-3 border border-gray-300 rounded-lg input-focus focus:outline-none"
+                     placeholder="#ffffff">
+            </div>
+          </div>
+          
+          <div>
+            <label class="block text-sm font-medium text-gray-700 mb-2">Texto del Botón de Envío</label>
+            <input type="text" id="sendButtonText" value="" 
+                   class="w-full px-4 py-3 border border-gray-300 rounded-lg input-focus focus:outline-none"
+                   placeholder="Dejar vacío para usar ícono por defecto">
+          </div>
+        </div>
+      </div>
+
+      <!-- Configuración de Tamaño -->
+      <div class="bg-white rounded-2xl shadow-xl p-6 card-hover">
+        <div class="flex items-center mb-6">
+          <div class="w-12 h-12 bg-yellow-100 rounded-xl flex items-center justify-center mr-4">
+            <span class="text-2xl">📏</span>
+          </div>
+          <h3 class="text-xl font-bold text-gray-800">Configuración de Tamaño</h3>
+        </div>
+        
+        <div class="space-y-4">
+          <div>
+            <label class="block text-sm font-medium text-gray-700 mb-2">Ancho del Chat</label>
+            <input type="text" id="chatWidth" value="500px" 
+                   class="w-full px-4 py-3 border border-gray-300 rounded-lg input-focus focus:outline-none"
+                   placeholder="400px, 50vw, etc.">
+          </div>
+          
+          <div>
+            <label class="block text-sm font-medium text-gray-700 mb-2">Alto del Chat</label>
+            <input type="text" id="chatHeight" value="70vh" 
+                   class="w-full px-4 py-3 border border-gray-300 rounded-lg input-focus focus:outline-none"
+                   placeholder="60vh, 500px, etc.">
+          </div>
+          
+          <div>
+            <label class="block text-sm font-medium text-gray-700 mb-2">Ancho Máximo</label>
+            <input type="text" id="chatMaxWidth" value="600px" 
+                   class="w-full px-4 py-3 border border-gray-300 rounded-lg input-focus focus:outline-none"
+                   placeholder="90vw, 800px, etc.">
+          </div>
+          
+          <div>
+            <label class="block text-sm font-medium text-gray-700 mb-2">Alto Máximo</label>
+            <input type="text" id="chatMaxHeight" value="80vh" 
+                   class="w-full px-4 py-3 border border-gray-300 rounded-lg input-focus focus:outline-none"
+                   placeholder="60vh, 600px, etc.">
+          </div>
+          
+          <div>
+            <label class="block text-sm font-medium text-gray-700 mb-2">Alto del Área de Mensajes</label>
+            <input type="text" id="messagesHeight" value="450px" 
+                   class="w-full px-4 py-3 border border-gray-300 rounded-lg input-focus focus:outline-none"
+                   placeholder="350px, 60vh, etc.">
+          </div>
+          
+          <div>
+            <label class="block text-sm font-medium text-gray-700 mb-2">Tamaño del Botón Flotante</label>
+            <input type="text" id="buttonSize" value="64px" 
+                   class="w-full px-4 py-3 border border-gray-300 rounded-lg input-focus focus:outline-none"
+                   placeholder="56px, 80px, etc.">
+          </div>
+        </div>
+      </div>
+
+      <!-- Configuración de Posición -->
+      <div class="bg-white rounded-2xl shadow-xl p-6 card-hover">
+        <div class="flex items-center mb-6">
+          <div class="w-12 h-12 bg-indigo-100 rounded-xl flex items-center justify-center mr-4">
+            <span class="text-2xl">📍</span>
+          </div>
+          <h3 class="text-xl font-bold text-gray-800">Configuración de Posición</h3>
+        </div>
+        
+        <div class="space-y-4">
+          <div>
+            <label class="block text-sm font-medium text-gray-700 mb-2">Posición del Botón Flotante</label>
+            <div class="grid grid-cols-2 gap-3">
+              <div>
+                <label class="block text-xs font-medium text-gray-600 mb-1">Desde Abajo</label>
+                <input type="text" id="buttonBottom" value="20px" 
+                       class="w-full px-3 py-2 border border-gray-300 rounded-lg input-focus focus:outline-none text-sm"
+                       placeholder="24px">
+              </div>
+              <div>
+                <label class="block text-xs font-medium text-gray-600 mb-1">Desde la Derecha</label>
+                <input type="text" id="buttonRight" value="24px" 
+                       class="w-full px-3 py-2 border border-gray-300 rounded-lg input-focus focus:outline-none text-sm"
+                       placeholder="24px">
+              </div>
+            </div>
+          </div>
+          
+          <label class="flex items-center cursor-pointer">
+            <input type="checkbox" id="fullscreenEnabled" checked class="w-4 h-4 text-blue-600 rounded focus:ring-blue-500">
+            <span class="ml-3 text-sm text-gray-700">Habilitar modo pantalla completa</span>
+          </label>
+        </div>
+      </div>
+    </div>
+
+    <!-- Panel de Vista Previa -->
+    <div class="mt-8 bg-white rounded-2xl shadow-xl p-6">
+      <div class="flex items-center mb-6">
+        <div class="w-12 h-12 bg-gray-100 rounded-xl flex items-center justify-center mr-4">
+          <span class="text-2xl">📋</span>
+        </div>
+        <h3 class="text-xl font-bold text-gray-800">Vista Previa de la Configuración</h3>
+      </div>
+      
+      <div class="bg-gray-900 rounded-xl p-6 overflow-x-auto">
+        <pre id="configPreview" class="text-green-400 font-mono text-sm leading-relaxed">
+// Configuración generada automáticamente
+const chat = new ChatBot({
+  // Configuración básica
+  baseUrl: 'https://hubdocs.test',
+  apiKey: 'Ae812043-87ed-4bde-ba4a-0daaff8aadad',
+  tenant: 'nomed',
+  
+  // Usuario
+  user: {
+    name: 'Benjamín',
+    email: 'benja@hubdox.com',
+    photo: 'https://res.cloudinary.com/dienilw2p/image/upload/v1747635921/hubdox/lgvqg0648leq6meeusid.png'
+  },
+  
+  // Bot
+  bot: {
+    name: 'Boti',
+    img: 'https://res.cloudinary.com/dienilw2p/image/upload/v1747635921/hubdox/xevgjbvb1ri3ytpletzk.png'
+  },
+  
+  // Opciones
+  options: {
+    show: true,
+    register: true,
+    cache: true,
+    testMode: false
+  },
+  
+  // Personalización
+  custom: {
+    primaryColor: '#000000',
+    botName: 'Social Media',
+    headerBgColor: '#000000',
+    headerTextColor: '#ffffff',
+    sendButtonText: '',
+    chatWidth: '500px',
+    chatHeight: '70vh',
+    chatMaxWidth: '600px',
+    chatMaxHeight: '80vh',
+    fullscreenEnabled: true,
+    messagesHeight: '450px',
+    buttonSize: '64px',
+    position: {
+      bottom: '20px',
+      right: '24px'
+    }
+  }
+});</pre>
+      </div>
+    </div>
+
+    <!-- Botones de Acción -->
+    <div class="mt-8 flex flex-col sm:flex-row gap-4 justify-center">
+      <button onclick="generateConfig()" 
+              class="btn-primary text-white px-8 py-4 rounded-xl font-semibold text-lg">
+        🔄 Generar Configuración
+      </button>
+      <button onclick="testConfig()" 
+              class="bg-green-600 hover:bg-green-700 text-white px-8 py-4 rounded-xl font-semibold text-lg transition-all duration-300 hover:transform hover:scale-105">
+        🧪 Probar Configuración
+      </button>
+      <button onclick="resetToDefaults()" 
+              class="bg-gray-600 hover:bg-gray-700 text-white px-8 py-4 rounded-xl font-semibold text-lg transition-all duration-300 hover:transform hover:scale-105">
+        🔄 Restablecer Valores
+      </button>
+    </div>
+  </div>
+
+  <script src="../src/index.js"></script>
+  <script>
+    let currentChat = null;
+
+    // Sincronizar color pickers con inputs de texto
+    function syncColorPickers() {
+      const colorInputs = document.querySelectorAll('input[type="color"]');
+      colorInputs.forEach(input => {
+        const textInput = document.getElementById(input.id + 'Text');
+        if (textInput) {
+          input.addEventListener('input', () => {
+            textInput.value = input.value;
+            updatePreview();
+          });
+          textInput.addEventListener('input', () => {
+            input.value = textInput.value;
+            updatePreview();
+          });
+        }
+      });
+    }
+
+    // Actualizar vista previa
+    function updatePreview() {
+      const config = getCurrentConfig();
+      const preview = document.getElementById('configPreview');
+      
+      preview.textContent = `// Configuración generada automáticamente
+const chat = new ChatBot({
+  // Configuración básica
+  baseUrl: '${config.baseUrl}',
+  apiKey: '${config.apiKey}',
+  tenant: '${config.tenant}',
+  
+  // Usuario
+  user: {
+    name: '${config.user.name}',
+    email: '${config.user.email}',
+    photo: '${config.user.photo}'
+  },
+  
+  // Bot
+  bot: {
+    name: '${config.bot.name}',
+    img: '${config.bot.img}'
+  },
+  
+  // Opciones
+  options: {
+    show: ${config.options.show},
+    register: ${config.options.register},
+    cache: ${config.options.cache},
+    testMode: ${config.options.testMode}
+  },
+  
+  // Personalización
+  custom: {
+    primaryColor: '${config.custom.primaryColor}',
+    botName: '${config.custom.botName}',
+    headerBgColor: '${config.custom.headerBgColor}',
+    headerTextColor: '${config.custom.headerTextColor}',
+    sendButtonText: '${config.custom.sendButtonText}',
+    chatWidth: '${config.custom.chatWidth}',
+    chatHeight: '${config.custom.chatHeight}',
+    chatMaxWidth: '${config.custom.chatMaxWidth}',
+    chatMaxHeight: '${config.custom.chatMaxHeight}',
+    fullscreenEnabled: ${config.custom.fullscreenEnabled},
+    messagesHeight: '${config.custom.messagesHeight}',
+    buttonSize: '${config.custom.buttonSize}',
+    position: {
+      bottom: '${config.custom.position.bottom}',
+      right: '${config.custom.position.right}'
+    }
+  }
+});`;
+    }
+
+    // Obtener configuración actual
+    function getCurrentConfig() {
+      return {
+        baseUrl: document.getElementById('baseUrl').value,
+        apiKey: document.getElementById('apiKey').value,
+        tenant: document.getElementById('tenant').value,
+        user: {
+          name: document.getElementById('userName').value,
+          email: document.getElementById('userEmail').value,
+          photo: document.getElementById('userPhoto').value
+        },
+        bot: {
+          name: document.getElementById('botName').value,
+          img: document.getElementById('botPhoto').value
+        },
+        options: {
+          show: document.getElementById('show').checked,
+          register: document.getElementById('register').checked,
+          cache: document.getElementById('cache').checked,
+          testMode: document.getElementById('testMode').checked
+        },
+        custom: {
+          primaryColor: document.getElementById('primaryColor').value,
+          botName: document.getElementById('botDisplayName').value,
+          headerBgColor: document.getElementById('headerBgColor').value,
+          headerTextColor: document.getElementById('headerTextColor').value,
+          sendButtonText: document.getElementById('sendButtonText').value,
+          chatWidth: document.getElementById('chatWidth').value,
+          chatHeight: document.getElementById('chatHeight').value,
+          chatMaxWidth: document.getElementById('chatMaxWidth').value,
+          chatMaxHeight: document.getElementById('chatMaxHeight').value,
+          fullscreenEnabled: document.getElementById('fullscreenEnabled').checked,
+          messagesHeight: document.getElementById('messagesHeight').value,
+          buttonSize: document.getElementById('buttonSize').value,
+          position: {
+            bottom: document.getElementById('buttonBottom').value,
+            right: document.getElementById('buttonRight').value
+          }
+        }
+      };
+    }
+
+    // Generar configuración
+    function generateConfig() {
+      updatePreview();
+      
+      // Mostrar notificación
+      const notification = document.createElement('div');
+      notification.className = 'fixed top-4 right-4 bg-green-500 text-white px-6 py-3 rounded-lg shadow-lg z-50';
+      notification.textContent = '✅ Configuración generada. Copia el código de la vista previa.';
+      document.body.appendChild(notification);
+      
+      setTimeout(() => {
+        notification.remove();
+      }, 3000);
+    }
+
+    // Probar configuración
+    function testConfig() {
+      const config = getCurrentConfig();
+      
+      // Destruir chat anterior si existe
+      if (currentChat) {
+        if (currentChat.floatingBtn && currentChat.floatingBtn.parentNode) {
+          currentChat.floatingBtn.parentNode.removeChild(currentChat.floatingBtn);
+        }
+        if (currentChat.chatPanel && currentChat.chatPanel.parentNode) {
+          currentChat.chatPanel.parentNode.removeChild(currentChat.chatPanel);
+        }
+      }
+      
+      // Crear nuevo chat con la configuración
+      try {
+        currentChat = new ChatBot(config);
+        
+        // Mostrar notificación
+        const notification = document.createElement('div');
+        notification.className = 'fixed top-4 right-4 bg-blue-500 text-white px-6 py-3 rounded-lg shadow-lg z-50';
+        notification.textContent = '✅ Chatbot creado exitosamente con la nueva configuración!';
+        document.body.appendChild(notification);
+        
+        setTimeout(() => {
+          notification.remove();
+        }, 3000);
+      } catch (error) {
+        // Mostrar error
+        const notification = document.createElement('div');
+        notification.className = 'fixed top-4 right-4 bg-red-500 text-white px-6 py-3 rounded-lg shadow-lg z-50';
+        notification.textContent = '❌ Error al crear el chatbot: ' + error.message;
+        document.body.appendChild(notification);
+        
+        setTimeout(() => {
+          notification.remove();
+        }, 5000);
+      }
+    }
+
+    // Restablecer valores por defecto
+    function resetToDefaults() {
+      if (confirm('¿Estás seguro de que quieres restablecer todos los valores por defecto?')) {
+        document.getElementById('baseUrl').value = 'https://hubdocs.test';
+        document.getElementById('apiKey').value = 'Ae812043-87ed-4bde-ba4a-0daaff8aadad';
+        document.getElementById('tenant').value = 'nomed';
+        document.getElementById('userName').value = 'Benjamín';
+        document.getElementById('userEmail').value = 'benja@hubdox.com';
+        document.getElementById('userPhoto').value = 'https://res.cloudinary.com/dienilw2p/image/upload/v1747635921/hubdox/lgvqg0648leq6meeusid.png';
+        document.getElementById('botName').value = 'Boti';
+        document.getElementById('botPhoto').value = 'https://res.cloudinary.com/dienilw2p/image/upload/v1747635921/hubdox/xevgjbvb1ri3ytpletzk.png';
+        document.getElementById('botDisplayName').value = 'Social Media';
+        document.getElementById('primaryColor').value = '#000000';
+        document.getElementById('primaryColorText').value = '#000000';
+        document.getElementById('headerBgColor').value = '#000000';
+        document.getElementById('headerBgColorText').value = '#000000';
+        document.getElementById('headerTextColor').value = '#ffffff';
+        document.getElementById('headerTextColorText').value = '#ffffff';
+        document.getElementById('sendButtonText').value = '';
+        document.getElementById('chatWidth').value = '500px';
+        document.getElementById('chatHeight').value = '70vh';
+        document.getElementById('chatMaxWidth').value = '600px';
+        document.getElementById('chatMaxHeight').value = '80vh';
+        document.getElementById('messagesHeight').value = '450px';
+        document.getElementById('buttonSize').value = '64px';
+        document.getElementById('buttonBottom').value = '20px';
+        document.getElementById('buttonRight').value = '24px';
+        document.getElementById('show').checked = true;
+        document.getElementById('register').checked = true;
+        document.getElementById('cache').checked = true;
+        document.getElementById('testMode').checked = false;
+        document.getElementById('fullscreenEnabled').checked = true;
+        
+        updatePreview();
+        
+        // Mostrar notificación
+        const notification = document.createElement('div');
+        notification.className = 'fixed top-4 right-4 bg-yellow-500 text-white px-6 py-3 rounded-lg shadow-lg z-50';
+        notification.textContent = '✅ Valores restablecidos por defecto';
+        document.body.appendChild(notification);
+        
+        setTimeout(() => {
+          notification.remove();
+        }, 3000);
+      }
+    }
+
+    // Event listeners para actualizar vista previa
+    document.addEventListener('DOMContentLoaded', function() {
+      syncColorPickers();
+      updatePreview();
+      
+      // Agregar event listeners a todos los inputs
+      const inputs = document.querySelectorAll('input, select, textarea');
+      inputs.forEach(input => {
+        input.addEventListener('input', updatePreview);
+        input.addEventListener('change', updatePreview);
+      });
+      
+      // Event listeners para checkboxes
+      const checkboxes = document.querySelectorAll('input[type="checkbox"]');
+      checkboxes.forEach(checkbox => {
+        checkbox.addEventListener('change', updatePreview);
+      });
+    });
+  </script>
+</body>
+</html> 

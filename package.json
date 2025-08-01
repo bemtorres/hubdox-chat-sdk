@@ -1,11 +1,30 @@
 {
   "name": "hubdox-chat-sdk",
-  "version": "0.1.0",
-  "main": "src/index.js", 
+  "version": "0.1.1",
+  "description": "SDK de JavaScript para integrar chatbots flotantes en sitios web con soporte para registro de usuarios y APIs personalizables",
+  "main": "src/index.js",
   "scripts": {
-    
+    "test": "echo \"Error: no test specified\" && exit 1"
   },
-  "keywords": ["chat", "sdk", "hubdox"],
+  "keywords": [
+    "chat", 
+    "sdk", 
+    "hubdox", 
+    "chatbot", 
+    "widget", 
+    "floating", 
+    "javascript", 
+    "api", 
+    "registration"
+  ],
   "author": "Bemtorres",
-  "license": "ISC"
+  "license": "ISC",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/bemtorres/hubdox-chat-sdk.git"
+  },
+  "bugs": {
+    "url": "https://github.com/bemtorres/hubdox-chat-sdk/issues"
+  },
+  "homepage": "https://github.com/bemtorres/hubdox-chat-sdk#readme"
 }

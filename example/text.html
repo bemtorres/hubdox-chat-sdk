@@ -2,18 +2,58 @@
 <html lang="es">
 <head>
 <meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Prueba Hubdox Chat SDK</title>
 </head>
 <body>
-  <script src="https://cdn.jsdelivr.net/npm/hubdox-chat-sdk@0.1.0"></script>
-<!-- <script src="../src/index.js"></script> -->
-<script>
-  const chat = new ChatBot({
-    apiCall: 'https://tuapi.com/chat',
-    user: { name: 'Benjamín', photo: "https://res.cloudinary.com/dienilw2p/image/upload/v1747635921/hubdox/lgvqg0648leq6meeusid.png" },
-    bot: { name: 'Boti', img: "https://res.cloudinary.com/dienilw2p/image/upload/v1747635921/hubdox/xevgjbvb1ri3ytpletzk.png"  },
-    mode: 'popup',
-  });
-</script>
+  <script src="../src/index.js"></script>
+  <!-- <script src="https://cdn.jsdelivr.net/npm/hubdox-chat-sdk@0.1.0"></script> -->
+  <script>
+    const chat = new ChatBot({
+      baseUrl: 'https://hubdocs.test',
+      apiKey: 'Ad7edcb0-780d-448e-b46e-0625eaa4184c',
+      tenant: 'robot_3',
+      user: { 
+        name: '', 
+        email: 'usuario@ejemplo.com', 
+        photo: "https://res.cloudinary.com/dienilw2p/image/upload/v1747635921/hubdox/lgvqg0648leq6meeusid.png" 
+      },
+      bot: { 
+        name: 'Boti', 
+        img: "https://res.cloudinary.com/dienilw2p/image/upload/v1747635921/hubdox/xevgjbvb1ri3ytpletzk.png"  
+      },
+      options: {
+        show: false,
+        register: true,
+        cache: true,
+        testMode: false,
+      },
+      custom: {
+        primaryColor: "#000",
+        botName: "Social Media",
+        headerBgColor: "#000",
+        headerTextColor: "#fff",
+        sendButtonText: "",
+        // Configuración de tamaño del chat
+        chatWidth: "500px",           // Ancho del chat (por defecto 400px)
+        chatHeight: "70vh",           // Alto del chat (por defecto 60vh)
+        chatMaxWidth: "600px",        // Ancho máximo del chat
+        chatMaxHeight: "80vh",        // Alto máximo del chat
+        // Configuración para modo pantalla completa
+        fullscreenEnabled: true,      // Habilitar modo pantalla completa
+        // Configuración del área de mensajes
+        messagesHeight: "450px",      // Altura del área de mensajes (por defecto 350px)
+        // Configuración del botón flotante
+        buttonSize: "64px",           // Tamaño del botón flotante (por defecto 56px)
+        // Posición del chat
+        position: {
+          bottom: "20px",
+          right: "24px"
+        }
+      }
+    });
+  </script>
 </body>
 </html>
+
+

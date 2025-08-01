@@ -1,0 +1,290 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Panel de Control - Hubdox Chat SDK</title>
+<style>
+  .control-panel {
+    position: fixed;
+    top: 20px;
+    left: 20px;
+    background: white;
+    padding: 20px;
+    border-radius: 8px;
+    box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+    z-index: 1000;
+    font-family: Arial, sans-serif;
+    max-width: 300px;
+  }
+  .control-panel h4 {
+    margin: 0 0 15px 0;
+    color: #333;
+    border-bottom: 2px solid #007bff;
+    padding-bottom: 8px;
+  }
+  .control-panel button {
+    margin: 5px;
+    padding: 8px 16px;
+    border: none;
+    border-radius: 4px;
+    cursor: pointer;
+    font-size: 14px;
+    width: 100%;
+    transition: all 0.3s ease;
+  }
+  .control-panel button:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 8px rgba(0,0,0,0.2);
+  }
+  .btn-primary { background: #007bff; color: white; }
+  .btn-success { background: #28a745; color: white; }
+  .btn-warning { background: #ffc107; color: black; }
+  .btn-danger { background: #dc3545; color: white; }
+  .btn-info { background: #17a2b8; color: white; }
+  .cache-status {
+    margin-top: 15px;
+    padding: 12px;
+    background: #f8f9fa;
+    border-radius: 6px;
+    font-size: 12px;
+    border-left: 4px solid #007bff;
+  }
+  .status-item {
+    margin: 5px 0;
+    display: flex;
+    justify-content: space-between;
+  }
+  .status-label {
+    font-weight: bold;
+    color: #555;
+  }
+  .status-value {
+    color: #007bff;
+  }
+  .console-output {
+    position: fixed;
+    bottom: 20px;
+    right: 20px;
+    background: #1e1e1e;
+    color: #00ff00;
+    padding: 15px;
+    border-radius: 8px;
+    font-family: 'Courier New', monospace;
+    font-size: 12px;
+    max-width: 400px;
+    max-height: 200px;
+    overflow-y: auto;
+    z-index: 1001;
+    display: none;
+  }
+  .console-output.show {
+    display: block;
+  }
+  .console-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 10px;
+    border-bottom: 1px solid #333;
+    padding-bottom: 5px;
+  }
+  .console-close {
+    background: #dc3545;
+    color: white;
+    border: none;
+    border-radius: 3px;
+    padding: 2px 6px;
+    cursor: pointer;
+    font-size: 10px;
+  }
+</style>
+</head>
+<body>
+  <div class="control-panel">
+    <h4>🎛️ Panel de Control</h4>
+    <button class="btn-primary" onclick="chat.toggleChatPanel()">💬 Abrir/Cerrar Chat</button>
+    <button class="btn-success" onclick="showCacheStatus()">📊 Ver Estado Caché</button>
+    <button class="btn-warning" onclick="clearCacheAndRestart()">🗑️ Limpiar Caché</button>
+    <button class="btn-danger" onclick="reloadFromCache()">🔄 Recargar desde Caché</button>
+    <button class="btn-info" onclick="toggleConsole()">🖥️ Mostrar Consola</button>
+    <div id="cache-status" class="cache-status"></div>
+  </div>
+
+  <div id="console-output" class="console-output">
+    <div class="console-header">
+      <span>🖥️ Consola de Debug</span>
+      <button class="console-close" onclick="toggleConsole()">✕</button>
+    </div>
+    <div id="console-content"></div>
+  </div>
+
+  <script src="../src/index.js"></script>
+  <script>
+    const chat = new ChatBot({
+      baseUrl: 'https://hubdocs.test',
+      apiKey: 'Ae812043-87ed-4bde-ba4a-0daaff8aadad',
+      tenant: 'nomed',
+      user: { 
+        name: 'Benjamín', 
+        email: 'benja@hubdox.com', 
+        photo: "https://res.cloudinary.com/dienilw2p/image/upload/v1747635921/hubdox/lgvqg0648leq6meeusid.png" 
+      },
+      bot: { 
+        name: 'Boti', 
+        img: "https://res.cloudinary.com/dienilw2p/image/upload/v1747635921/hubdox/xevgjbvb1ri3ytpletzk.png"  
+      },
+      options: {
+        show: false,
+        register: true,
+        cache: true,
+        testMode: false,
+      },
+      custom: {
+        primaryColor: "#000",
+        botName: "Social Media",
+        headerBgColor: "#000",
+        headerTextColor: "#fff",
+        sendButtonText: "",
+        chatWidth: "500px",
+        chatHeight: "70vh",
+        chatMaxWidth: "600px",
+        chatMaxHeight: "80vh",
+        fullscreenEnabled: true,
+        messagesHeight: "450px",
+        buttonSize: "64px",
+        position: {
+          bottom: "20px",
+          right: "24px"
+        }
+      }
+    });
+
+    // Función para mostrar el estado de la caché
+    function showCacheStatus() {
+      const status = chat.getCacheStatus();
+      const statusDiv = document.getElementById('cache-status');
+      
+      if (status.enabled) {
+        if (status.exists) {
+          statusDiv.innerHTML = `
+            <div class="status-item">
+              <span class="status-label">Estado:</span>
+              <span class="status-value">✅ Habilitada</span>
+            </div>
+            <div class="status-item">
+              <span class="status-label">Mensajes:</span>
+              <span class="status-value">📦 ${status.messages}</span>
+            </div>
+            <div class="status-item">
+              <span class="status-label">Registrado:</span>
+              <span class="status-value">👤 ${status.registered ? 'Sí' : 'No'}</span>
+            </div>
+            <div class="status-item">
+              <span class="status-label">Edad:</span>
+              <span class="status-value">⏰ ${status.age} min</span>
+            </div>
+            <div class="status-item">
+              <span class="status-label">Validez:</span>
+              <span class="status-value">${status.expired ? '⚠️ Expirada' : '✅ Válida'}</span>
+            </div>
+          `;
+        } else {
+          statusDiv.innerHTML = `
+            <div class="status-item">
+              <span class="status-label">Estado:</span>
+              <span class="status-value">✅ Habilitada</span>
+            </div>
+            <div class="status-item">
+              <span class="status-label">Datos:</span>
+              <span class="status-value">❌ Sin datos</span>
+            </div>
+          `;
+        }
+      } else {
+        statusDiv.innerHTML = `
+          <div class="status-item">
+            <span class="status-label">Estado:</span>
+            <span class="status-value">❌ Deshabilitada</span>
+          </div>
+        `;
+      }
+      
+      logToConsole('Estado de caché consultado', status);
+    }
+
+    // Función para limpiar caché y reiniciar
+    function clearCacheAndRestart() {
+      if (confirm('¿Estás seguro de que quieres limpiar la caché y reiniciar el chat?')) {
+        // Limpiar la caché
+        chat.clearCache();
+        logToConsole('Caché limpiada', { action: 'clearCache' });
+        
+        // Recargar la página para reiniciar completamente
+        setTimeout(() => {
+          location.reload();
+        }, 1000);
+      }
+    }
+
+    // Función para recargar desde caché
+    function reloadFromCache() {
+      chat.reloadFromCache();
+      logToConsole('Datos recargados desde caché', { action: 'reloadFromCache' });
+      alert('Datos recargados desde caché. Revisa el chat para ver los mensajes restaurados.');
+    }
+
+    // Función para mostrar/ocultar consola
+    function toggleConsole() {
+      const console = document.getElementById('console-output');
+      console.classList.toggle('show');
+    }
+
+    // Función para loggear en la consola
+    function logToConsole(message, data = null) {
+      const consoleContent = document.getElementById('console-content');
+      const timestamp = new Date().toLocaleTimeString();
+      const logEntry = document.createElement('div');
+      logEntry.style.marginBottom = '5px';
+      logEntry.style.borderBottom = '1px solid #333';
+      logEntry.style.paddingBottom = '5px';
+      
+      if (data) {
+        logEntry.innerHTML = `
+          <span style="color: #888;">[${timestamp}]</span> 
+          <span style="color: #00ff00;">${message}</span>
+          <br><span style="color: #888; font-size: 10px;">${JSON.stringify(data, null, 2)}</span>
+        `;
+      } else {
+        logEntry.innerHTML = `
+          <span style="color: #888;">[${timestamp}]</span> 
+          <span style="color: #00ff00;">${message}</span>
+        `;
+      }
+      
+      consoleContent.appendChild(logEntry);
+      consoleContent.scrollTop = consoleContent.scrollHeight;
+    }
+
+    // Mostrar estado inicial de la caché
+    setTimeout(() => {
+      showCacheStatus();
+      logToConsole('Panel de control inicializado', { 
+        options: {
+          show: false,
+          register: true,
+          cache: true,
+          testMode: false
+        }
+      });
+    }, 1000);
+
+    // Loggear eventos del chat
+    const originalAddMessage = chat._addMessage;
+    chat._addMessage = function(from, text, isRegistration = false) {
+      logToConsole(`Mensaje agregado: ${from}`, { text: text.substring(0, 50) + '...' });
+      return originalAddMessage.call(this, from, text, isRegistration);
+    };
+  </script>
+</body>
+</html> 
