@@ -1,1 +1,1 @@
-feat: Add 'More Examples' section to index.html
+chore: Clean up temporary files and update example/text.html and src/index.js
