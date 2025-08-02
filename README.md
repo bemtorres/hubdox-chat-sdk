@@ -1,37 +1,38 @@
 # Hubdox Chat SDK
 
-[![Versión](https://img.shields.io/badge/version-0.1.0-blue.svg)](https://www.npmjs.com/package/hubdox-chat-sdk)
-[![Licencia](https://img.shields.io/badge/license-ISC-green.svg)](LICENSE)
+[![Version](https://img.shields.io/badge/version-0.1.0-blue.svg)](https://www.npmjs.com/package/hubdox-chat-sdk)
+[![License](https://img.shields.io/badge/license-ISC-green.svg)](LICENSE)
 
+Developed by [Bemtorres](https://github.com/bemtorres)
 
-Desarrollado por [Bemtorres](https://github.com/bemtorres)
+A lightweight and easy-to-use JavaScript SDK for integrating a floating chatbot into any website. The chat widget is highly customizable and integrates seamlessly with existing chat APIs.
 
-Un SDK de JavaScript ligero y fácil de usar para integrar un chatbot flotante en cualquier sitio web. El widget de chat es altamente personalizable y se integra a la perfección con las API de chat existentes.
+## 🚀 Features
 
-## 🚀 Características
+- **Floating widget**: A floating button that expands into a full chat panel.
+- **Responsive design**: Automatically adapts to different screen sizes.
+- **Fullscreen mode on mobile**: Automatic expansion to fullscreen on mobile devices.
+- **Separate registration screen**: A dedicated welcome screen where the bot greets and asks for the user's name before starting the chat.
+- **Highly customizable**: Configurable colors, texts, images, and styles.
+- **Easy integration**: Single line of code to implement.
+- **Bootstrap included**: Uses Bootstrap 5 for modern and professional design.
+- **Avatar support**: Profile images for user and bot.
+- **Typing indicator**: Shows when the bot is processing a response.
+- **State management**: Automatic handling of messages and sessions, with optional caching.
+- **Minimalist design**: Clean and easy-to-use interface.
+- **Simplified system**: Only 2 APIs (registration and message).
+- **Automatic configuration**: The bot configures itself automatically from the API.
+- **Dynamic updates**: The user interface updates automatically with the bot's configuration.
+- **Test mode**: A test mode for development and testing without a live API.
+- **Markdown support**: Automatic rendering of Markdown text in bot responses.
+- **Simulated streaming**: Character-by-character typing effect to simulate real-time writing.
+- **Development mode**: Configurable logging system for development and production.
 
-- **Widget flotante**: Un botón flotante que se expande en un panel de chat completo.
-- **Diseño adaptable**: Se adapta automáticamente a diferentes tamaños de pantalla.
-- **Modo de pantalla completa en móviles**: Expansión automática a pantalla completa en dispositivos móviles.
-- **Pantalla de registro separada**: Una pantalla de bienvenida independiente donde el bot saluda y solicita el nombre del usuario antes de iniciar el chat.
-- **Altamente personalizable**: Colores, textos, imágenes y estilos configurables.
-- **Integración sencilla**: Una sola línea de código para implementarlo.
-- **Bootstrap incluido**: Utiliza Bootstrap 5 para un diseño moderno y profesional.
-- **Soporte para avatares**: Imágenes de perfil para el usuario y el bot.
-- **Indicador de escritura**: Muestra cuándo el bot está procesando una respuesta.
-- **Gestión de estado**: Manejo automático de mensajes y sesiones, con caché opcional.
-- **Diseño minimalista**: Interfaz limpia y fácil de usar.
-- **Sistema simplificado**: Solo 2 API (registro y mensaje).
-- **Configuración automática**: El bot se configura automáticamente desde la API.
-- **Actualización dinámica**: La interfaz de usuario se actualiza automáticamente con la configuración del bot.
-- **Modo de prueba**: Un modo de prueba para el desarrollo y las pruebas sin una API en vivo.
-- **Soporte Markdown**: Renderizado automático de texto Markdown en las respuestas del bot.
+## 📦 Installation
 
-## 📦 Instalación
+### CDN (Recommended)
 
-### CDN (Recomendado)
-
-last version:
+Latest version:
 ```html
 <script src="https://cdn.jsdelivr.net/npm/hubdox-chat-sdk"></script>
 ```
@@ -46,112 +47,114 @@ npm install hubdox-chat-sdk
 import ChatBot from 'hubdox-chat-sdk';
 ```
 
-## 🛠️ Uso Básico
+## 🛠️ Basic Usage
 
 ```javascript
 const chat = new ChatBot({
-  baseUrl: 'https://tu-api.com',
-  apiKey: 'tu-api-key',
-  tenant: 'tu-tenant',
+  baseUrl: 'https://your-api.com',
+  apiKey: 'your-api-key',
+  tenant: 'your-tenant',
   options: {
-    register: true, // Opcional: solicita información del usuario al iniciar
+    register: true, // Optional: requests user information on startup
   },
   user: {
-    name: 'Usuario',
-    email: 'usuario@ejemplo.com',
-    photo: 'https://ejemplo.com/avatar.jpg'
+    name: 'User',
+    email: 'user@example.com',
+    photo: 'https://example.com/avatar.jpg'
   },
   bot: {
-    name: 'Asistente',
-    img: 'https://ejemplo.com/bot-avatar.jpg'
+    name: 'Assistant',
+    img: 'https://example.com/bot-avatar.jpg'
   }
 });
 ```
 
-## ⚙️ Configuración
+## ⚙️ Configuration
 
-### Opciones Requeridas
+### Required Options
 
-| Parámetro | Tipo   | Descripción                            |
+| Parameter | Type   | Description                            |
 |-----------|--------|----------------------------------------|
-| `baseUrl` | string | URL base de tu API de chat             |
-| `apiKey`  | string | Clave de API para autenticación (token Bearer) |
-| `tenant`  | string | Identificador del tenant/organización  |
+| `baseUrl` | string | Base URL of your chat API              |
+| `apiKey`  | string | API key for authentication (Bearer token) |
+| `tenant`  | string | Tenant/organization identifier         |
 
-### Objeto `options` (Opcional)
+### `options` Object (Optional)
 
-| Parámetro  | Tipo    | Por defecto | Descripción                                                                 |
-|------------|---------|-------------|-----------------------------------------------------------------------------|
-| `register` | boolean | `false`     | Si es `true`, muestra una pantalla de registro donde el bot solicita el nombre del usuario antes de iniciar el chat.                  |
-| `show`     | boolean | `true`      | Muestra u oculta el widget de chat en la inicialización.                    |
-| `cache`    | boolean | `true`      | Habilita o deshabilita el almacenamiento en caché de la sesión de chat y los mensajes. |
-| `testMode` | boolean | `false`     | Habilita o deshabilita el modo de prueba.                                   |
+| Parameter  | Type    | Default | Description                                                                 |
+|------------|---------|---------|-----------------------------------------------------------------------------|
+| `register` | boolean | `false` | If `true`, shows a registration screen where the bot asks for the user's name before starting the chat. |
+| `show`     | boolean | `true`  | Shows or hides the chat widget on initialization.                           |
+| `cache`    | boolean | `true`  | Enables or disables caching of chat session and messages.                   |
+| `testMode` | boolean | `false` | Enables or disables test mode.                                             |
+| `stream`   | boolean | `false` | If `true`, simulates typing effect showing the message character by character. |
+| `devMode`  | boolean | `false` | Enables development logs. Should be `false` in production.                 |
 
-### Objeto `user` (Opcional)
+### `user` Object (Optional)
 
-| Parámetro | Tipo   | Por defecto                                                                              | Descripción              |
-|-----------|--------|------------------------------------------------------------------------------------------|--------------------------|
-| `name`    | string | `'Usuario'`                                                                              | Nombre del usuario.      |
-| `email`   | string | `'test@mail.com'`                                                                        | Correo electrónico del usuario. |
-| `photo`   | string | `'https://res.cloudinary.com/dienilw2p/image/upload/v1747635921/hubdox/lgvqg0648leq6meeusid.png'` | URL de la foto de perfil del usuario. |
+| Parameter | Type   | Default                                                                              | Description              |
+|-----------|--------|--------------------------------------------------------------------------------------|--------------------------|
+| `name`    | string | `'User'`                                                                             | User's name.             |
+| `email`   | string | `'test@mail.com'`                                                                    | User's email address.    |
+| `photo`   | string | `'https://res.cloudinary.com/dienilw2p/image/upload/v1747635921/hubdox/lgvqg0648leq6meeusid.png'` | User's profile photo URL. |
 
-### Objeto `bot` (Opcional)
+### `bot` Object (Optional)
 
-| Parámetro | Tipo   | Por defecto                                                                              | Descripción           |
-|-----------|--------|------------------------------------------------------------------------------------------|-----------------------|
-| `name`    | string | `'Bot'`                                                                                  | Nombre del bot.       |
-| `img`     | string | `'https://res.cloudinary.com/dienilw2p/image/upload/v1747635921/hubdox/xevgjbvb1ri3ytpletzk.png'` | URL de la imagen del bot. |
+| Parameter | Type   | Default                                                                              | Description           |
+|-----------|--------|--------------------------------------------------------------------------------------|-----------------------|
+| `name`    | string | `'Bot'`                                                                              | Bot's name.           |
+| `img`     | string | `'https://res.cloudinary.com/dienilw2p/image/upload/v1747635921/hubdox/xevgjbvb1ri3ytpletzk.png'` | Bot's image URL.      |
 
-### Objeto `custom` (Opcional)
+### `custom` Object (Optional)
 
-| Parámetro           | Tipo    | Por defecto        | Descripción                                                              |
-|---------------------|---------|--------------------|--------------------------------------------------------------------------|
-| `primaryColor`      | string  | `'#0d6efd'`        | El color principal del widget de chat.                                   |
-| `botName`           | string  | `'Bot'`            | El nombre del bot que se muestra en el encabezado.                       |
-| `headerBgColor`     | string  | `primaryColor`     | El color de fondo del encabezado del chat.                               |
-| `headerTextColor`   | string  | `'#ffffff'`        | El color del texto del encabezado del chat.                              |
-| `sendButtonText`    | string  | `null`             | El texto del botón de enviar.                                            |
-| `iconButton`        | string  | `null`             | La URL de un icono personalizado para el botón flotante.                 |
-| `chatWidth`         | string  | `'400px'`          | El ancho del panel de chat en el escritorio.                             |
-| `chatHeight`        | string  | `'60vh'`           | La altura del panel de chat en el escritorio.                            |
-| `chatMaxWidth`      | string  | `'90vw'`           | El ancho máximo del panel de chat en móviles.                            |
-| `chatMaxHeight`     | string  | `'60vh'`           | La altura máxima del panel de chat en móviles.                           |
-| `messagesHeight`    | string  | `'350px'`          | La altura del contenedor de mensajes.                                    |
-| `buttonSize`        | string  | `'56px'`           | El tamaño del botón flotante.                                            |
-| `fullscreenEnabled` | boolean | `true`             | Habilita o deshabilita el modo de pantalla completa en móviles.          |
-| `showTime`          | boolean | `true`            | Si es `true`, muestra la hora en cada mensaje del chat.                  |
-| `position`          | object  | `{ bottom: '24px', right: '24px' }` | La posición del botón flotante con propiedades `top`, `bottom`, `left`, `right` y `transform`. |
+| Parameter           | Type    | Default        | Description                                                              |
+|---------------------|---------|----------------|--------------------------------------------------------------------------|
+| `primaryColor`      | string  | `'#0d6efd'`    | The primary color of the chat widget.                                    |
+| `botName`           | string  | `'Bot'`        | The bot's name displayed in the chat header.                             |
+| `headerBgColor`     | string  | `primaryColor` | The background color of the chat header.                                 |
+| `headerTextColor`   | string  | `'#ffffff'`    | The text color of the chat header.                                       |
+| `sendButtonText`    | string  | `null`         | The send button text.                                                     |
+| `iconButton`        | string  | `null`         | The URL of a custom icon for the floating button.                        |
+| `chatWidth`         | string  | `'400px'`      | The width of the chat panel on desktop.                                  |
+| `chatHeight`        | string  | `'60vh'`       | The height of the chat panel on desktop.                                 |
+| `chatMaxWidth`      | string  | `'90vw'`       | The maximum width of the chat panel on mobile.                           |
+| `chatMaxHeight`     | string  | `'60vh'`       | The maximum height of the chat panel on mobile.                          |
+| `messagesHeight`    | string  | `'350px'`      | The height of the messages container.                                    |
+| `buttonSize`        | string  | `'56px'`       | The size of the floating button.                                         |
+| `fullscreenEnabled` | boolean | `true`         | Enables or disables fullscreen mode on mobile.                           |
+| `showTime`          | boolean | `true`         | If `true`, shows the time in each chat message.                          |
+| `position`          | object  | `{ bottom: '24px', right: '24px' }` | The position of the floating button with `top`, `bottom`, `left`, `right` and `transform` properties. |
 
-## 📝 Ejemplos
+## 📝 Examples
 
-### Ejemplo Básico
+### Basic Example
 
 ```html
 <!DOCTYPE html>
 <html>
 <head>
-  <title>Mi Sitio Web</title>
+  <title>My Website</title>
 </head>
 <body>
-  <h1>Bienvenido a mi sitio</h1>
+  <h1>Welcome to my site</h1>
   
   <script src="https://cdn.jsdelivr.net/npm/hubdox-chat-sdk@0.1.0"></script>
   <script>
     const chat = new ChatBot({
-      baseUrl: 'https://mi-api.com',
-      apiKey: 'mi-api-key-123',
-      tenant: 'mi-tenant',
+      baseUrl: 'https://my-api.com',
+      apiKey: 'my-api-key-123',
+      tenant: 'my-tenant',
       options: {
-        register: true, // Habilita el registro conversacional
+        register: true, // Enables conversational registration
       },
       user: {
-        name: 'Juan Pérez',
-        email: 'juan@ejemplo.com',
-        photo: 'https://ejemplo.com/juan-avatar.jpg'
+        name: 'John Doe',
+        email: 'john@example.com',
+        photo: 'https://example.com/john-avatar.jpg'
       },
       bot: {
-        name: 'Asistente Virtual',
-        img: 'https://ejemplo.com/bot-avatar.jpg'
+        name: 'Virtual Assistant',
+        img: 'https://example.com/bot-avatar.jpg'
       }
     });
   </script>
@@ -159,121 +162,152 @@ const chat = new ChatBot({
 </html>
 ```
 
-### Ejemplo con Pantalla de Registro
+### Registration Screen Example
 
 ```javascript
 const chat = new ChatBot({
-  baseUrl: 'https://api.miempresa.com',
+  baseUrl: 'https://api.mycompany.com',
   apiKey: 'sk-1234567890abcdef',
-  tenant: 'miempresa-prod',
+  tenant: 'mycompany-prod',
   options: {
-    register: true, // Habilita la pantalla de registro
+    register: true, // Enables registration screen
   },
   user: {
-    name: 'Usuario', // Se mostrará pantalla de registro
-    email: 'usuario@miempresa.com',
-    photo: 'https://miempresa.com/avatars/default.jpg'
+    name: 'User', // Registration screen will be shown
+    email: 'user@mycompany.com',
+    photo: 'https://mycompany.com/avatars/default.jpg'
   },
   bot: {
-    name: 'Asistente Virtual',
-    img: 'https://miempresa.com/bots/asistente.jpg'
+    name: 'Virtual Assistant',
+    img: 'https://mycompany.com/bots/assistant.jpg'
   },
   custom: {
     primaryColor: '#ff6b35',
-    botName: 'Soporte IA',
+    botName: 'AI Support',
     headerBgColor: '#2c3e50',
     headerTextColor: '#ecf0f1',
-    sendButtonText: 'Enviar Mensaje',
+    sendButtonText: 'Send Message',
     showTime: true
   }
 });
 ```
 
-### Ejemplo Personalizado (Sin Registro)
+### Custom Example (No Registration)
 
 ```javascript
 const chat = new ChatBot({
-  baseUrl: 'https://api.miempresa.com',
+  baseUrl: 'https://api.mycompany.com',
   apiKey: 'sk-1234567890abcdef',
-  tenant: 'miempresa-prod',
+  tenant: 'mycompany-prod',
   options: {
-    register: false, // No muestra pantalla de registro
+    register: false, // No registration screen
   },
   user: {
-    name: 'María García', // Usuario ya registrado
-    email: 'maria@miempresa.com',
-    photo: 'https://miempresa.com/avatars/maria.jpg'
+    name: 'Mary Garcia', // Already registered user
+    email: 'mary@mycompany.com',
+    photo: 'https://mycompany.com/avatars/mary.jpg'
   },
   bot: {
-    name: 'Soporte Técnico',
-    img: 'https://miempresa.com/bots/soporte.jpg'
+    name: 'Technical Support',
+    img: 'https://mycompany.com/bots/support.jpg'
   },
   custom: {
     primaryColor: '#ff6b35',
-    botName: 'Soporte IA',
+    botName: 'AI Support',
     headerBgColor: '#2c3e50',
     headerTextColor: '#ecf0f1',
-    sendButtonText: 'Enviar Mensaje',
+    sendButtonText: 'Send Message',
     showTime: true
   }
 });
 ```
 
-## 🔧 API del Servidor
+### Streaming Example
 
-El SDK está diseñado para comunicarse con dos puntos finales principales en su servidor backend.
+```javascript
+const chat = new ChatBot({
+  baseUrl: 'https://api.mycompany.com',
+  apiKey: 'sk-1234567890abcdef',
+  tenant: 'mycompany-prod',
+  options: {
+    register: true,
+    stream: true,      // Enables streaming effect
+    devMode: true,     // Development logs (development only)
+  },
+  user: {
+    name: 'User',
+    email: 'user@mycompany.com',
+    photo: 'https://mycompany.com/avatars/default.jpg'
+  },
+  bot: {
+    name: 'AI Assistant',
+    img: 'https://mycompany.com/bots/assistant.jpg'
+  },
+  custom: {
+    primaryColor: '#6366f1',
+    botName: 'Virtual Assistant',
+    headerBgColor: '#4f46e5',
+    headerTextColor: '#ffffff',
+    showTime: true
+  }
+});
+```
 
-### 1. Registro de Sesión (`/api/sdk/v1/register`)
+## 🔧 Server API
 
-Este punto final se llama cuando se inicializa el widget de chat. Su propósito es registrar una nueva sesión de chat y obtener la configuración inicial del bot y la licencia.
+The SDK is designed to communicate with two main endpoints on your backend server.
 
-- **Método:** `POST`
-- **Encabezados:**
+### 1. Session Registration (`/api/sdk/v1/register`)
+
+This endpoint is called when the chat widget is initialized. Its purpose is to register a new chat session and obtain the initial bot and license configuration.
+
+- **Method:** `POST`
+- **Headers:**
   - `Authorization`: `Bearer {apiKey}`
   - `Content-Type`: `application/json`
 
-#### Parámetros de Envío (Request Body)
+#### Request Parameters (Request Body)
 
-| Parámetro | Tipo   | Requerido | Descripción                           |
-|-----------|--------|-----------|---------------------------------------|
-| `apiKey`  | string | Sí        | La clave de API para la autenticación.    |
-| `tenant`  | string | Sí        | El identificador del tenant/organización. |
+| Parameter | Type   | Required | Description                           |
+|-----------|--------|----------|---------------------------------------|
+| `apiKey`  | string | Yes      | The API key for authentication.       |
+| `tenant`  | string | Yes      | The tenant/organization identifier.   |
 
-**Ejemplo de Envío:**
+**Request Example:**
 ```json
 {
   "apiKey": "sk-1234567890abcdef",
-  "tenant": "mi-tenant"
+  "tenant": "my-tenant"
 }
 ```
 
-#### Parámetros de Recibo (Response Body)
+#### Response Parameters (Response Body)
 
-| Parámetro | Tipo   | Descripción                                                                                             |
+| Parameter | Type   | Description                                                                                             |
 |-----------|--------|---------------------------------------------------------------------------------------------------------|
-| `session` | string | Un identificador único para la sesión de chat. El SDK lo almacenará y lo enviará en las solicitudes de mensajes posteriores. |
-| `license` | object | Un objeto que contiene información sobre la licencia del cliente.                                       |
-| `chatbot` | object | Un objeto que contiene la configuración del bot.                                                        |
+| `session` | string | A unique identifier for the chat session. The SDK will store it and send it in subsequent message requests. |
+| `license` | object | An object containing information about the client's license.                                           |
+| `chatbot` | object | An object containing the bot's configuration.                                                          |
 
-**Estructura del Objeto `license`:**
+**License Object Structure:**
 
-| Parámetro    | Tipo    | Descripción                                            |
+| Parameter    | Type    | Description                                            |
 |--------------|---------|--------------------------------------------------------|
-| `name`       | string  | El nombre del titular de la licencia (por ejemplo, "Hubdox"). |
-| `logo`       | string  | La URL del logo del titular de la licencia.            |
-| `active`     | boolean | Indica si la licencia está activa.                     |
-| `url`        | string  | La URL a la que enlazará el pie de página de la licencia. |
-| `showFooter` | boolean | Si es `true`, se mostrará un pie de página "Powered by". |
+| `name`       | string  | The license holder's name (e.g., "Hubdox").           |
+| `logo`       | string  | The URL of the license holder's logo.                  |
+| `active`     | boolean | Indicates if the license is active.                    |
+| `url`        | string  | The URL that the license footer will link to.          |
+| `showFooter` | boolean | If `true`, a "Powered by" footer will be displayed.    |
 
-**Estructura del Objeto `chatbot`:**
+**Chatbot Object Structure:**
 
-| Parámetro         | Tipo   | Descripción                                           |
+| Parameter         | Type   | Description                                           |
 |-------------------|--------|-------------------------------------------------------|
-| `name`            | string | El nombre del bot (por ejemplo, "Asistente Virtual"). |
-| `photo`           | string | La URL de la imagen de perfil del bot.                |
-| `initial_message` | string | El primer mensaje que el bot enviará al usuario.      |
+| `name`            | string | The bot's name (e.g., "Virtual Assistant").          |
+| `photo`           | string | The URL of the bot's profile image.                   |
+| `initial_message` | string | The first message the bot will send to the user.      |
 
-**Ejemplo de Recibo:**
+**Response Example:**
 ```json
 {
   "session": "sess_a1b2c3d4e5f6",
@@ -285,63 +319,67 @@ Este punto final se llama cuando se inicializa el widget de chat. Su propósito 
     "showFooter": true
   },
   "chatbot": {
-    "name": "Asistente de Ventas",
+    "name": "Sales Assistant",
     "photo": "https://cdn.example.com/bot-avatar.png",
-    "initial_message": "¡Hola! 👋 ¿Cómo puedo ayudarte a encontrar el producto perfecto hoy?"
+    "initial_message": "Hello! 👋 How can I help you find the perfect product today?"
   }
 }
 ```
 
 ---
 
-### 2. Envío de Mensajes (`/api/sdk/v1/message`)
+### 2. Message Sending (`/api/sdk/v1/message`)
 
-Este punto final se llama cada vez que un usuario envía un mensaje a través del widget de chat.
+This endpoint is called every time a user sends a message through the chat widget.
 
-- **Método:** `POST`
-- **Encabezados:**
+- **Method:** `POST`
+- **Headers:**
   - `Authorization`: `Bearer {apiKey}`
   - `Content-Type`: `application/json`
 
-#### Parámetros de Envío (Request Body)
+#### Request Parameters (Request Body)
 
-| Parámetro | Tipo   | Requerido | Descripción                                      |
-|-----------|--------|-----------|--------------------------------------------------|
-| `apiKey`  | string | Sí        | La clave de API para la autenticación.               |
-| `tenant`  | string | Sí        | El identificador del tenant/organización.            |
-| `session` | string | Sí        | El ID de sesión obtenido del punto final de registro. |
-| `message` | string | Sí        | El mensaje de texto del usuario.                 |
-| `name`    | string | No        | El nombre del usuario.                           |
+| Parameter | Type   | Required | Description                                      |
+|-----------|--------|----------|--------------------------------------------------|
+| `apiKey`  | string | Yes      | The API key for authentication.                  |
+| `tenant`  | string | Yes      | The tenant/organization identifier.              |
+| `session` | string | Yes      | The session ID obtained from the registration endpoint. |
+| `message` | string | Yes      | The user's text message.                         |
+| `name`    | string | No       | The user's name.                                 |
+| `stream`  | boolean| No       | If `true`, indicates that streaming should be used. |
 
-**Ejemplo de Envío:**
+**Request Example:**
 ```json
 {
   "apiKey": "sk-1234567890abcdef",
-  "tenant": "mi-tenant",
+  "tenant": "my-tenant",
   "session": "sess_a1b2c3d4e5f6",
-  "message": "Hola, me gustaría saber más sobre el producto X.",
-  "name": "Juan Pérez"
+  "message": "Hello, I'd like to know more about product X.",
+  "name": "John Doe",
+  "stream": false
 }
 ```
 
-#### Parámetros de Recibo (Response Body)
+#### Response Parameters (Response Body)
 
-| Parámetro | Tipo   | Descripción                     |
+| Parameter | Type   | Description                     |
 |-----------|--------|---------------------------------|
-| `answer`  | string | La respuesta de texto del bot. |
+| `answer`  | string | The bot's text response.        |
 
-**Ejemplo de Recibo:**
+**Streaming Note**: If `stream: true` is sent in the request, the SDK will simulate the streaming effect by showing the response character by character, regardless of whether the server supports real streaming or not.
+
+**Response Example:**
 ```json
 {
-  "answer": "¡Claro! El producto X es una de nuestras mejores opciones. ¿Qué te gustaría saber específicamente sobre él?"
+  "answer": "Of course! Product X is one of our best options. What would you like to know specifically about it?"
 }
 ```
 
-## ⚙️ Métodos Públicos
+## ⚙️ Public Methods
 
 ### `toggleChatPanel()`
 
-Alterna la visibilidad del panel de chat.
+Toggles the chat panel visibility.
 
 ```javascript
 chat.toggleChatPanel();
@@ -349,7 +387,7 @@ chat.toggleChatPanel();
 
 ### `hideChatPanel()`
 
-Oculta el panel de chat.
+Hides the chat panel.
 
 ```javascript
 chat.hideChatPanel();
@@ -357,15 +395,15 @@ chat.hideChatPanel();
 
 ### `sendMessage(message)`
 
-Envía un mensaje al bot.
+Sends a message to the bot.
 
 ```javascript
-chat.sendMessage('Hola, necesito ayuda.');
+chat.sendMessage('Hello, I need help.');
 ```
 
 ### `clearCache()`
 
-Borra la sesión de chat y los mensajes almacenados en caché.
+Clears the cached chat session and messages.
 
 ```javascript
 chat.clearCache();
@@ -373,7 +411,7 @@ chat.clearCache();
 
 ### `reloadFromCache()`
 
-Recarga la sesión de chat y los mensajes desde la caché.
+Reloads the chat session and messages from cache.
 
 ```javascript
 chat.reloadFromCache();
@@ -381,7 +419,7 @@ chat.reloadFromCache();
 
 ### `getCacheStatus()`
 
-Obtiene el estado de la caché.
+Gets the cache status.
 
 ```javascript
 const status = chat.getCacheStatus();
@@ -390,184 +428,273 @@ console.log(status);
 
 ### `getRegistrationStatus()`
 
-Obtiene el estado del registro del usuario.
+Gets the user registration status.
 
 ```javascript
 const status = chat.getRegistrationStatus();
 console.log(status);
 ```
 
-## 🎯 Pantalla de Registro
+## 🎯 Registration Screen
 
-La nueva funcionalidad de pantalla de registro separa claramente el proceso de registro del chat normal, evitando confusiones y mejorando la experiencia del usuario.
+The new registration screen functionality clearly separates the registration process from normal chat, avoiding confusion and improving user experience.
 
-### ¿Cuándo se muestra la pantalla de registro?
+### When is the registration screen shown?
 
-La pantalla de registro se muestra automáticamente cuando se cumple alguna de estas condiciones:
+The registration screen is automatically displayed when any of these conditions are met:
 
-1. **Cuando `register: true`** - La opción de registro está habilitada
-2. **Cuando el nombre del usuario no existe** - El usuario no tiene un nombre válido
-3. **Cuando el usuario no está registrado** - No se ha completado el proceso de registro
+1. **When `register: true`** - The registration option is enabled
+2. **When the user's name doesn't exist** - The user doesn't have a valid name
+3. **When the user is not registered** - The registration process hasn't been completed
 
-### Flujo de la pantalla de registro
+### Registration screen flow
 
-1. **Bienvenida**: El bot muestra una pantalla de bienvenida con su imagen
-2. **Solicitud de nombre**: Solicita al usuario que escriba su nombre
-3. **Confirmación**: Confirma el nombre y transiciona al chat
-4. **Chat normal**: Inicia el chat con un mensaje personalizado
+1. **Welcome**: The bot shows a welcome screen with its image
+2. **Name request**: Asks the user to type their name
+3. **Confirmation**: Confirms the name and transitions to chat
+4. **Normal chat**: Starts the chat with a personalized message
 
-### Ejemplo de configuración
+### Configuration example
 
 ```javascript
 const chat = new ChatBot({
-  baseUrl: 'https://tu-api.com',
-  apiKey: 'tu-api-key',
-  tenant: 'tu-tenant',
+  baseUrl: 'https://your-api.com',
+  apiKey: 'your-api-key',
+  tenant: 'your-tenant',
   options: {
-    register: true, // Habilita la pantalla de registro
-    testMode: true  // Para pruebas sin API real
+    register: true, // Enables registration screen
+    testMode: true  // For testing without real API
   },
   user: {
-    name: "Usuario", // Se mostrará pantalla de registro
-    email: 'usuario@ejemplo.com'
+    name: "User", // Registration screen will be shown
+    email: 'user@example.com'
   }
 });
 ```
 
-## 🧪 Modo de Prueba
+## 🧪 Test Mode
 
-Cuando `testMode: true` está habilitado, el widget de chat utiliza un conjunto predefinido de respuestas para fines de prueba, sin necesidad de una API en vivo.
+When `testMode: true` is enabled, the chat widget uses a predefined set of responses for testing purposes, without needing a live API.
 
 ```javascript
 const chat = new ChatBot({
-  // ... otras opciones
+  // ... other options
   options: {
     testMode: true,
   }
 });
 ```
 
-## 📝 Soporte Markdown
+## 📝 Markdown Support
 
-El ChatBot incluye soporte completo para renderizar texto Markdown en las respuestas del bot. Los siguientes formatos son soportados:
+The ChatBot includes complete support for rendering Markdown text in bot responses. The following formats are supported:
 
-### Formatos Soportados
+### Supported Formats
 
-| Formato | Sintaxis | Resultado |
-|---------|----------|-----------|
-| **Negrita** | `**texto**` | **texto** |
-| *Cursiva* | `*texto*` | *texto* |
-| `Código inline` | `` `código` `` | `código` |
-| **Bloque de código** | ```` ```código``` ```` | Bloque de código con resaltado |
-| [Enlaces](https://ejemplo.com) | `[texto](url)` | Enlaces externos |
-| **Títulos** | `# Título`, `## Subtítulo` | Títulos con jerarquía |
-| **Listas** | `- item` o `1. item` | Listas ordenadas y no ordenadas |
+| Format | Syntax | Result |
+|--------|--------|--------|
+| **Bold** | `**text**` | **text** |
+| *Italic* | `*text*` | *text* |
+| `Inline code` | `` `code` `` | `code` |
+| **Code block** | ```` ```code``` ```` | Code block with highlighting |
+| [Links](https://example.com) | `[text](url)` | External links |
+| **Headers** | `# Header`, `## Subheader` | Headers with hierarchy |
+| **Lists** | `- item` or `1. item` | Ordered and unordered lists |
 
-### Ejemplo de Respuesta con Markdown
+### Response with Markdown Example
 
 ```javascript
-// El bot puede responder con Markdown
-const respuesta = `# ¡Hola! 👋
+// The bot can respond with Markdown
+const response = `# Hello! 👋
 
-Te ayudo con **formato Markdown**. Aquí tienes algunos ejemplos:
+I help you with **Markdown formatting**. Here are some examples:
 
-## Características principales:
-- **Negrita** para énfasis
-- *Cursiva* para detalles
-- \`código inline\` para comandos
-- [Enlaces](https://ejemplo.com) para recursos
+## Main features:
+- **Bold** for emphasis
+- *Italic* for details
+- \`inline code\` for commands
+- [Links](https://example.com) for resources
 
-## Ejemplo de código:
+## Code example:
 \`\`\`javascript
-function saludar() {
-    console.log("¡Hola mundo!");
+function greet() {
+    console.log("Hello world!");
 }
 \`\`\``;
 ```
 
-### Seguridad
+### Security
 
-El parser de Markdown incluye protección contra XSS (Cross-Site Scripting) al escapar automáticamente el HTML malicioso en el texto de entrada.
+The Markdown parser includes protection against XSS (Cross-Site Scripting) by automatically escaping malicious HTML in the input text.
 
-## 🔄 Almacenamiento en Caché
+## ⚡ Simulated Streaming
 
-El widget de chat puede almacenar en caché la sesión de chat y los mensajes en el almacenamiento local del navegador para mantener la conversación a través de las recargas de la página.
+The ChatBot SDK includes a simulated streaming functionality that allows showing bot responses character by character, creating a visual effect similar to ChatGPT.
 
-Para deshabilitar el almacenamiento en caché, establece `cache: false` en el objeto `options`.
+### How does it work?
+
+When `stream: true` is enabled:
+
+1. **Typing indicator**: The "is typing..." indicator is shown first
+2. **Text streaming**: The message appears progressively character by character
+3. **Blinking cursor**: An animated cursor indicates the bot is "typing"
+4. **Variable speed**: Different speeds for spaces, punctuation, and normal characters
+
+### Configuration
 
 ```javascript
 const chat = new ChatBot({
-  // ... otras opciones
+  // ... other options
+  options: {
+    stream: true,  // Enables simulated streaming
+  }
+});
+```
+
+### Behavior
+
+- **With `stream: true`**: Message appears character by character with blinking cursor
+- **With `stream: false`**: Message appears complete at once
+
+### Customization
+
+The streaming includes:
+- **Blinking cursor** with the chat's primary color
+- **Left border** special during streaming
+- **Subtle gradient background** to highlight the message
+- **Variable speed** that simulates human typing
+
+## 🔧 Development Mode
+
+The SDK includes a configurable logging system to facilitate development and debugging.
+
+### Configuration
+
+```javascript
+const chat = new ChatBot({
+  // ... other options
+  options: {
+    devMode: true,  // Enables development logs
+  }
+});
+```
+
+### Log Types
+
+- **`_log()`**: General informational logs
+- **`_logError()`**: Errors (always visible)
+- **`_logWarn()`**: Warnings (development mode only)
+- **`_logInfo()`**: Additional information (development mode only)
+- **`_logDebug()`**: Debugging information (development mode only)
+
+### Production Usage
+
+```javascript
+// For production, disable logs
+options: {
+  devMode: false,  // Disables logs for better performance
+}
+```
+
+## 🔄 Caching
+
+The chat widget can cache the chat session and messages in the browser's local storage to maintain the conversation across page reloads.
+
+To disable caching, set `cache: false` in the `options` object.
+
+```javascript
+const chat = new ChatBot({
+  // ... other options
   options: {
     cache: false,
   }
 });
 ```
 
-## 🎨 Personalización
+## 🎨 Customization
 
-### Colores
+### Colors
 
-Puedes personalizar completamente la apariencia del widget:
+You can completely customize the widget's appearance:
 
 ```javascript
 const chat = new ChatBot({
-  // ... otras opciones
+  // ... other options
   custom: {
-    primaryColor: '#e74c3c',      // Color principal
-    headerBgColor: '#2c3e50',     // Fondo del encabezado
-    headerTextColor: '#ffffff',   // Texto del encabezado
+    primaryColor: '#e74c3c',      // Primary color
+    headerBgColor: '#2c3e50',     // Header background
+    headerTextColor: '#ffffff',   // Header text
   }
 });
 ```
 
-### Textos
+### Texts
 
-Personaliza los textos que aparecen en el widget:
+Customize the texts that appear in the widget:
 
 ```javascript
 const chat = new ChatBot({
-  // ... otras opciones
+  // ... other options
   custom: {
-    botName: 'Mi Asistente Personal',
-    sendButtonText: 'Enviar Mensaje'
+    botName: 'My Personal Assistant',
+    sendButtonText: 'Send Message'
   }
 });
 ```
 
-## 🚀 Despliegue
+## 📁 Example Files
 
-### Desarrollo Local
+The SDK includes several example files for different use cases:
 
-1. Clona el repositorio.
-2. Abre `example/text.html` en tu navegador.
-3. Modifica la configuración según tus necesidades.
+### Main Files
 
-### Producción
+- **`example/text.html`**: Basic example with all functionalities
+- **`example/streaming-test.html`**: Specific test for simulated streaming
+- **`example/options-menu.html`**: Visual configurator with Bootstrap
+- **`example/options-menu-tailwind.html`**: Visual configurator with Tailwind CSS
+- **`example/registration-screen-example.html`**: Registration screen example
+- **`index.html`**: 30 different configuration examples
 
-1. Incluye el script desde CDN.
-2. Configura tu punto final de la API.
-3. Personaliza la apariencia según tu marca.
+### Tests
 
-## 🤝 Contribuir
+- **`tests/`**: Complete unit test suite
+- **`tests/RegistrationScreen.test.js`**: Specific tests for registration screen
+- **`tests/streaming.test.js`**: Tests for streaming functionality
 
-1. Haz un fork del proyecto.
-2. Crea una rama para tu característica (`git checkout -b feature/AmazingFeature`).
-3. Confirma tus cambios (`git commit -m 'Add some AmazingFeature'`).
-4. Empuja a la rama (`git push origin feature/AmazingFeature`).
-5. Abre una Pull Request.
+## 🚀 Deployment
 
-## 📄 Licencia
+### Local Development
 
-Este proyecto está bajo la Licencia ISC. Consulta el archivo `LICENSE` para más detalles.
+1. Clone the repository.
+2. Open `example/streaming-test.html` to test streaming.
+3. Open `example/text.html` to see all functionalities.
+4. Modify the configuration according to your needs.
 
-## 👨‍💻 Autor
+### Production
+
+1. Include the script from CDN.
+2. Configure your API endpoint.
+3. Customize the appearance according to your brand.
+
+## 🤝 Contributing
+
+1. Fork the project.
+2. Create a feature branch (`git checkout -b feature/AmazingFeature`).
+3. Commit your changes (`git commit -m 'Add some AmazingFeature'`).
+4. Push to the branch (`git push origin feature/AmazingFeature`).
+5. Open a Pull Request.
+
+## 📄 License
+
+This project is under the ISC License. See the `LICENSE` file for more details.
+
+## 👨‍💻 Author
 
 **Bemtorres**
 
 - GitHub: [@bemtorres](https://github.com/bemtorres)
 
-## 🙏 Agradecimientos
+## 🙏 Acknowledgments
 
-- [Bootstrap](https://getbootstrap.com/) por el framework CSS.
-- [Cloudinary](https://cloudinary.com/) por el alojamiento de imágenes predeterminado.
+- [Bootstrap](https://getbootstrap.com/) for the CSS framework.
+- [Cloudinary](https://cloudinary.com/) for default image hosting.
