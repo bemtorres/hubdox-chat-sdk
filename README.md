@@ -25,6 +25,7 @@ Un SDK de JavaScript ligero y fácil de usar para integrar un chatbot flotante e
 - **Configuración automática**: El bot se configura automáticamente desde la API.
 - **Actualización dinámica**: La interfaz de usuario se actualiza automáticamente con la configuración del bot.
 - **Modo de prueba**: Un modo de prueba para el desarrollo y las pruebas sin una API en vivo.
+- **Soporte Markdown**: Renderizado automático de texto Markdown en las respuestas del bot.
 
 ## 📦 Instalación
 
@@ -118,6 +119,7 @@ const chat = new ChatBot({
 | `messagesHeight`    | string  | `'350px'`          | La altura del contenedor de mensajes.                                    |
 | `buttonSize`        | string  | `'56px'`           | El tamaño del botón flotante.                                            |
 | `fullscreenEnabled` | boolean | `true`             | Habilita o deshabilita el modo de pantalla completa en móviles.          |
+| `showTime`          | boolean | `false`            | Si es `true`, muestra la hora en cada mensaje del chat.                  |
 | `position`          | object  | `{ bottom: '24px', right: '24px' }` | La posición del botón flotante con propiedades `top`, `bottom`, `left`, `right` y `transform`. |
 
 ## 📝 Ejemplos
@@ -181,7 +183,8 @@ const chat = new ChatBot({
     botName: 'Soporte IA',
     headerBgColor: '#2c3e50',
     headerTextColor: '#ecf0f1',
-    sendButtonText: 'Enviar Mensaje'
+    sendButtonText: 'Enviar Mensaje',
+    showTime: true // Muestra la hora en cada mensaje
   }
 });
 ```
@@ -376,6 +379,48 @@ const chat = new ChatBot({
   }
 });
 ```
+
+## 📝 Soporte Markdown
+
+El ChatBot incluye soporte completo para renderizar texto Markdown en las respuestas del bot. Los siguientes formatos son soportados:
+
+### Formatos Soportados
+
+| Formato | Sintaxis | Resultado |
+|---------|----------|-----------|
+| **Negrita** | `**texto**` | **texto** |
+| *Cursiva* | `*texto*` | *texto* |
+| `Código inline` | `` `código` `` | `código` |
+| **Bloque de código** | ```` ```código``` ```` | Bloque de código con resaltado |
+| [Enlaces](https://ejemplo.com) | `[texto](url)` | Enlaces externos |
+| **Títulos** | `# Título`, `## Subtítulo` | Títulos con jerarquía |
+| **Listas** | `- item` o `1. item` | Listas ordenadas y no ordenadas |
+
+### Ejemplo de Respuesta con Markdown
+
+```javascript
+// El bot puede responder con Markdown
+const respuesta = `# ¡Hola! 👋
+
+Te ayudo con **formato Markdown**. Aquí tienes algunos ejemplos:
+
+## Características principales:
+- **Negrita** para énfasis
+- *Cursiva* para detalles
+- \`código inline\` para comandos
+- [Enlaces](https://ejemplo.com) para recursos
+
+## Ejemplo de código:
+\`\`\`javascript
+function saludar() {
+    console.log("¡Hola mundo!");
+}
+\`\`\``;
+```
+
+### Seguridad
+
+El parser de Markdown incluye protección contra XSS (Cross-Site Scripting) al escapar automáticamente el HTML malicioso en el texto de entrada.
 
 ## 🔄 Almacenamiento en Caché
 

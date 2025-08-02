@@ -35,6 +35,7 @@ class ChatBot {
     this.headerTextColor = custom.headerTextColor || "#ffffff";
     this.sendButtonText = custom.sendButtonText || null;
     this.iconButton = custom.iconButton || this.bot.img;
+    this.showTime = custom.showTime || false;
     
     // Configuración de tamaño del chat
     this.chatWidth = custom.chatWidth || "400px";
@@ -315,7 +316,7 @@ class ChatBot {
 
     const data = await response.json();
     console.log('_sendMessageToAPI - Respuesta recibida:', data);
-    return data;
+    return data.answer || 'No se pudo obtener respuesta del bot';
   }
 
   // Registro dentro del chat
@@ -1019,7 +1020,7 @@ class ChatBot {
       welcomeText.innerHTML = `
         <p class="mb-0 fw-bold">${this.botName}</p>
         <p class="mb-0 text-muted small">${msg.time}</p>
-        <p class="mb-0 mt-2">${msg.text}</p>
+        <p class="mb-0 mt-2">${this._parseMarkdown(msg.text)}</p>
       `;
       
       welcomeWrapper.appendChild(botImage);
@@ -1088,7 +1089,7 @@ class ChatBot {
       "w-auto",
     ].join(" ");
 
-    bubble.style.maxWidth = "75%";
+    bubble.style.maxWidth = "98%";
 
     if (msg.from === "user") {
       bubble.style.backgroundColor = this.primaryColor;
@@ -1099,12 +1100,12 @@ class ChatBot {
 
     const info = document.createElement("small");
     info.className = "fw-bold d-block mb-1";
-    info.innerHTML = `${msg.from === "user" ? this.user.name : this.botName} <span class="text-muted fs-7 ms-2" style="font-size:0.75rem;">${msg.time}</span>`;
+    info.innerHTML = `${msg.from === "user" ? this.user.name : this.botName} <span class="text-muted fs-7 ms-2" style="font-size:0.75rem;">${this.showTime ? msg.time : ""}</span>`;
 
     const textP = document.createElement("p");
     textP.className = "mb-0";
     textP.style.whiteSpace = "pre-wrap";
-    textP.textContent = msg.text;
+    textP.innerHTML = this._parseMarkdown(msg.text);
 
     bubble.appendChild(info);
     bubble.appendChild(textP);
@@ -1505,6 +1506,59 @@ class ChatBot {
         email: this.user.email
       }
     };
+  }
+
+  /**
+   * Parsea texto Markdown básico a HTML
+   * @param {string} text - Texto en formato Markdown
+   * @returns {string} - Texto convertido a HTML
+   */
+  _parseMarkdown(text) {
+    if (!text || typeof text !== 'string') {
+      return text;
+    }
+
+    let html = text;
+
+    // Escapar HTML existente para evitar XSS
+    html = html.replace(/&/g, '&amp;')
+               .replace(/</g, '&lt;')
+               .replace(/>/g, '&gt;')
+               .replace(/"/g, '&quot;')
+               .replace(/'/g, '&#39;');
+
+    // **texto** -> <strong>texto</strong> (negrita)
+    html = html.replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>');
+    
+    // *texto* -> <em>texto</em> (cursiva)
+    html = html.replace(/\*(.*?)\*/g, '<em>$1</em>');
+    
+    // `texto` -> <code>texto</code> (código inline)
+    html = html.replace(/`(.*?)`/g, '<code class="bg-light px-1 rounded">$1</code>');
+    
+    // ```texto``` -> <pre><code>texto</code></pre> (bloque de código)
+    html = html.replace(/```([\s\S]*?)```/g, '<pre class="bg-light p-2 rounded"><code>$1</code></pre>');
+    
+    // [texto](url) -> <a href="url">texto</a> (enlaces)
+    html = html.replace(/\[([^\]]+)\]\(([^)]+)\)/g, '<a href="$2" target="_blank" rel="noopener noreferrer">$1</a>');
+    
+    // # Título -> <h1>Título</h1> (títulos)
+    html = html.replace(/^### (.*$)/gim, '<h3 class="mt-2 mb-1">$1</h3>');
+    html = html.replace(/^## (.*$)/gim, '<h2 class="mt-2 mb-1">$1</h2>');
+    html = html.replace(/^# (.*$)/gim, '<h1 class="mt-2 mb-1">$1</h1>');
+    
+    // - item -> <li>item</li> (listas)
+    html = html.replace(/^- (.*$)/gim, '<li>$1</li>');
+    html = html.replace(/(<li>.*<\/li>)/s, '<ul class="mb-2">$1</ul>');
+    
+    // 1. item -> <li>item</li> (listas numeradas)
+    html = html.replace(/^\d+\. (.*$)/gim, '<li>$1</li>');
+    html = html.replace(/(<li>.*<\/li>)/s, '<ol class="mb-2">$1</ol>');
+    
+    // Saltos de línea
+    html = html.replace(/\n/g, '<br>');
+    
+    return html;
   }
 
   destroy() {
