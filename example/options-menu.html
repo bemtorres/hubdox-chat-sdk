@@ -269,6 +269,11 @@
     <div class="header">
       <h1>🎛️ Menú de Opciones del Chatbot</h1>
       <p>Configura todas las opciones disponibles para personalizar tu chatbot</p>
+      <div style="margin-top: 15px; padding: 10px; background: rgba(255,255,255,0.1); border-radius: 8px;">
+        <p style="font-size: 14px; opacity: 0.9;">
+          ✨ <strong>Nueva funcionalidad:</strong> Pantalla de registro separada que evita confusiones al solicitar el nombre del usuario
+        </p>
+      </div>
     </div>
 
     <div class="content">
@@ -301,7 +306,7 @@
             </div>
             <div class="checkbox-group">
               <input type="checkbox" id="register" checked>
-              <label for="register">Habilitar registro de usuario</label>
+              <label for="register">Habilitar pantalla de registro separada</label>
             </div>
             <div class="checkbox-group">
               <input type="checkbox" id="cache" checked>
@@ -310,6 +315,10 @@
             <div class="checkbox-group">
               <input type="checkbox" id="testMode">
               <label for="testMode">Modo de prueba (respuestas automáticas)</label>
+            </div>
+            <div class="checkbox-group">
+              <input type="checkbox" id="showTime">
+              <label for="showTime">Mostrar timestamps en mensajes</label>
             </div>
           </div>
         </div>
@@ -386,6 +395,16 @@
             <label for="sendButtonText">Texto del Botón de Envío</label>
             <input type="text" id="sendButtonText" value="" placeholder="Dejar vacío para usar ícono por defecto">
           </div>
+          
+          <div class="form-group">
+            <label for="iconButton">URL del Ícono del Botón Flotante</label>
+            <input type="url" id="iconButton" value="" placeholder="https://ejemplo.com/icono.svg">
+          </div>
+          
+          <div class="form-group">
+            <label for="sendButtonIcon">URL del Ícono del Botón de Envío</label>
+            <input type="url" id="sendButtonIcon" value="" placeholder="https://ejemplo.com/send-icon.svg">
+          </div>
         </div>
 
         <!-- Configuración de Tamaño -->
@@ -448,6 +467,36 @@
         </div>
       </div>
 
+      <!-- Configuración Avanzada -->
+      <div class="option-section">
+        <h3>⚙️ Configuración Avanzada</h3>
+        
+        <div class="form-group">
+          <label for="welcomeMessage">Mensaje de Bienvenida Personalizado</label>
+          <textarea id="welcomeMessage" rows="3" placeholder="Mensaje personalizado que se muestra al iniciar el chat"></textarea>
+        </div>
+        
+        <div class="form-group">
+          <label for="registrationMessage">Mensaje de Registro Personalizado</label>
+          <textarea id="registrationMessage" rows="3" placeholder="Mensaje personalizado para la pantalla de registro"></textarea>
+        </div>
+        
+        <div class="form-group">
+          <label for="registrationPlaceholder">Placeholder del Input de Registro</label>
+          <input type="text" id="registrationPlaceholder" value="Escribe tu nombre..." placeholder="Placeholder para el input de nombre">
+        </div>
+        
+        <div class="form-group">
+          <label for="messagePlaceholder">Placeholder del Input de Mensaje</label>
+          <input type="text" id="messagePlaceholder" value="Escribe un mensaje..." placeholder="Placeholder para el input de mensaje">
+        </div>
+        
+        <div class="form-group">
+          <label for="transitionTime">Tiempo de Transición (ms)</label>
+          <input type="number" id="transitionTime" value="1500" placeholder="1500">
+        </div>
+      </div>
+
       <!-- Panel de Vista Previa -->
       <div class="preview-panel">
         <h4>📋 Vista Previa de la Configuración</h4>
@@ -470,92 +519,6 @@ const chat = new ChatBot({
   bot: {
     name: 'Boti',
     img: 'https://res.cloudinary.com/dienilw2p/image/upload/v1747635921/hubdox/xevgjbvb1ri3ytpletzk.png'
-  },
-  
-  // Opciones
-  options: {
-    show: true,
-    register: true,
-    cache: true,
-    testMode: false
-  },
-  
-  // Personalización
-  custom: {
-    primaryColor: '#000000',
-    botName: 'Social Media',
-    headerBgColor: '#000000',
-    headerTextColor: '#ffffff',
-    sendButtonText: '',
-    chatWidth: '500px',
-    chatHeight: '70vh',
-    chatMaxWidth: '600px',
-    chatMaxHeight: '80vh',
-    fullscreenEnabled: true,
-    messagesHeight: '450px',
-    buttonSize: '64px',
-    position: {
-      bottom: '20px',
-      right: '24px'
-    }
-  }
-});
-        </div>
-      </div>
-    </div>
-
-    <div class="actions">
-      <button class="btn btn-primary" onclick="generateConfig()">🔄 Generar Configuración</button>
-      <button class="btn btn-success" onclick="testConfig()">🧪 Probar Configuración</button>
-      <button class="btn btn-secondary" onclick="resetToDefaults()">🔄 Restablecer Valores</button>
-    </div>
-  </div>
-
-  <script src="../src/index.js"></script>
-  <script>
-    let currentChat = null;
-
-    // Sincronizar color pickers con inputs de texto
-    function syncColorPickers() {
-      const colorInputs = document.querySelectorAll('input[type="color"]');
-      colorInputs.forEach(input => {
-        const textInput = document.getElementById(input.id + 'Text');
-        if (textInput) {
-          input.addEventListener('input', () => {
-            textInput.value = input.value;
-            updatePreview();
-          });
-          textInput.addEventListener('input', () => {
-            input.value = textInput.value;
-            updatePreview();
-          });
-        }
-      });
-    }
-
-    // Actualizar vista previa
-    function updatePreview() {
-      const config = getCurrentConfig();
-      const preview = document.getElementById('configPreview');
-      
-      preview.textContent = `// Configuración generada automáticamente
-const chat = new ChatBot({
-  // Configuración básica
-  baseUrl: '${config.baseUrl}',
-  apiKey: '${config.apiKey}',
-  tenant: '${config.tenant}',
-  
-  // Usuario
-  user: {
-    name: '${config.user.name}',
-    email: '${config.user.email}',
-    photo: '${config.user.photo}'
-  },
-  
-  // Bot
-  bot: {
-    name: '${config.bot.name}',
-    img: '${config.bot.img}'
   },
   
   // Opciones
@@ -607,7 +570,8 @@ const chat = new ChatBot({
           show: document.getElementById('show').checked,
           register: document.getElementById('register').checked,
           cache: document.getElementById('cache').checked,
-          testMode: document.getElementById('testMode').checked
+          testMode: document.getElementById('testMode').checked,
+          showTime: document.getElementById('showTime').checked
         },
         custom: {
           primaryColor: document.getElementById('primaryColor').value,
@@ -615,6 +579,8 @@ const chat = new ChatBot({
           headerBgColor: document.getElementById('headerBgColor').value,
           headerTextColor: document.getElementById('headerTextColor').value,
           sendButtonText: document.getElementById('sendButtonText').value,
+          iconButton: document.getElementById('iconButton').value,
+          sendButtonIcon: document.getElementById('sendButtonIcon').value,
           chatWidth: document.getElementById('chatWidth').value,
           chatHeight: document.getElementById('chatHeight').value,
           chatMaxWidth: document.getElementById('chatMaxWidth').value,
@@ -622,6 +588,11 @@ const chat = new ChatBot({
           fullscreenEnabled: document.getElementById('fullscreenEnabled').checked,
           messagesHeight: document.getElementById('messagesHeight').value,
           buttonSize: document.getElementById('buttonSize').value,
+          welcomeMessage: document.getElementById('welcomeMessage').value,
+          registrationMessage: document.getElementById('registrationMessage').value,
+          registrationPlaceholder: document.getElementById('registrationPlaceholder').value,
+          messagePlaceholder: document.getElementById('messagePlaceholder').value,
+          transitionTime: parseInt(document.getElementById('transitionTime').value) || 1500,
           position: {
             bottom: document.getElementById('buttonBottom').value,
             right: document.getElementById('buttonRight').value
@@ -676,6 +647,8 @@ const chat = new ChatBot({
         document.getElementById('headerTextColor').value = '#ffffff';
         document.getElementById('headerTextColorText').value = '#ffffff';
         document.getElementById('sendButtonText').value = '';
+        document.getElementById('iconButton').value = '';
+        document.getElementById('sendButtonIcon').value = '';
         document.getElementById('chatWidth').value = '500px';
         document.getElementById('chatHeight').value = '70vh';
         document.getElementById('chatMaxWidth').value = '600px';
@@ -688,7 +661,13 @@ const chat = new ChatBot({
         document.getElementById('register').checked = true;
         document.getElementById('cache').checked = true;
         document.getElementById('testMode').checked = false;
+        document.getElementById('showTime').checked = false;
         document.getElementById('fullscreenEnabled').checked = true;
+        document.getElementById('welcomeMessage').value = '';
+        document.getElementById('registrationMessage').value = '';
+        document.getElementById('registrationPlaceholder').value = 'Escribe tu nombre...';
+        document.getElementById('messagePlaceholder').value = 'Escribe un mensaje...';
+        document.getElementById('transitionTime').value = '1500';
         
         updatePreview();
         alert('✅ Valores restablecidos por defecto');

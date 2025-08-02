@@ -48,6 +48,175 @@
         border-radius: 0.375rem;
         overflow-x: auto;
     }
+
+    /* Estilos para los cards de ejemplos */
+    .design-card {
+      transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+      position: relative;
+      border: 2px solid transparent;
+      background: linear-gradient(135deg, #f8fafc 0%, #e2e8f0 100%);
+    }
+
+    .design-card:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 10px 25px rgba(0, 0, 0, 0.1);
+    }
+
+    /* Efecto de selección diamante con brillo */
+    .design-card.selected {
+      border: 2px solid transparent;
+      background: linear-gradient(135deg, #f8fafc 0%, #e2e8f0 100%);
+      position: relative;
+      transform: translateY(-4px);
+      z-index: 10;
+    }
+
+    .design-card.selected::before {
+      content: '';
+      position: absolute;
+      top: -2px;
+      left: -2px;
+      right: -2px;
+      bottom: -2px;
+      background: linear-gradient(45deg, 
+        #ff6b6b, #4ecdc4, #45b7d1, #96ceb4, #feca57, #ff9ff3, #54a0ff, #5f27cd,
+        #00d2d3, #ff9f43, #10ac84, #ee5a24, #ff3838, #ff6348, #ff9ff3, #54a0ff
+      );
+      background-size: 400% 400%;
+      border-radius: 0.5rem;
+      z-index: -1;
+      animation: diamondShine 3s ease-in-out infinite;
+    }
+
+    .design-card.selected::after {
+      content: '';
+      position: absolute;
+      top: 0;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      background: linear-gradient(135deg, #f8fafc 0%, #e2e8f0 100%);
+      border-radius: 0.375rem;
+      z-index: -1;
+    }
+
+    /* Animación de brillo diamante */
+    @keyframes diamondShine {
+      0% {
+        background-position: 0% 50%;
+        box-shadow: 
+          0 0 20px rgba(255, 107, 107, 0.6),
+          0 0 40px rgba(78, 205, 196, 0.4),
+          0 0 60px rgba(69, 183, 209, 0.2),
+          0 8px 32px rgba(0, 0, 0, 0.15);
+      }
+      25% {
+        background-position: 100% 50%;
+        box-shadow: 
+          0 0 20px rgba(150, 206, 180, 0.6),
+          0 0 40px rgba(254, 202, 87, 0.4),
+          0 0 60px rgba(255, 159, 243, 0.2),
+          0 8px 32px rgba(0, 0, 0, 0.15);
+      }
+      50% {
+        background-position: 100% 100%;
+        box-shadow: 
+          0 0 20px rgba(84, 160, 255, 0.6),
+          0 0 40px rgba(95, 39, 205, 0.4),
+          0 0 60px rgba(0, 210, 211, 0.2),
+          0 8px 32px rgba(0, 0, 0, 0.15);
+      }
+      75% {
+        background-position: 50% 100%;
+        box-shadow: 
+          0 0 20px rgba(255, 159, 67, 0.6),
+          0 0 40px rgba(16, 172, 132, 0.4),
+          0 0 60px rgba(238, 90, 36, 0.2),
+          0 8px 32px rgba(0, 0, 0, 0.15);
+      }
+      100% {
+        background-position: 0% 50%;
+        box-shadow: 
+          0 0 20px rgba(255, 107, 107, 0.6),
+          0 0 40px rgba(78, 205, 196, 0.4),
+          0 0 60px rgba(69, 183, 209, 0.2),
+          0 8px 32px rgba(0, 0, 0, 0.15);
+      }
+    }
+
+    /* Efecto de resplandor interno */
+    .design-card.selected .bg-gray-50 {
+      background: linear-gradient(135deg, 
+        rgba(255, 255, 255, 0.9) 0%, 
+        rgba(248, 250, 252, 0.95) 50%,
+        rgba(255, 255, 255, 0.9) 100%
+      ) !important;
+      backdrop-filter: blur(10px);
+      border-radius: 0.375rem;
+    }
+
+    /* Efecto de brillo en el título */
+    .design-card.selected h4 {
+      background: linear-gradient(45deg, #667eea, #764ba2, #f093fb, #f5576c);
+      background-size: 300% 300%;
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+      animation: titleShine 2s ease-in-out infinite;
+    }
+
+    @keyframes titleShine {
+      0%, 100% {
+        background-position: 0% 50%;
+      }
+      50% {
+        background-position: 100% 50%;
+      }
+    }
+
+    /* Efecto de pulso sutil */
+    .design-card.selected {
+      animation: subtlePulse 2s ease-in-out infinite;
+    }
+
+    @keyframes subtlePulse {
+      0%, 100% {
+        transform: translateY(-4px) scale(1);
+      }
+      50% {
+        transform: translateY(-4px) scale(1.02);
+      }
+    }
+
+    /* Indicador de selección */
+    .design-card.selected::before {
+      content: '✨';
+      position: absolute;
+      top: -10px;
+      right: -10px;
+      background: linear-gradient(45deg, #ff6b6b, #4ecdc4);
+      color: white;
+      width: 30px;
+      height: 30px;
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 14px;
+      z-index: 20;
+      animation: starTwinkle 1.5s ease-in-out infinite;
+    }
+
+    @keyframes starTwinkle {
+      0%, 100% {
+        opacity: 1;
+        transform: scale(1) rotate(0deg);
+      }
+      50% {
+        opacity: 0.8;
+        transform: scale(1.1) rotate(180deg);
+      }
+    }
   </style>
 </head>
 <body class="bg-gray-50 text-gray-800">
@@ -150,10 +319,10 @@
 
         <!-- Examples Section -->
         <div class="bg-white p-6 rounded-lg shadow-md prose max-w-none">
-          <h3 class="text-2xl font-bold text-gray-800 border-b pb-2 mb-4">✨ Live Examples</h3>
-          <p>Scroll through these examples to see the chatbot update in real-time on the right.</p>
+          <h3 class="text-2xl font-bold text-gray-800 border-b pb-2 mb-4">✨ 30 Live Examples</h3>
+          <p>Scroll through these examples to see the chatbot update in real-time on the right. Each example demonstrates different configurations and features.</p>
 
-          <!-- Design Card: Default Minimal -->
+          <!-- Example 1: Default Minimal -->
           <div class="design-card bg-gray-50 p-6 rounded-lg shadow-inner mb-6" data-config='{
             "baseUrl": "https://api.example.com",
             "apiKey": "your-api-key",
@@ -162,7 +331,7 @@
               "testMode": true
             }
           }'>
-            <h4 class="text-xl font-bold text-gray-800 mb-2">Default Minimal</h4>
+            <h4 class="text-xl font-bold text-gray-800 mb-2">1. Default Minimal</h4>
             <p class="text-gray-600">The chatbot with its default settings. Clean and simple.</p>
             <pre class="bg-gray-800 text-white p-4 rounded-md mt-4"><code class="language-javascript">new ChatBot({
   baseUrl: 'https://api.example.com',
@@ -174,7 +343,38 @@
 });</code></pre>
           </div>
 
-          <!-- Design Card: Custom Colors -->
+          <!-- Example 2: Registration Screen -->
+          <div class="design-card bg-gray-50 p-6 rounded-lg shadow-inner mb-6" data-config='{
+            "baseUrl": "https://api.example.com",
+            "apiKey": "your-api-key",
+            "tenant": "your-tenant",
+            "options": {
+              "register": true,
+              "testMode": true
+            },
+            "user": {
+              "name": "Usuario",
+              "email": "usuario@ejemplo.com"
+            }
+          }'>
+            <h4 class="text-xl font-bold text-gray-800 mb-2">2. Registration Screen</h4>
+            <p class="text-gray-600">Shows the new registration screen where the bot greets and asks for the user's name.</p>
+            <pre class="bg-gray-800 text-white p-4 rounded-md mt-4"><code class="language-javascript">new ChatBot({
+  baseUrl: 'https://api.example.com',
+  apiKey: 'your-api-key',
+  tenant: 'your-tenant',
+  options: {
+    register: true,
+    testMode: true
+  },
+  user: {
+    name: "Usuario",
+    email: "usuario@ejemplo.com"
+  }
+});</code></pre>
+          </div>
+
+          <!-- Example 3: Custom Colors -->
           <div class="design-card bg-gray-50 p-6 rounded-lg shadow-inner mb-6" data-config='{
             "baseUrl": "https://api.example.com",
             "apiKey": "your-api-key",
@@ -189,7 +389,7 @@
               "botName": "Orange Bot"
             }
           }'>
-            <h4 class="text-xl font-bold text-gray-800 mb-2">Custom Colors</h4>
+            <h4 class="text-xl font-bold text-gray-800 mb-2">3. Custom Colors</h4>
             <p class="text-gray-600">Change the primary color, header background, and text color to match your brand.</p>
             <pre class="bg-gray-800 text-white p-4 rounded-md mt-4"><code class="language-javascript">new ChatBot({
   // ...
@@ -202,7 +402,7 @@
 });</code></pre>
           </div>
 
-          <!-- Design Card: Custom Position (Bottom Left) -->
+          <!-- Example 4: Custom Position (Bottom Left) -->
           <div class="design-card bg-gray-50 p-6 rounded-lg shadow-inner mb-6" data-config='{
             "baseUrl": "https://api.example.com",
             "apiKey": "your-api-key",
@@ -218,8 +418,8 @@
               }
             }
           }'>
-            <h4 class="text-xl font-bold text-gray-800 mb-2">Custom Position (Bottom Left)</h4>
-            <p class="text-gray-600">Move the floating button to a different corner of the screen.</p>
+            <h4 class="text-xl font-bold text-gray-800 mb-2">4. Custom Position (Bottom Left)</h4>
+            <p class="text-gray-600">Move the floating button to the bottom left corner.</p>
             <pre class="bg-gray-800 text-white p-4 rounded-md mt-4"><code class="language-javascript">new ChatBot({
   // ...
   custom: {
@@ -232,7 +432,7 @@
 });</code></pre>
           </div>
 
-          <!-- Design Card: Custom Position (Top Right) -->
+          <!-- Example 5: Custom Position (Top Right) -->
           <div class="design-card bg-gray-50 p-6 rounded-lg shadow-inner mb-6" data-config='{
             "baseUrl": "https://api.example.com",
             "apiKey": "your-api-key",
@@ -248,8 +448,8 @@
               }
             }
           }'>
-            <h4 class="text-xl font-bold text-gray-800 mb-2">Custom Position (Top Right)</h4>
-            <p class="text-gray-600">Another example of custom floating button placement.</p>
+            <h4 class="text-xl font-bold text-gray-800 mb-2">5. Custom Position (Top Right)</h4>
+            <p class="text-gray-600">Position the floating button at the top right corner.</p>
             <pre class="bg-gray-800 text-white p-4 rounded-md mt-4"><code class="language-javascript">new ChatBot({
   // ...
   custom: {
@@ -262,28 +462,7 @@
 });</code></pre>
           </div>
 
-          <!-- Design Card: Registration Flow -->
-          <div class="design-card bg-gray-50 p-6 rounded-lg shadow-inner mb-6" data-config='{
-            "baseUrl": "https://api.example.com",
-            "apiKey": "your-api-key",
-            "tenant": "your-tenant",
-            "options": {
-              "register": true,
-              "testMode": true
-            }
-          }'>
-            <h4 class="text-xl font-bold text-gray-800 mb-2">Conversational Registration</h4>
-            <p class="text-gray-600">Enable the built-in conversational registration flow to collect user information.</p>
-            <pre class="bg-gray-800 text-white p-4 rounded-md mt-4"><code class="language-javascript">new ChatBot({
-  // ...
-  options: {
-    register: true,
-    testMode: true
-  }
-});</code></pre>
-          </div>
-
-          <!-- Design Card: Custom Button Icon -->
+          <!-- Example 6: Custom Button Icon -->
           <div class="design-card bg-gray-50 p-6 rounded-lg shadow-inner mb-6" data-config='{
             "baseUrl": "https://api.example.com",
             "apiKey": "your-api-key",
@@ -295,7 +474,7 @@
               "iconButton": "https://www.svgrepo.com/show/508699/chat-bubble.svg"
             }
           }'>
-            <h4 class="text-xl font-bold text-gray-800 mb-2">Custom Floating Button Icon</h4>
+            <h4 class="text-xl font-bold text-gray-800 mb-2">6. Custom Floating Button Icon</h4>
             <p class="text-gray-600">Use your own image for the floating chat button.</p>
             <pre class="bg-gray-800 text-white p-4 rounded-md mt-4"><code class="language-javascript">new ChatBot({
   // ...
@@ -305,7 +484,7 @@
 });</code></pre>
           </div>
 
-          <!-- Design Card: Custom Send Button Text -->
+          <!-- Example 7: Custom Send Button Text -->
           <div class="design-card bg-gray-50 p-6 rounded-lg shadow-inner mb-6" data-config='{
             "baseUrl": "https://api.example.com",
             "apiKey": "your-api-key",
@@ -317,7 +496,7 @@
               "sendButtonText": "Send Now!"
             }
           }'>
-            <h4 class="text-xl font-bold text-gray-800 mb-2">Custom Send Button Text</h4>
+            <h4 class="text-xl font-bold text-gray-800 mb-2">7. Custom Send Button Text</h4>
             <p class="text-gray-600">Change the text displayed on the message send button.</p>
             <pre class="bg-gray-800 text-white p-4 rounded-md mt-4"><code class="language-javascript">new ChatBot({
   // ...
@@ -327,7 +506,7 @@
 });</code></pre>
           </div>
 
-          <!-- Design Card: No Cache -->
+          <!-- Example 8: No Cache -->
           <div class="design-card bg-gray-50 p-6 rounded-lg shadow-inner mb-6" data-config='{
             "baseUrl": "https://api.example.com",
             "apiKey": "your-api-key",
@@ -337,13 +516,728 @@
               "cache": false
             }
           }'>
-            <h4 class="text-xl font-bold text-gray-800 mb-2">No Cache</h4>
+            <h4 class="text-xl font-bold text-gray-800 mb-2">8. No Cache</h4>
             <p class="text-gray-600">Disable the chat history caching. Each refresh will start a new session.</p>
             <pre class="bg-gray-800 text-white p-4 rounded-md mt-4"><code class="language-javascript">new ChatBot({
   // ...
   options: {
     testMode: true,
     cache: false
+  }
+});</code></pre>
+          </div>
+
+          <!-- Example 9: Green Theme -->
+          <div class="design-card bg-gray-50 p-6 rounded-lg shadow-inner mb-6" data-config='{
+            "baseUrl": "https://api.example.com",
+            "apiKey": "your-api-key",
+            "tenant": "your-tenant",
+            "options": {
+              "testMode": true
+            },
+            "custom": {
+              "primaryColor": "#10b981",
+              "headerBgColor": "#059669",
+              "headerTextColor": "#ffffff",
+              "botName": "Green Assistant"
+            }
+          }'>
+            <h4 class="text-xl font-bold text-gray-800 mb-2">9. Green Theme</h4>
+            <p class="text-gray-600">A fresh green color scheme for nature-themed websites.</p>
+            <pre class="bg-gray-800 text-white p-4 rounded-md mt-4"><code class="language-javascript">new ChatBot({
+  // ...
+  custom: {
+    primaryColor: '#10b981',
+    headerBgColor: '#059669',
+    headerTextColor: '#ffffff',
+    botName: 'Green Assistant'
+  }
+});</code></pre>
+          </div>
+
+          <!-- Example 10: Purple Theme -->
+          <div class="design-card bg-gray-50 p-6 rounded-lg shadow-inner mb-6" data-config='{
+            "baseUrl": "https://api.example.com",
+            "apiKey": "your-api-key",
+            "tenant": "your-tenant",
+            "options": {
+              "testMode": true
+            },
+            "custom": {
+              "primaryColor": "#8b5cf6",
+              "headerBgColor": "#7c3aed",
+              "headerTextColor": "#ffffff",
+              "botName": "Purple Helper"
+            }
+          }'>
+            <h4 class="text-xl font-bold text-gray-800 mb-2">10. Purple Theme</h4>
+            <p class="text-gray-600">Elegant purple theme for creative and artistic websites.</p>
+            <pre class="bg-gray-800 text-white p-4 rounded-md mt-4"><code class="language-javascript">new ChatBot({
+  // ...
+  custom: {
+    primaryColor: '#8b5cf6',
+    headerBgColor: '#7c3aed',
+    headerTextColor: '#ffffff',
+    botName: 'Purple Helper'
+  }
+});</code></pre>
+          </div>
+
+          <!-- Example 11: Red Theme -->
+          <div class="design-card bg-gray-50 p-6 rounded-lg shadow-inner mb-6" data-config='{
+            "baseUrl": "https://api.example.com",
+            "apiKey": "your-api-key",
+            "tenant": "your-tenant",
+            "options": {
+              "testMode": true
+            },
+            "custom": {
+              "primaryColor": "#ef4444",
+              "headerBgColor": "#dc2626",
+              "headerTextColor": "#ffffff",
+              "botName": "Red Support"
+            }
+          }'>
+            <h4 class="text-xl font-bold text-gray-800 mb-2">11. Red Theme</h4>
+            <p class="text-gray-600">Bold red theme for urgent support or emergency services.</p>
+            <pre class="bg-gray-800 text-white p-4 rounded-md mt-4"><code class="language-javascript">new ChatBot({
+  // ...
+  custom: {
+    primaryColor: '#ef4444',
+    headerBgColor: '#dc2626',
+    headerTextColor: '#ffffff',
+    botName: 'Red Support'
+  }
+});</code></pre>
+          </div>
+
+          <!-- Example 12: Dark Theme -->
+          <div class="design-card bg-gray-50 p-6 rounded-lg shadow-inner mb-6" data-config='{
+            "baseUrl": "https://api.example.com",
+            "apiKey": "your-api-key",
+            "tenant": "your-tenant",
+            "options": {
+              "testMode": true
+            },
+            "custom": {
+              "primaryColor": "#1f2937",
+              "headerBgColor": "#111827",
+              "headerTextColor": "#f9fafb",
+              "botName": "Dark Mode Bot"
+            }
+          }'>
+            <h4 class="text-xl font-bold text-gray-800 mb-2">12. Dark Theme</h4>
+            <p class="text-gray-600">Dark theme for modern, sleek websites.</p>
+            <pre class="bg-gray-800 text-white p-4 rounded-md mt-4"><code class="language-javascript">new ChatBot({
+  // ...
+  custom: {
+    primaryColor: '#1f2937',
+    headerBgColor: '#111827',
+    headerTextColor: '#f9fafb',
+    botName: 'Dark Mode Bot'
+  }
+});</code></pre>
+          </div>
+
+          <!-- Example 13: Show Time -->
+          <div class="design-card bg-gray-50 p-6 rounded-lg shadow-inner mb-6" data-config='{
+            "baseUrl": "https://api.example.com",
+            "apiKey": "your-api-key",
+            "tenant": "your-tenant",
+            "options": {
+              "testMode": true
+            },
+            "custom": {
+              "showTime": true,
+              "botName": "Time Keeper"
+            }
+          }'>
+            <h4 class="text-xl font-bold text-gray-800 mb-2">13. Show Time</h4>
+            <p class="text-gray-600">Display timestamps on each message for better conversation tracking.</p>
+            <pre class="bg-gray-800 text-white p-4 rounded-md mt-4"><code class="language-javascript">new ChatBot({
+  // ...
+  custom: {
+    showTime: true,
+    botName: 'Time Keeper'
+  }
+});</code></pre>
+          </div>
+
+          <!-- Example 14: Custom Chat Width -->
+          <div class="design-card bg-gray-50 p-6 rounded-lg shadow-inner mb-6" data-config='{
+            "baseUrl": "https://api.example.com",
+            "apiKey": "your-api-key",
+            "tenant": "your-tenant",
+            "options": {
+              "testMode": true
+            },
+            "custom": {
+              "chatWidth": "500px",
+              "chatHeight": "70vh",
+              "botName": "Wide Chat"
+            }
+          }'>
+            <h4 class="text-xl font-bold text-gray-800 mb-2">14. Custom Chat Width</h4>
+            <p class="text-gray-600">Wider chat panel for better readability on large screens.</p>
+            <pre class="bg-gray-800 text-white p-4 rounded-md mt-4"><code class="language-javascript">new ChatBot({
+  // ...
+  custom: {
+    chatWidth: '500px',
+    chatHeight: '70vh',
+    botName: 'Wide Chat'
+  }
+});</code></pre>
+          </div>
+
+          <!-- Example 15: Custom Button Size -->
+          <div class="design-card bg-gray-50 p-6 rounded-lg shadow-inner mb-6" data-config='{
+            "baseUrl": "https://api.example.com",
+            "apiKey": "your-api-key",
+            "tenant": "your-tenant",
+            "options": {
+              "testMode": true
+            },
+            "custom": {
+              "buttonSize": "70px",
+              "botName": "Big Button"
+            }
+          }'>
+            <h4 class="text-xl font-bold text-gray-800 mb-2">15. Custom Button Size</h4>
+            <p class="text-gray-600">Larger floating button for better visibility and accessibility.</p>
+            <pre class="bg-gray-800 text-white p-4 rounded-md mt-4"><code class="language-javascript">new ChatBot({
+  // ...
+  custom: {
+    buttonSize: '70px',
+    botName: 'Big Button'
+  }
+});</code></pre>
+          </div>
+
+          <!-- Example 16: Disable Fullscreen -->
+          <div class="design-card bg-gray-50 p-6 rounded-lg shadow-inner mb-6" data-config='{
+            "baseUrl": "https://api.example.com",
+            "apiKey": "your-api-key",
+            "tenant": "your-tenant",
+            "options": {
+              "testMode": true
+            },
+            "custom": {
+              "fullscreenEnabled": false,
+              "botName": "No Fullscreen"
+            }
+          }'>
+            <h4 class="text-xl font-bold text-gray-800 mb-2">16. Disable Fullscreen</h4>
+            <p class="text-gray-600">Disable the fullscreen mode option for a more controlled experience.</p>
+            <pre class="bg-gray-800 text-white p-4 rounded-md mt-4"><code class="language-javascript">new ChatBot({
+  // ...
+  custom: {
+    fullscreenEnabled: false,
+    botName: 'No Fullscreen'
+  }
+});</code></pre>
+          </div>
+
+          <!-- Example 17: Registration with Custom Colors -->
+          <div class="design-card bg-gray-50 p-6 rounded-lg shadow-inner mb-6" data-config='{
+            "baseUrl": "https://api.example.com",
+            "apiKey": "your-api-key",
+            "tenant": "your-tenant",
+            "options": {
+              "register": true,
+              "testMode": true
+            },
+            "user": {
+              "name": "Usuario",
+              "email": "usuario@ejemplo.com"
+            },
+            "custom": {
+              "primaryColor": "#3b82f6",
+              "headerBgColor": "#1d4ed8",
+              "headerTextColor": "#ffffff",
+              "botName": "Blue Registration"
+            }
+          }'>
+            <h4 class="text-xl font-bold text-gray-800 mb-2">17. Registration with Custom Colors</h4>
+            <p class="text-gray-600">Registration screen with a beautiful blue theme.</p>
+            <pre class="bg-gray-800 text-white p-4 rounded-md mt-4"><code class="language-javascript">new ChatBot({
+  // ...
+  options: {
+    register: true,
+    testMode: true
+  },
+  user: {
+    name: "Usuario",
+    email: "usuario@ejemplo.com"
+  },
+  custom: {
+    primaryColor: '#3b82f6',
+    headerBgColor: '#1d4ed8',
+    headerTextColor: '#ffffff',
+    botName: 'Blue Registration'
+  }
+});</code></pre>
+          </div>
+
+          <!-- Example 18: Custom Position (Center) -->
+          <div class="design-card bg-gray-50 p-6 rounded-lg shadow-inner mb-6" data-config='{
+            "baseUrl": "https://api.example.com",
+            "apiKey": "your-api-key",
+            "tenant": "your-tenant",
+            "options": {
+              "testMode": true
+            },
+            "custom": {
+              "position": {
+                "bottom": "24px",
+                "left": "50%",
+                "transform": "translateX(-50%)"
+              },
+              "botName": "Center Position"
+            }
+          }'>
+            <h4 class="text-xl font-bold text-gray-800 mb-2">18. Custom Position (Center)</h4>
+            <p class="text-gray-600">Center the floating button at the bottom of the screen.</p>
+            <pre class="bg-gray-800 text-white p-4 rounded-md mt-4"><code class="language-javascript">new ChatBot({
+  // ...
+  custom: {
+    position: {
+      bottom: '24px',
+      left: '50%',
+      transform: 'translateX(-50%)'
+    },
+    botName: 'Center Position'
+  }
+});</code></pre>
+          </div>
+
+          <!-- Example 19: Pink Theme -->
+          <div class="design-card bg-gray-50 p-6 rounded-lg shadow-inner mb-6" data-config='{
+            "baseUrl": "https://api.example.com",
+            "apiKey": "your-api-key",
+            "tenant": "your-tenant",
+            "options": {
+              "testMode": true
+            },
+            "custom": {
+              "primaryColor": "#ec4899",
+              "headerBgColor": "#db2777",
+              "headerTextColor": "#ffffff",
+              "botName": "Pink Assistant"
+            }
+          }'>
+            <h4 class="text-xl font-bold text-gray-800 mb-2">19. Pink Theme</h4>
+            <p class="text-gray-600">Charming pink theme for fashion and beauty websites.</p>
+            <pre class="bg-gray-800 text-white p-4 rounded-md mt-4"><code class="language-javascript">new ChatBot({
+  // ...
+  custom: {
+    primaryColor: '#ec4899',
+    headerBgColor: '#db2777',
+    headerTextColor: '#ffffff',
+    botName: 'Pink Assistant'
+  }
+});</code></pre>
+          </div>
+
+          <!-- Example 20: Teal Theme -->
+          <div class="design-card bg-gray-50 p-6 rounded-lg shadow-inner mb-6" data-config='{
+            "baseUrl": "https://api.example.com",
+            "apiKey": "your-api-key",
+            "tenant": "your-tenant",
+            "options": {
+              "testMode": true
+            },
+            "custom": {
+              "primaryColor": "#14b8a6",
+              "headerBgColor": "#0d9488",
+              "headerTextColor": "#ffffff",
+              "botName": "Teal Helper"
+            }
+          }'>
+            <h4 class="text-xl font-bold text-gray-800 mb-2">20. Teal Theme</h4>
+            <p class="text-gray-600">Professional teal theme for business and corporate websites.</p>
+            <pre class="bg-gray-800 text-white p-4 rounded-md mt-4"><code class="language-javascript">new ChatBot({
+  // ...
+  custom: {
+    primaryColor: '#14b8a6',
+    headerBgColor: '#0d9488',
+    headerTextColor: '#ffffff',
+    botName: 'Teal Helper'
+  }
+});</code></pre>
+          </div>
+
+          <!-- Example 21: Yellow Theme -->
+          <div class="design-card bg-gray-50 p-6 rounded-lg shadow-inner mb-6" data-config='{
+            "baseUrl": "https://api.example.com",
+            "apiKey": "your-api-key",
+            "tenant": "your-tenant",
+            "options": {
+              "testMode": true
+            },
+            "custom": {
+              "primaryColor": "#eab308",
+              "headerBgColor": "#ca8a04",
+              "headerTextColor": "#ffffff",
+              "botName": "Yellow Bot"
+            }
+          }'>
+            <h4 class="text-xl font-bold text-gray-800 mb-2">21. Yellow Theme</h4>
+            <p class="text-gray-600">Bright yellow theme for energetic and optimistic brands.</p>
+            <pre class="bg-gray-800 text-white p-4 rounded-md mt-4"><code class="language-javascript">new ChatBot({
+  // ...
+  custom: {
+    primaryColor: '#eab308',
+    headerBgColor: '#ca8a04',
+    headerTextColor: '#ffffff',
+    botName: 'Yellow Bot'
+  }
+});</code></pre>
+          </div>
+
+          <!-- Example 22: Indigo Theme -->
+          <div class="design-card bg-gray-50 p-6 rounded-lg shadow-inner mb-6" data-config='{
+            "baseUrl": "https://api.example.com",
+            "apiKey": "your-api-key",
+            "tenant": "your-tenant",
+            "options": {
+              "testMode": true
+            },
+            "custom": {
+              "primaryColor": "#6366f1",
+              "headerBgColor": "#4f46e5",
+              "headerTextColor": "#ffffff",
+              "botName": "Indigo Assistant"
+            }
+          }'>
+            <h4 class="text-xl font-bold text-gray-800 mb-2">22. Indigo Theme</h4>
+            <p class="text-gray-600">Sophisticated indigo theme for tech and innovation companies.</p>
+            <pre class="bg-gray-800 text-white p-4 rounded-md mt-4"><code class="language-javascript">new ChatBot({
+  // ...
+  custom: {
+    primaryColor: '#6366f1',
+    headerBgColor: '#4f46e5',
+    headerTextColor: '#ffffff',
+    botName: 'Indigo Assistant'
+  }
+});</code></pre>
+          </div>
+
+          <!-- Example 23: Registration with No Cache -->
+          <div class="design-card bg-gray-50 p-6 rounded-lg shadow-inner mb-6" data-config='{
+            "baseUrl": "https://api.example.com",
+            "apiKey": "your-api-key",
+            "tenant": "your-tenant",
+            "options": {
+              "register": true,
+              "testMode": true,
+              "cache": false
+            },
+            "user": {
+              "name": "Usuario",
+              "email": "usuario@ejemplo.com"
+            },
+            "custom": {
+              "primaryColor": "#f59e0b",
+              "headerBgColor": "#d97706",
+              "headerTextColor": "#ffffff",
+              "botName": "Orange Registration"
+            }
+          }'>
+            <h4 class="text-xl font-bold text-gray-800 mb-2">23. Registration with No Cache</h4>
+            <p class="text-gray-600">Registration screen with cache disabled for fresh sessions every time.</p>
+            <pre class="bg-gray-800 text-white p-4 rounded-md mt-4"><code class="language-javascript">new ChatBot({
+  // ...
+  options: {
+    register: true,
+    testMode: true,
+    cache: false
+  },
+  user: {
+    name: "Usuario",
+    email: "usuario@ejemplo.com"
+  },
+  custom: {
+    primaryColor: '#f59e0b',
+    headerBgColor: '#d97706',
+    headerTextColor: '#ffffff',
+    botName: 'Orange Registration'
+  }
+});</code></pre>
+          </div>
+
+          <!-- Example 24: Custom Position (Top Left) -->
+          <div class="design-card bg-gray-50 p-6 rounded-lg shadow-inner mb-6" data-config='{
+            "baseUrl": "https://api.example.com",
+            "apiKey": "your-api-key",
+            "tenant": "your-tenant",
+            "options": {
+              "testMode": true
+            },
+            "custom": {
+              "position": {
+                "top": "24px",
+                "left": "24px",
+                "bottom": "auto",
+                "right": "auto"
+              },
+              "botName": "Top Left Position"
+            }
+          }'>
+            <h4 class="text-xl font-bold text-gray-800 mb-2">24. Custom Position (Top Left)</h4>
+            <p class="text-gray-600">Position the floating button at the top left corner.</p>
+            <pre class="bg-gray-800 text-white p-4 rounded-md mt-4"><code class="language-javascript">new ChatBot({
+  // ...
+  custom: {
+    position: {
+      top: '24px',
+      left: '24px',
+      bottom: 'auto',
+      right: 'auto'
+    },
+    botName: 'Top Left Position'
+  }
+});</code></pre>
+          </div>
+
+          <!-- Example 25: Gray Theme -->
+          <div class="design-card bg-gray-50 p-6 rounded-lg shadow-inner mb-6" data-config='{
+            "baseUrl": "https://api.example.com",
+            "apiKey": "your-api-key",
+            "tenant": "your-tenant",
+            "options": {
+              "testMode": true
+            },
+            "custom": {
+              "primaryColor": "#6b7280",
+              "headerBgColor": "#4b5563",
+              "headerTextColor": "#ffffff",
+              "botName": "Gray Assistant"
+            }
+          }'>
+            <h4 class="text-xl font-bold text-gray-800 mb-2">25. Gray Theme</h4>
+            <p class="text-gray-600">Neutral gray theme for minimalist and professional websites.</p>
+            <pre class="bg-gray-800 text-white p-4 rounded-md mt-4"><code class="language-javascript">new ChatBot({
+  // ...
+  custom: {
+    primaryColor: '#6b7280',
+    headerBgColor: '#4b5563',
+    headerTextColor: '#ffffff',
+    botName: 'Gray Assistant'
+  }
+});</code></pre>
+          </div>
+
+          <!-- Example 26: Custom Messages Height -->
+          <div class="design-card bg-gray-50 p-6 rounded-lg shadow-inner mb-6" data-config='{
+            "baseUrl": "https://api.example.com",
+            "apiKey": "your-api-key",
+            "tenant": "your-tenant",
+            "options": {
+              "testMode": true
+            },
+            "custom": {
+              "messagesHeight": "400px",
+              "botName": "Tall Messages"
+            }
+          }'>
+            <h4 class="text-xl font-bold text-gray-800 mb-2">26. Custom Messages Height</h4>
+            <p class="text-gray-600">Taller messages container for longer conversations.</p>
+            <pre class="bg-gray-800 text-white p-4 rounded-md mt-4"><code class="language-javascript">new ChatBot({
+  // ...
+  custom: {
+    messagesHeight: '400px',
+    botName: 'Tall Messages'
+  }
+});</code></pre>
+          </div>
+
+          <!-- Example 27: Registration with Show Time -->
+          <div class="design-card bg-gray-50 p-6 rounded-lg shadow-inner mb-6" data-config='{
+            "baseUrl": "https://api.example.com",
+            "apiKey": "your-api-key",
+            "tenant": "your-tenant",
+            "options": {
+              "register": true,
+              "testMode": true
+            },
+            "user": {
+              "name": "Usuario",
+              "email": "usuario@ejemplo.com"
+            },
+            "custom": {
+              "showTime": true,
+              "primaryColor": "#8b5cf6",
+              "headerBgColor": "#7c3aed",
+              "headerTextColor": "#ffffff",
+              "botName": "Purple Time Bot"
+            }
+          }'>
+            <h4 class="text-xl font-bold text-gray-800 mb-2">27. Registration with Show Time</h4>
+            <p class="text-gray-600">Registration screen with timestamps and purple theme.</p>
+            <pre class="bg-gray-800 text-white p-4 rounded-md mt-4"><code class="language-javascript">new ChatBot({
+  // ...
+  options: {
+    register: true,
+    testMode: true
+  },
+  user: {
+    name: "Usuario",
+    email: "usuario@ejemplo.com"
+  },
+  custom: {
+    showTime: true,
+    primaryColor: '#8b5cf6',
+    headerBgColor: '#7c3aed',
+    headerTextColor: '#ffffff',
+    botName: 'Purple Time Bot'
+  }
+});</code></pre>
+          </div>
+
+          <!-- Example 28: Custom Position (Bottom Center) -->
+          <div class="design-card bg-gray-50 p-6 rounded-lg shadow-inner mb-6" data-config='{
+            "baseUrl": "https://api.example.com",
+            "apiKey": "your-api-key",
+            "tenant": "your-tenant",
+            "options": {
+              "testMode": true
+            },
+            "custom": {
+              "position": {
+                "bottom": "24px",
+                "left": "50%",
+                "transform": "translateX(-50%)"
+              },
+              "primaryColor": "#10b981",
+              "headerBgColor": "#059669",
+              "headerTextColor": "#ffffff",
+              "botName": "Green Center"
+            }
+          }'>
+            <h4 class="text-xl font-bold text-gray-800 mb-2">28. Custom Position (Bottom Center)</h4>
+            <p class="text-gray-600">Green themed bot positioned at the bottom center.</p>
+            <pre class="bg-gray-800 text-white p-4 rounded-md mt-4"><code class="language-javascript">new ChatBot({
+  // ...
+  custom: {
+    position: {
+      bottom: '24px',
+      left: '50%',
+      transform: 'translateX(-50%)'
+    },
+    primaryColor: '#10b981',
+    headerBgColor: '#059669',
+    headerTextColor: '#ffffff',
+    botName: 'Green Center'
+  }
+});</code></pre>
+          </div>
+
+          <!-- Example 29: Registration with Custom Button -->
+          <div class="design-card bg-gray-50 p-6 rounded-lg shadow-inner mb-6" data-config='{
+            "baseUrl": "https://api.example.com",
+            "apiKey": "your-api-key",
+            "tenant": "your-tenant",
+            "options": {
+              "register": true,
+              "testMode": true
+            },
+            "user": {
+              "name": "Usuario",
+              "email": "usuario@ejemplo.com"
+            },
+            "custom": {
+              "iconButton": "https://res.cloudinary.com/diytuytti/image/upload/v1754119454/openIA-logo-provider_kgdxa2.webp",
+              "buttonSize": "70px",
+              "primaryColor": "#ef4444",
+              "headerBgColor": "#dc2626",
+              "headerTextColor": "#ffffff",
+              "botName": "Red Custom Button"
+            }
+          }'>
+            <h4 class="text-xl font-bold text-gray-800 mb-2">29. Registration with Custom Button</h4>
+            <p class="text-gray-600">Registration screen with custom icon, larger button, and red theme.</p>
+            <pre class="bg-gray-800 text-white p-4 rounded-md mt-4"><code class="language-javascript">new ChatBot({
+  // ...
+  options: {
+    register: true,
+    testMode: true
+  },
+  user: {
+    name: "Usuario",
+    email: "usuario@ejemplo.com"
+  },
+  custom: {
+    iconButton: 'https://www.svgrepo.com/show/508699/chat-bubble.svg',
+    buttonSize: '70px',
+    primaryColor: '#ef4444',
+    headerBgColor: '#dc2626',
+    headerTextColor: '#ffffff',
+    botName: 'Red Custom Button'
+  }
+});</code></pre>
+          </div>
+
+          <!-- Example 30: Complete Customization -->
+          <div class="design-card bg-gray-50 p-6 rounded-lg shadow-inner mb-6" data-config='{
+            "baseUrl": "https://api.example.com",
+            "apiKey": "your-api-key",
+            "tenant": "your-tenant",
+            "options": {
+              "register": true,
+              "testMode": true,
+              "cache": true
+            },
+            "user": {
+              "name": "Usuario",
+              "email": "usuario@ejemplo.com"
+            },
+            "custom": {
+              "primaryColor": "#6366f1",
+              "headerBgColor": "#4f46e5",
+              "headerTextColor": "#ffffff",
+              "botName": "Complete Custom",
+              "sendButtonText": "Send Message",
+              "iconButton": "https://res.cloudinary.com/diytuytti/image/upload/v1754119540/wsp_yvak5b.png",
+              "buttonSize": "65px",
+              "chatWidth": "450px",
+              "chatHeight": "65vh",
+              "messagesHeight": "380px",
+              "showTime": true,
+              "position": {
+                "bottom": "30px",
+                "right": "30px"
+              }
+            }
+          }'>
+            <h4 class="text-xl font-bold text-gray-800 mb-2">30. Complete Customization</h4>
+            <p class="text-gray-600">All features combined: registration, custom colors, sizes, positions, and text.</p>
+            <pre class="bg-gray-800 text-white p-4 rounded-md mt-4"><code class="language-javascript">new ChatBot({
+  // ...
+  options: {
+    register: true,
+    testMode: true,
+    cache: true
+  },
+  user: {
+    name: "Usuario",
+    email: "usuario@ejemplo.com"
+  },
+  custom: {
+    primaryColor: '#6366f1',
+    headerBgColor: '#4f46e5',
+    headerTextColor: '#ffffff',
+    botName: 'Complete Custom',
+    sendButtonText: 'Send Message',
+    iconButton: 'https://www.svgrepo.com/show/508699/chat-bubble.svg',
+    buttonSize: '65px',
+    chatWidth: '450px',
+    chatHeight: '65vh',
+    messagesHeight: '380px',
+    showTime: true,
+    position: {
+      bottom: '30px',
+      right: '30px'
+    }
   }
 });</code></pre>
           </div>
@@ -376,6 +1270,8 @@
   <script src="./src/index.js"></script>
   <script>
     let currentChatInstance = null;
+    let currentSelectedCard = null;
+    let isManualSelection = false; // Flag para detectar selección manual
 
     function initializeChat(config) {
       if (currentChatInstance) {
@@ -384,28 +1280,155 @@
       currentChatInstance = new ChatBot(config);
     }
 
+    function selectCard(card, isManual = false) {
+      // Remover selección anterior
+      if (currentSelectedCard) {
+        currentSelectedCard.classList.remove('selected');
+      }
+      
+      // Aplicar nueva selección
+      card.classList.add('selected');
+      currentSelectedCard = card;
+      
+      // Marcar si es selección manual
+      isManualSelection = isManual;
+      
+      // Inicializar chat con la configuración del card seleccionado
+      const config = JSON.parse(card.dataset.config);
+      initializeChat(config);
+      
+      // Resetear el flag de selección manual después de un tiempo
+      if (isManual) {
+        setTimeout(() => {
+          isManualSelection = false;
+        }, 2000); // 2 segundos de "protección" para selección manual
+      }
+    }
+
     const designCards = document.querySelectorAll('.design-card');
 
     const observer = new IntersectionObserver((entries) => {
+      // Encontrar el card más visible
+      let mostVisibleCard = null;
+      let highestRatio = 0;
+      
       entries.forEach(entry => {
-        if (entry.isIntersecting) {
-          const config = JSON.parse(entry.target.dataset.config);
-          initializeChat(config);
+        if (entry.isIntersecting && entry.intersectionRatio > highestRatio) {
+          highestRatio = entry.intersectionRatio;
+          mostVisibleCard = entry.target;
         }
       });
+      
+      // Seleccionar el card más visible si no hay selección manual activa
+      if (mostVisibleCard && !isManualSelection && highestRatio > 0.3) {
+        selectCard(mostVisibleCard, false);
+      }
     }, {
-      threshold: 0.5 // Trigger when 50% of the card is visible
+      threshold: [0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.8, 0.9, 1.0], // Múltiples umbrales
+      rootMargin: '-20% 0px -20% 0px' // Ajustar el área de detección
     });
 
+    // Agregar event listeners para selección manual
     designCards.forEach(card => {
       observer.observe(card);
+      
+      // Permitir selección manual con clic
+      card.addEventListener('click', () => {
+        selectCard(card, true);
+      });
+      
+      // Agregar cursor pointer para indicar que es clickeable
+      card.style.cursor = 'pointer';
     });
 
-    // Initialize with the first card's config on page load
+    // Inicializar con el primer card por defecto
     if (designCards.length > 0) {
-      const initialConfig = JSON.parse(designCards[0].dataset.config);
-      initializeChat(initialConfig);
+      selectCard(designCards[0], false);
     }
+
+    // Función para limpiar selección (opcional)
+    function clearSelection() {
+      if (currentSelectedCard) {
+        currentSelectedCard.classList.remove('selected');
+        currentSelectedCard = null;
+      }
+      isManualSelection = false;
+    }
+
+    // Agregar navegación con teclado
+    document.addEventListener('keydown', (e) => {
+      if (!currentSelectedCard) return;
+      
+      const currentIndex = Array.from(designCards).indexOf(currentSelectedCard);
+      let nextIndex = currentIndex;
+      
+      switch(e.key) {
+        case 'ArrowDown':
+          e.preventDefault();
+          nextIndex = Math.min(currentIndex + 1, designCards.length - 1);
+          break;
+        case 'ArrowUp':
+          e.preventDefault();
+          nextIndex = Math.max(currentIndex - 1, 0);
+          break;
+        case 'Home':
+          e.preventDefault();
+          nextIndex = 0;
+          break;
+        case 'End':
+          e.preventDefault();
+          nextIndex = designCards.length - 1;
+          break;
+        default:
+          return;
+      }
+      
+      if (nextIndex !== currentIndex) {
+        const nextCard = designCards[nextIndex];
+        nextCard.scrollIntoView({ 
+          behavior: 'smooth', 
+          block: 'center' 
+        });
+        selectCard(nextCard, true);
+      }
+    });
+
+    // Debug: Mostrar información de selección en consola
+    console.log('Sistema de selección de cards inicializado');
+    console.log('Total de cards encontrados:', designCards.length);
+
+    // Scroll listener adicional como respaldo
+    let scrollTimeout;
+    document.addEventListener('scroll', () => {
+      clearTimeout(scrollTimeout);
+      
+      scrollTimeout = setTimeout(() => {
+        if (isManualSelection) return; // No cambiar si hay selección manual reciente
+        
+        // Encontrar el card más visible en el viewport
+        let mostVisibleCard = null;
+        let highestVisibility = 0;
+        
+        designCards.forEach(card => {
+          const rect = card.getBoundingClientRect();
+          const windowHeight = window.innerHeight;
+          
+          // Calcular qué tan visible está el card
+          const visibleHeight = Math.min(rect.bottom, windowHeight) - Math.max(rect.top, 0);
+          const visibility = visibleHeight / Math.min(rect.height, windowHeight);
+          
+          if (visibility > highestVisibility && rect.top < windowHeight * 0.8) {
+            highestVisibility = visibility;
+            mostVisibleCard = card;
+          }
+        });
+        
+        // Seleccionar el card más visible si es diferente al actual
+        if (mostVisibleCard && mostVisibleCard !== currentSelectedCard && highestVisibility > 0.3) {
+          selectCard(mostVisibleCard, false);
+        }
+      }, 100); // Debounce de 100ms
+    });
   </script>
 </body>
 </html>
