@@ -13,7 +13,7 @@ Un SDK de JavaScript ligero y fácil de usar para integrar un chatbot flotante e
 - **Widget flotante**: Un botón flotante que se expande en un panel de chat completo.
 - **Diseño adaptable**: Se adapta automáticamente a diferentes tamaños de pantalla.
 - **Modo de pantalla completa en móviles**: Expansión automática a pantalla completa en dispositivos móviles.
-- **Registro conversacional**: Un formulario de registro integrado dentro del chat.
+- **Pantalla de registro separada**: Una pantalla de bienvenida independiente donde el bot saluda y solicita el nombre del usuario antes de iniciar el chat.
 - **Altamente personalizable**: Colores, textos, imágenes y estilos configurables.
 - **Integración sencilla**: Una sola línea de código para implementarlo.
 - **Bootstrap incluido**: Utiliza Bootstrap 5 para un diseño moderno y profesional.
@@ -82,7 +82,7 @@ const chat = new ChatBot({
 
 | Parámetro  | Tipo    | Por defecto | Descripción                                                                 |
 |------------|---------|-------------|-----------------------------------------------------------------------------|
-| `register` | boolean | `false`     | Si es `true`, solicita información del usuario al iniciar.                  |
+| `register` | boolean | `false`     | Si es `true`, muestra una pantalla de registro donde el bot solicita el nombre del usuario antes de iniciar el chat.                  |
 | `show`     | boolean | `true`      | Muestra u oculta el widget de chat en la inicialización.                    |
 | `cache`    | boolean | `true`      | Habilita o deshabilita el almacenamiento en caché de la sesión de chat y los mensajes. |
 | `testMode` | boolean | `false`     | Habilita o deshabilita el modo de prueba.                                   |
@@ -159,7 +159,7 @@ const chat = new ChatBot({
 </html>
 ```
 
-### Ejemplo Personalizado
+### Ejemplo con Pantalla de Registro
 
 ```javascript
 const chat = new ChatBot({
@@ -167,10 +167,40 @@ const chat = new ChatBot({
   apiKey: 'sk-1234567890abcdef',
   tenant: 'miempresa-prod',
   options: {
-    register: true,
+    register: true, // Habilita la pantalla de registro
   },
   user: {
-    name: 'María García',
+    name: 'Usuario', // Se mostrará pantalla de registro
+    email: 'usuario@miempresa.com',
+    photo: 'https://miempresa.com/avatars/default.jpg'
+  },
+  bot: {
+    name: 'Asistente Virtual',
+    img: 'https://miempresa.com/bots/asistente.jpg'
+  },
+  custom: {
+    primaryColor: '#ff6b35',
+    botName: 'Soporte IA',
+    headerBgColor: '#2c3e50',
+    headerTextColor: '#ecf0f1',
+    sendButtonText: 'Enviar Mensaje',
+    showTime: true
+  }
+});
+```
+
+### Ejemplo Personalizado (Sin Registro)
+
+```javascript
+const chat = new ChatBot({
+  baseUrl: 'https://api.miempresa.com',
+  apiKey: 'sk-1234567890abcdef',
+  tenant: 'miempresa-prod',
+  options: {
+    register: false, // No muestra pantalla de registro
+  },
+  user: {
+    name: 'María García', // Usuario ya registrado
     email: 'maria@miempresa.com',
     photo: 'https://miempresa.com/avatars/maria.jpg'
   },
@@ -184,7 +214,7 @@ const chat = new ChatBot({
     headerBgColor: '#2c3e50',
     headerTextColor: '#ecf0f1',
     sendButtonText: 'Enviar Mensaje',
-    showTime: true // Muestra la hora en cada mensaje
+    showTime: true
   }
 });
 ```
@@ -365,6 +395,43 @@ Obtiene el estado del registro del usuario.
 ```javascript
 const status = chat.getRegistrationStatus();
 console.log(status);
+```
+
+## 🎯 Pantalla de Registro
+
+La nueva funcionalidad de pantalla de registro separa claramente el proceso de registro del chat normal, evitando confusiones y mejorando la experiencia del usuario.
+
+### ¿Cuándo se muestra la pantalla de registro?
+
+La pantalla de registro se muestra automáticamente cuando se cumple alguna de estas condiciones:
+
+1. **Cuando `register: true`** - La opción de registro está habilitada
+2. **Cuando el nombre del usuario no existe** - El usuario no tiene un nombre válido
+3. **Cuando el usuario no está registrado** - No se ha completado el proceso de registro
+
+### Flujo de la pantalla de registro
+
+1. **Bienvenida**: El bot muestra una pantalla de bienvenida con su imagen
+2. **Solicitud de nombre**: Solicita al usuario que escriba su nombre
+3. **Confirmación**: Confirma el nombre y transiciona al chat
+4. **Chat normal**: Inicia el chat con un mensaje personalizado
+
+### Ejemplo de configuración
+
+```javascript
+const chat = new ChatBot({
+  baseUrl: 'https://tu-api.com',
+  apiKey: 'tu-api-key',
+  tenant: 'tu-tenant',
+  options: {
+    register: true, // Habilita la pantalla de registro
+    testMode: true  // Para pruebas sin API real
+  },
+  user: {
+    name: "Usuario", // Se mostrará pantalla de registro
+    email: 'usuario@ejemplo.com'
+  }
+});
 ```
 
 ## 🧪 Modo de Prueba

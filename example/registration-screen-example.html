@@ -1,0 +1,241 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Ejemplo - Pantalla de Registro Separada</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 0;
+            padding: 20px;
+            background-color: #f5f5f5;
+        }
+        .container {
+            max-width: 800px;
+            margin: 0 auto;
+            background: white;
+            padding: 30px;
+            border-radius: 10px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+        h1 {
+            color: #333;
+            text-align: center;
+            margin-bottom: 30px;
+        }
+        .example-section {
+            margin-bottom: 30px;
+            padding: 20px;
+            border: 1px solid #ddd;
+            border-radius: 8px;
+            background-color: #fafafa;
+        }
+        .example-title {
+            font-weight: bold;
+            color: #2c3e50;
+            margin-bottom: 10px;
+        }
+        .code-block {
+            background-color: #2c3e50;
+            color: #ecf0f1;
+            padding: 15px;
+            border-radius: 5px;
+            font-family: 'Courier New', monospace;
+            font-size: 14px;
+            overflow-x: auto;
+            margin: 10px 0;
+        }
+        .description {
+            color: #666;
+            line-height: 1.6;
+            margin-bottom: 15px;
+        }
+        .feature-list {
+            background-color: #e8f4fd;
+            padding: 15px;
+            border-radius: 5px;
+            border-left: 4px solid #3498db;
+        }
+        .feature-list h4 {
+            margin-top: 0;
+            color: #2c3e50;
+        }
+        .feature-list ul {
+            margin: 10px 0;
+            padding-left: 20px;
+        }
+        .feature-list li {
+            margin-bottom: 5px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🚀 Nueva Funcionalidad: Pantalla de Registro Separada</h1>
+        
+        <div class="feature-list">
+            <h4>✨ Nuevas Características:</h4>
+            <ul>
+                <li><strong>Pantalla de registro independiente:</strong> El bot saluda al usuario y solicita su nombre antes de iniciar el chat</li>
+                <li><strong>Transición suave:</strong> Después del registro, el usuario pasa automáticamente al chat normal</li>
+                <li><strong>Lógica mejorada:</strong> Evita confusiones al separar claramente el proceso de registro del chat</li>
+                <li><strong>Condiciones flexibles:</strong> Se muestra la pantalla de registro cuando register=true o el usuario no existe</li>
+            </ul>
+        </div>
+
+        <div class="example-section">
+            <div class="example-title">📋 Condiciones para Mostrar Pantalla de Registro:</div>
+            <div class="description">
+                La nueva lógica muestra la pantalla de registro en los siguientes casos:
+            </div>
+            <div class="code-block">
+1. Cuando register = true
+2. Cuando register = true O el nombre del usuario no existe
+3. Cuando register = true O el usuario no existe
+            </div>
+        </div>
+
+        <div class="example-section">
+            <div class="example-title">🔧 Ejemplo de Configuración:</div>
+            <div class="description">
+                Configuración básica para habilitar la nueva pantalla de registro:
+            </div>
+            <div class="code-block">
+const chat = new ChatBot({
+    baseUrl: 'https://tu-api.com',
+    apiKey: 'tu-api-key',
+    tenant: 'tu-tenant',
+    options: {
+        register: true, // Habilita la pantalla de registro
+        testMode: true  // Para pruebas sin API real
+    },
+    user: {
+        name: "Usuario", // Se mostrará pantalla de registro
+        email: 'usuario@ejemplo.com',
+        photo: 'https://ejemplo.com/avatar.jpg'
+    },
+    bot: {
+        name: 'Asistente Virtual',
+        img: 'https://ejemplo.com/bot-avatar.jpg'
+    }
+});
+            </div>
+        </div>
+
+        <div class="example-section">
+            <div class="example-title">🎯 Flujo de Usuario:</div>
+            <div class="description">
+                El nuevo flujo de interacción es más claro y directo:
+            </div>
+            <div class="code-block">
+1. Usuario hace clic en el botón de chat
+2. Se muestra pantalla de bienvenida con imagen del bot
+3. Bot solicita el nombre del usuario
+4. Usuario escribe su nombre
+5. Bot confirma y transiciona al chat normal
+6. Chat normal comienza con mensaje de bienvenida personalizado
+            </div>
+        </div>
+
+        <div class="example-section">
+            <div class="example-title">💾 Persistencia de Datos:</div>
+            <div class="description">
+                Los datos de registro se guardan en caché para evitar solicitar el nombre repetidamente:
+            </div>
+            <div class="code-block">
+// El estado se guarda automáticamente
+{
+    registered: true,
+    registrationScreen: false,
+    registrationCompleted: true,
+    user: {
+        name: "Juan Pérez",
+        email: "juan@ejemplo.com"
+    }
+}
+            </div>
+        </div>
+
+        <div class="example-section">
+            <div class="example-title">🔍 Métodos de Debug:</div>
+            <div class="description">
+                Nuevos métodos para verificar el estado del registro:
+            </div>
+            <div class="code-block">
+// Verificar estado del registro
+const status = chat.getRegistrationStatus();
+console.log(status);
+
+// Limpiar caché para forzar nuevo registro
+chat.clearCache();
+            </div>
+        </div>
+    </div>
+
+    <!-- Incluir el SDK -->
+    <script src="../src/index.js"></script>
+    
+    <!-- Ejemplo de implementación -->
+    <script>
+        // Ejemplo de implementación con la nueva funcionalidad
+        const chat = new ChatBot({
+            baseUrl: 'https://api.ejemplo.com',
+            apiKey: 'sk-ejemplo123',
+            tenant: 'ejemplo-tenant',
+            options: {
+                register: true,
+                testMode: true, // Modo test para demostración
+                cache: true
+            },
+            user: {
+                name: "Usuario", // Se mostrará pantalla de registro
+                email: 'usuario@ejemplo.com',
+                photo: '../src/img/user_icon.png'
+            },
+            bot: {
+                name: 'Asistente IA',
+                img: '../src/img/bot_icon.png'
+            },
+            custom: {
+                primaryColor: '#3498db',
+                botName: 'Asistente Virtual',
+                showTime: true
+            }
+        });
+
+        // Función para mostrar información del estado
+        function showRegistrationStatus() {
+            const status = chat.getRegistrationStatus();
+            console.log('Estado del registro:', status);
+            
+            // Mostrar en la página
+            const statusDiv = document.createElement('div');
+            statusDiv.innerHTML = `
+                <h4>Estado Actual:</h4>
+                <p><strong>Registro habilitado:</strong> ${status.registerOption}</p>
+                <p><strong>Usuario registrado:</strong> ${status.registered}</p>
+                <p><strong>Pantalla de registro:</strong> ${status.registrationScreen}</p>
+                <p><strong>Registro completado:</strong> ${status.registrationCompleted}</p>
+                <p><strong>Nombre del usuario:</strong> ${status.user.name}</p>
+            `;
+            statusDiv.style.cssText = `
+                position: fixed;
+                top: 20px;
+                right: 20px;
+                background: white;
+                padding: 15px;
+                border-radius: 8px;
+                box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+                z-index: 1000;
+                font-size: 12px;
+                max-width: 250px;
+            `;
+            document.body.appendChild(statusDiv);
+        }
+
+        // Mostrar estado después de un delay
+        setTimeout(showRegistrationStatus, 2000);
+    </script>
+</body>
+</html> 

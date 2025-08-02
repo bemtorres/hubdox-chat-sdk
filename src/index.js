@@ -60,6 +60,11 @@ class ChatBot {
     this.registered = false;
     this.isMobile = window.innerWidth <= 768;
     this.isFullscreen = false;
+    
+    // Nuevas propiedades para manejar la pantalla de registro
+    this.registrationScreen = false;
+    this.registrationCompleted = false;
+    
     this.license = {
       name: "",
       logo: "",
@@ -157,7 +162,7 @@ class ChatBot {
         this.session = "test-session-" + Date.now();
         this.registered = true;
         this._renderChatPanel();
-        this._addInitialMessage();
+        this._checkRegistrationStatus();
         return;
       }
       
@@ -177,22 +182,8 @@ class ChatBot {
         this.chatPanel.style.display = "none";
       }
       
-      // Paso 2: Mostrar mensaje inicial o formulario de registro
-      if (this.session) {
-        // Si register es true y el usuario no está registrado, mostrar formulario de registro
-        if (this.register && !this.registered) {
-          this._showRegistrationInChat();
-        } else if (this.registered && this.user.name) {
-          // Si el usuario ya está registrado y tiene nombre, mostrar mensaje inicial
-          this._addInitialMessage();
-        } else {
-          // Si está registrado pero no tiene nombre, mostrar formulario de registro
-          this._showRegistrationInChat();
-        }
-      } else {
-        // Si no hay sesión después del registro, mostrar error
-        this._showBotInfoWithRetry();
-      }
+      // Paso 2: Verificar estado de registro y mostrar pantalla correspondiente
+      this._checkRegistrationStatus();
       
     } catch (error) {
       console.error('Error inicializando chat:', error);
@@ -319,85 +310,37 @@ class ChatBot {
     return data.answer || 'No se pudo obtener respuesta del bot';
   }
 
-  // Registro dentro del chat
-  _showRegistrationInChat() {
-    // Deshabilitar el chat inicialmente
-    this.input.disabled = true;
-    this.sendButton.disabled = true;
-    
-    // Mostrar mensaje de bienvenida centrado con imagen del bot
-    // Solo si ya tenemos sesión (configuración del bot obtenida)
-    if (this.session) {
-      const welcomeMessage = {
-        from: "bot",
-        text: "¡Hola! 👋 Soy tu asistente virtual. Para personalizar tu experiencia, necesito saber tu nombre.",
-        time: this._getCurrentTime(),
-        isWelcome: true
-      };
-      
-      this.messages.push(welcomeMessage);
-      this._renderMessages();
-      
-      // Habilitar el input para que el usuario pueda escribir su nombre
-      this.input.disabled = false;
-      this.sendButton.disabled = false;
-      this.input.focus();
-      
-      // Cambiar el placeholder del input para indicar que debe escribir su nombre
-      this.input.placeholder = "Escribe tu nombre...";
-    } else {
-      // Si no hay sesión, mostrar mensaje de error
-      this._showBotInfoWithRetry();
-    }
-  }
+
 
   // Manejar respuesta del usuario durante registro
   async _handleRegistrationResponse(userMessage) {
     console.log('_handleRegistrationResponse - Iniciando con mensaje:', userMessage);
-    const currentStep = this._getCurrentRegistrationStep();
-    console.log('_handleRegistrationResponse - Paso actual:', currentStep);
     
-    switch (currentStep) {
-      case 'name':
-        // Validar que el nombre no esté vacío
-        if (!userMessage.trim()) {
-          console.log('_handleRegistrationResponse - Nombre vacío, solicitando nombre');
-          this._addMessage("bot", "Por favor, escribe tu nombre para continuar.");
-          return;
-        }
-        
-        console.log('_handleRegistrationResponse - Procesando nombre:', userMessage.trim());
-        this.user.name = userMessage.trim();
-        
-        // Marcar como registrado y actualizar el estado
-        console.log('_handleRegistrationResponse - Estableciendo registered = true');
-        this.registered = true;
-        this._saveToCache();
-        
-        // Restaurar el placeholder original del input
-        this.input.placeholder = "Escribe un mensaje...";
-        
-        // Habilitar el chat después del registro
-        this.input.disabled = false;
-        this.sendButton.disabled = false;
-        this.input.focus();
-        
-        // Mostrar la pregunta por defecto del bot después del registro
-        console.log('_handleRegistrationResponse - Llamando a _addInitialMessage');
-        this._addInitialMessage();
-        console.log('_handleRegistrationResponse - Registro completado');
-        break;
+    // Validar que el nombre no esté vacío
+    if (!userMessage.trim()) {
+      console.log('_handleRegistrationResponse - Nombre vacío, solicitando nombre');
+      this._addMessage("bot", "Por favor, escribe tu nombre para continuar.");
+      return;
     }
-  }
-
-  _getCurrentRegistrationStep() {
-    const welcomeMessages = this.messages.filter(msg => 
-      msg.from === "bot" && 
-      msg.isWelcome
-    );
     
-    if (welcomeMessages.length === 0) return 'name';
-    return 'complete';
+    console.log('_handleRegistrationResponse - Procesando nombre:', userMessage.trim());
+    this.user.name = userMessage.trim();
+    
+    // Marcar como registrado y actualizar el estado
+    console.log('_handleRegistrationResponse - Estableciendo registered = true');
+    this.registered = true;
+    this.registrationCompleted = true;
+    this._saveToCache();
+    
+    // Mostrar mensaje de confirmación
+    this._addMessage("bot", `¡Perfecto, ${this.user.name}! 👋 Ahora puedo ayudarte mejor.`);
+    
+    // Transicionar al chat normal después de un breve delay
+    setTimeout(() => {
+      this._showChatScreen();
+    }, 1500);
+    
+    console.log('_handleRegistrationResponse - Registro completado');
   }
 
   // Métodos para manejar errores y reintentos
@@ -476,6 +419,8 @@ class ChatBot {
         session: this.session,
         messages: this.messages,
         registered: this.registered,
+        registrationScreen: this.registrationScreen,
+        registrationCompleted: this.registrationCompleted,
         user: this.user,
         bot: {
           name: this.bot.name,
@@ -509,6 +454,8 @@ class ChatBot {
           this.session = cacheData.session;
           this.messages = cacheData.messages || [];
           this.registered = cacheData.registered || false;
+          this.registrationScreen = cacheData.registrationScreen || false;
+          this.registrationCompleted = cacheData.registrationCompleted || false;
           this.user = { ...this.user, ...cacheData.user };
           
           // Cargar configuración del bot desde caché
@@ -1230,6 +1177,8 @@ class ChatBot {
     console.log('_sendMessage - Estado actual:', {
       register: this.register,
       registered: this.registered,
+      registrationScreen: this.registrationScreen,
+      registrationCompleted: this.registrationCompleted,
       testMode: this.testMode,
       message: msg
     });
@@ -1249,14 +1198,12 @@ class ChatBot {
         console.log('_sendMessage - Usando modo test');
         await this._handleTestResponse(msg);
       } else {
-        // Verificar si estamos en proceso de registro ANTES de procesar el mensaje
-        const isInRegistration = this.register && !this.registered;
-        
-        if (isInRegistration) {
-          console.log('_sendMessage - Procesando registro');
+        // Verificar si estamos en pantalla de registro
+        if (this.registrationScreen && !this.registrationCompleted) {
+          console.log('_sendMessage - Procesando registro en pantalla de registro');
           await this._handleRegistrationResponse(msg);
-        } else if (this.registered) {
-          // Envío normal de mensaje solo si está registrado
+        } else if (this.registered && this.registrationCompleted) {
+          // Envío normal de mensaje solo si está registrado y completado
           console.log('_sendMessage - Enviando mensaje al API');
           const answer = await this._sendMessageToAPI(msg);
           this._addMessage("bot", answer);
@@ -1274,7 +1221,7 @@ class ChatBot {
       this.sendButton.disabled = false;
       // Ocultar indicador de "está escribiendo..."
       this._hideTypingIndicator();
-      if (this.testMode || !this.register || this.registered) {
+      if (this.testMode || this.registrationCompleted) {
         this.input.focus();
       }
     }
@@ -1422,6 +1369,98 @@ class ChatBot {
     }
   }
 
+  // Nuevo método para verificar el estado de registro
+  _checkRegistrationStatus() {
+    console.log('_checkRegistrationStatus - Verificando estado:', {
+      register: this.register,
+      registered: this.registered,
+      userExists: this.user.name && this.user.name !== "Usuario",
+      session: this.session
+    });
+
+    // Condiciones para mostrar pantalla de registro:
+    // 1. Cuando register es true
+    // 2. Cuando register es true o el nombre del usuario no existe
+    // 3. Cuando register es true o el usuario no existe
+    const shouldShowRegistration = this.register || 
+                                 !this.user.name || 
+                                 this.user.name === "Usuario" ||
+                                 !this.registered;
+
+    if (shouldShowRegistration && this.session) {
+      console.log('_checkRegistrationStatus - Mostrando pantalla de registro');
+      this._showRegistrationScreen();
+    } else if (this.session) {
+      console.log('_checkRegistrationStatus - Mostrando chat normal');
+      this._showChatScreen();
+    } else {
+      console.log('_checkRegistrationStatus - No hay sesión, mostrando error');
+      this._showBotInfoWithRetry();
+    }
+  }
+
+  // Nuevo método para mostrar la pantalla de registro
+  _showRegistrationScreen() {
+    this.registrationScreen = true;
+    this.registrationCompleted = false;
+    
+    // Limpiar mensajes anteriores
+    this.messages = [];
+    
+    // Verificar si los elementos del DOM están inicializados
+    if (this.input && this.sendButton) {
+      // Deshabilitar el chat inicialmente
+      this.input.disabled = true;
+      this.sendButton.disabled = true;
+    }
+    
+    // Mostrar pantalla de bienvenida con imagen del bot
+    const welcomeMessage = {
+      from: "bot",
+      text: "¡Hola! 👋 Soy tu asistente virtual. Para personalizar tu experiencia, necesito saber tu nombre.",
+      time: this._getCurrentTime(),
+      isWelcome: true,
+      isRegistration: true
+    };
+    
+    this.messages.push(welcomeMessage);
+    
+    // Solo renderizar si el contenedor existe
+    if (this.messagesContainer) {
+      this._renderMessages();
+    }
+    
+    // Habilitar el input para que el usuario pueda escribir su nombre
+    if (this.input && this.sendButton) {
+      this.input.disabled = false;
+      this.sendButton.disabled = false;
+      this.input.focus();
+      
+      // Cambiar el placeholder del input para indicar que debe escribir su nombre
+      this.input.placeholder = "Escribe tu nombre...";
+    }
+  }
+
+  // Nuevo método para mostrar la pantalla de chat normal
+  _showChatScreen() {
+    this.registrationScreen = false;
+    this.registrationCompleted = true;
+    
+    // Verificar si los elementos del DOM están inicializados
+    if (this.input && this.sendButton) {
+      // Restaurar el placeholder original del input
+      this.input.placeholder = "Escribe un mensaje...";
+      
+      // Habilitar el chat
+      this.input.disabled = false;
+      this.sendButton.disabled = false;
+      this.input.focus();
+    }
+    
+    // Mostrar mensaje inicial del bot
+    this._addInitialMessage();
+  }
+
   // Métodos públicos
   toggleChatPanel() {
     this._toggleChatPanel();
@@ -1498,6 +1537,8 @@ class ChatBot {
     return {
       registerOption: this.register,
       registered: this.registered,
+      registrationScreen: this.registrationScreen,
+      registrationCompleted: this.registrationCompleted,
       session: this.session ? true : false,
       licenseActive: this.license?.active || false,
       welcomeMessages: this.messages.filter(msg => msg.isWelcome).length,
