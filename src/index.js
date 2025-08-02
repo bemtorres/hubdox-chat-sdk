@@ -35,7 +35,7 @@ class ChatBot {
     this.headerTextColor = custom.headerTextColor || "#ffffff";
     this.sendButtonText = custom.sendButtonText || null;
     this.iconButton = custom.iconButton || this.bot.img;
-    this.showTime = custom.showTime || false;
+    this.showTime = custom.showTime || true;
     
     // Configuración de tamaño del chat
     this.chatWidth = custom.chatWidth || "400px";

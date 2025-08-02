@@ -119,7 +119,7 @@ const chat = new ChatBot({
 | `messagesHeight`    | string  | `'350px'`          | La altura del contenedor de mensajes.                                    |
 | `buttonSize`        | string  | `'56px'`           | El tamaño del botón flotante.                                            |
 | `fullscreenEnabled` | boolean | `true`             | Habilita o deshabilita el modo de pantalla completa en móviles.          |
-| `showTime`          | boolean | `false`            | Si es `true`, muestra la hora en cada mensaje del chat.                  |
+| `showTime`          | boolean | `true`            | Si es `true`, muestra la hora en cada mensaje del chat.                  |
 | `position`          | object  | `{ bottom: '24px', right: '24px' }` | La posición del botón flotante con propiedades `top`, `bottom`, `left`, `right` y `transform`. |
 
 ## 📝 Ejemplos
