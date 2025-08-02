@@ -1,6 +1,6 @@
 {
   "name": "hubdox-chat-sdk",
-  "version": "1.0.2",
+  "version": "1.1.0",
   "description": "SDK de JavaScript para integrar chatbots flotantes en sitios web con soporte para registro de usuarios y APIs personalizables",
   "main": "src/index.js",
   "scripts": {
@@ -37,15 +37,26 @@
   },
   "jest": {
     "testEnvironment": "jsdom",
-    "setupFilesAfterEnv": ["<rootDir>/tests/setup.js"],
+    "setupFilesAfterEnv": [
+      "<rootDir>/tests/setup.js"
+    ],
     "collectCoverageFrom": [
       "src/**/*.js",
       "!src/**/*.test.js"
     ],
     "coverageDirectory": "coverage",
-    "coverageReporters": ["text", "lcov", "html"],
-    "moduleFileExtensions": ["js", "json"],
-    "testMatch": ["**/tests/**/*.test.js"],
+    "coverageReporters": [
+      "text",
+      "lcov",
+      "html"
+    ],
+    "moduleFileExtensions": [
+      "js",
+      "json"
+    ],
+    "testMatch": [
+      "**/tests/**/*.test.js"
+    ],
     "transform": {},
     "transformIgnorePatterns": [
       "node_modules/(?!(@testing-library)/)"
