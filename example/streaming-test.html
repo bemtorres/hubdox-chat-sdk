@@ -1,0 +1,181 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Prueba de Streaming - ChatBot SDK</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 20px;
+            background-color: #f5f5f5;
+        }
+        .container {
+            max-width: 800px;
+            margin: 0 auto;
+            background: white;
+            padding: 20px;
+            border-radius: 10px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+        h1 {
+            color: #333;
+            text-align: center;
+        }
+        .test-info {
+            background: #e3f2fd;
+            padding: 15px;
+            border-radius: 5px;
+            margin-bottom: 20px;
+        }
+        .test-info h3 {
+            margin-top: 0;
+            color: #1976d2;
+        }
+        .controls {
+            text-align: center;
+            margin: 20px 0;
+        }
+        button {
+            background: #007bff;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 5px;
+            cursor: pointer;
+            margin: 5px;
+        }
+        button:hover {
+            background: #0056b3;
+        }
+        .status {
+            background: #f8f9fa;
+            padding: 10px;
+            border-radius: 5px;
+            margin: 10px 0;
+            font-family: monospace;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🧪 Prueba de Streaming - ChatBot SDK</h1>
+        
+        <div class="test-info">
+            <h3>📋 Información de la Prueba</h3>
+            <p><strong>Objetivo:</strong> Verificar que el streaming simulado funciona correctamente</p>
+            <p><strong>Configuración:</strong> <code>stream: true</code> y <code>testMode: true</code></p>
+            <p><strong>Comportamiento esperado:</strong> Los mensajes del bot deben aparecer carácter por carácter con un cursor parpadeante</p>
+        </div>
+
+        <div class="controls">
+            <button onclick="testStreaming()">🚀 Probar Streaming</button>
+            <button onclick="clearChat()">🗑️ Limpiar Chat</button>
+            <button onclick="toggleStreaming()">🔄 Cambiar Streaming</button>
+        </div>
+
+        <div class="status" id="status">
+            Estado: Inicializando...
+        </div>
+
+        <div class="status" id="config">
+            Configuración: Cargando...
+        </div>
+    </div>
+
+    <!-- ChatBot SDK -->
+    <script src="../src/index.js"></script>
+    <script>
+        let chat;
+        let streamingEnabled = true;
+
+        // Inicializar el chat
+        function initChat() {
+            chat = new ChatBot({
+                baseUrl: 'https://hubdocs.test',
+                apiKey: 'test-key',
+                tenant: 'test',
+                bot: { 
+                    name: 'Bot de Prueba', 
+                    img: "../src/img/bot_icon.png"  
+                },
+                options: {
+                    show: true,
+                    register: false,    // Sin registro para simplificar
+                    cache: false,       // Sin caché para pruebas
+                    testMode: true,     // Modo test para respuestas automáticas
+                    stream: streamingEnabled,
+                    devMode: true,      // Habilitar logs de desarrollo
+                },
+                custom: {
+                    primaryColor: "#007bff",
+                    botName: "Bot de Prueba",
+                    headerBgColor: "#007bff",
+                    headerTextColor: "#fff",
+                    showTime: true,
+                    position: {
+                        bottom: "24px",
+                        right: "24px"
+                    }
+                }
+            });
+
+            updateStatus();
+        }
+
+        // Probar streaming
+        function testStreaming() {
+            if (!chat) {
+                alert('Chat no inicializado');
+                return;
+            }
+
+            // Simular envío de mensaje
+            chat.sendMessage("Hola, ¿cómo estás?");
+            updateStatus('Mensaje enviado - Verificando streaming...');
+        }
+
+        // Limpiar chat
+        function clearChat() {
+            if (chat) {
+                chat.clearHistory();
+                updateStatus('Chat limpiado');
+            }
+        }
+
+        // Cambiar streaming
+        function toggleStreaming() {
+            streamingEnabled = !streamingEnabled;
+            if (chat) {
+                chat.destroy();
+            }
+            initChat();
+            updateStatus(`Streaming ${streamingEnabled ? 'habilitado' : 'deshabilitado'}`);
+        }
+
+        // Actualizar estado
+        function updateStatus(message = '') {
+            const statusEl = document.getElementById('status');
+            const configEl = document.getElementById('config');
+            
+            if (message) {
+                statusEl.textContent = `Estado: ${message}`;
+            }
+
+            if (chat) {
+                const config = {
+                    stream: streamingEnabled,
+                    testMode: true,
+                    devMode: true
+                };
+                configEl.textContent = `Configuración: ${JSON.stringify(config, null, 2)}`;
+            }
+        }
+
+        // Inicializar cuando se carga la página
+        window.addEventListener('load', () => {
+            initChat();
+        });
+    </script>
+</body>
+</html> 

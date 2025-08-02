@@ -16,6 +16,8 @@ class ChatBot {
     this.show = optionsConfig.show !== undefined ? optionsConfig.show : true;
     this.cache = optionsConfig.cache !== undefined ? optionsConfig.cache : true;
     this.testMode = optionsConfig.testMode || false;
+    this.devMode = optionsConfig.devMode || false; // Nueva opción para modo desarrollo
+    this.stream = optionsConfig.stream || false; // Opción para streaming simulado
     
     this.user = options.user || {
       email: 'test@mail.com',
@@ -200,8 +202,9 @@ class ChatBot {
 
   // API Calls
   async _registerUser() {
+    this._log('_registerUser - Iniciando registro de usuario');
     try {
-      console.log('Intentando registrar usuario con:', {
+      this._log('Intentando registrar usuario con:', {
         baseUrl: this.baseUrl,
         apiKey: this.apiKey ? '***' + this.apiKey.slice(-4) : 'undefined',
         tenant: this.tenant
@@ -221,19 +224,19 @@ class ChatBot {
 
       if (!response.ok) {
         const errorText = await response.text();
-        console.error('Error en registro:', response.status, errorText);
+        this._logError('Error en registro:', response.status, errorText);
         throw new Error(`Error en registro: ${response.status} - ${errorText}`);
       }
 
       const data = await response.json();
-      console.log('Registro exitoso:', data);
+      this._log('Registro exitoso:', data);
       
       // Actualizar datos de la sesión
       this.session = data.session;
       this.license = data.license; // name, logo, active, url, showFooter
       
       // Solo marcar como registrado si la licencia está activa Y register es true
-      console.log('DEBUG: Verificando registro:', {
+      this._log('DEBUG: Verificando registro:', {
         license: this.license,
         licenseActive: this.license?.active,
         register: this.register,
@@ -242,10 +245,10 @@ class ChatBot {
       
       if (this.license && this.license.active && this.register) {
         this.registered = true;
-        console.log('DEBUG: Usuario registrado exitosamente');
+        this._log('DEBUG: Usuario registrado exitosamente');
       } else {
         this.registered = false;
-        console.log('DEBUG: Usuario NO registrado');
+        this._log('DEBUG: Usuario NO registrado');
       }
       
       // Actualizar configuración del bot desde la respuesta del registro
@@ -264,7 +267,7 @@ class ChatBot {
       // Actualizar el footer después del registro
       this._updateFooter();
     } catch (error) {
-      console.error('Error en _registerUser:', error);
+      this._logError('Error en _registerUser:', error);
       throw error;
     }
   }
@@ -272,11 +275,11 @@ class ChatBot {
 
 
   async _sendMessageToAPI(message) {
-    console.log('_sendMessageToAPI - Llamando al API con mensaje:', message);
+    this._log('_sendMessageToAPI - Enviando mensaje:', message);
     
     // Si está en modo test, devolver respuesta simulada
     if (this.testMode) {
-      console.log('_sendMessageToAPI - Modo test activado');
+      this._log('_sendMessageToAPI - Modo test activado');
       return {
         success: true,
         data: {
@@ -306,7 +309,7 @@ class ChatBot {
     }
 
     const data = await response.json();
-    console.log('_sendMessageToAPI - Respuesta recibida:', data);
+    this._log('_sendMessageToAPI - Respuesta recibida:', data);
     return data.answer || 'No se pudo obtener respuesta del bot';
   }
 
@@ -314,20 +317,20 @@ class ChatBot {
 
   // Manejar respuesta del usuario durante registro
   async _handleRegistrationResponse(userMessage) {
-    console.log('_handleRegistrationResponse - Iniciando con mensaje:', userMessage);
+    this._log('_handleRegistrationResponse - Iniciando con mensaje:', userMessage);
     
     // Validar que el nombre no esté vacío
     if (!userMessage.trim()) {
-      console.log('_handleRegistrationResponse - Nombre vacío, solicitando nombre');
+      this._log('_handleRegistrationResponse - Nombre vacío, solicitando nombre');
       this._addMessage("bot", "Por favor, escribe tu nombre para continuar.");
       return;
     }
     
-    console.log('_handleRegistrationResponse - Procesando nombre:', userMessage.trim());
+    this._log('_handleRegistrationResponse - Procesando nombre:', userMessage.trim());
     this.user.name = userMessage.trim();
     
     // Marcar como registrado y actualizar el estado
-    console.log('_handleRegistrationResponse - Estableciendo registered = true');
+    this._log('_handleRegistrationResponse - Estableciendo registered = true');
     this.registered = true;
     this.registrationCompleted = true;
     this._saveToCache();
@@ -340,7 +343,7 @@ class ChatBot {
       this._showChatScreen();
     }, 1500);
     
-    console.log('_handleRegistrationResponse - Registro completado');
+    this._log('_handleRegistrationResponse - Registro completado');
   }
 
   // Métodos para manejar errores y reintentos
@@ -401,7 +404,7 @@ class ChatBot {
       // Reintentar la inicialización
       await this._initializeSession();
     } catch (error) {
-      console.error('Error en reintento:', error);
+      this._logError('Error en reintento:', error);
       this._showBotInfoWithRetry();
     }
   }
@@ -473,7 +476,7 @@ class ChatBot {
             this.license = { ...this.license, ...cacheData.license };
           }
           
-          console.log('Datos cargados desde caché');
+          this._log('Datos cargados desde caché');
           return true;
         } else {
           // Caché expirado, eliminarlo
@@ -753,6 +756,23 @@ class ChatBot {
     if (chatInfoBtn) {
       chatInfoBtn.addEventListener("click", () => this._showChatInfo());
     }
+
+    // Agregar estilos CSS para streaming
+    const streamingStyles = document.createElement("style");
+    streamingStyles.textContent = `
+      .streaming-cursor::after {
+        content: '|';
+        animation: blink 1s infinite;
+        color: ${this.primaryColor};
+        font-weight: bold;
+      }
+      
+      @keyframes blink {
+        0%, 50% { opacity: 1; }
+        51%, 100% { opacity: 0; }
+      }
+    `;
+    document.head.appendChild(streamingStyles);
   }
 
   _renderConfirmationModal() {
@@ -861,7 +881,7 @@ class ChatBot {
     if (this.fullscreenToggle) {
       const iconSvg = this.isFullscreen ? `
         <svg class="me-2" aria-hidden="true" xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" viewBox="0 0 24 24">
-          <path stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 9h4m0 0V5m0 4L4 4m15 5h-4m0 0V5m0 4 5-5M5 15h4m0 0v4m0-4-5 5m15-5h-4m0 0v4m0-4 5 5"/>
+          <path stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 9h4m0 0V5m0 4L4 4m15 5h-4m0 0V5m0 4 5-5M5 15h4m0 0v4m0-4-5 5m7 5h4m0 0v-4m0 4-5-5"/>
         </svg>
       ` : `
         <svg class="me-2" aria-hidden="true" xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" viewBox="0 0 24 24">
@@ -914,7 +934,7 @@ class ChatBot {
     
     // Si ya existe el mensaje inicial, no agregarlo nuevamente
     if (hasInitialMessage) {
-      console.log('_addInitialMessage - Mensaje inicial ya existe en el historial, omitiendo');
+      this._log('_addInitialMessage - Mensaje inicial ya existe en el historial, omitiendo');
       return;
     }
     
@@ -928,7 +948,7 @@ class ChatBot {
       message = this.saludoInicial || `Hola ${this.user.name}, soy ${this.botName} y estoy aquí para ayudarte. ¿En qué puedo asistirte?`;
     }
     
-    console.log('_addInitialMessage - Agregando mensaje inicial:', message);
+    this._log('_addInitialMessage - Agregando mensaje inicial:', message);
     this._addMessage("bot", message);
   }
 
@@ -1049,10 +1069,19 @@ class ChatBot {
     info.className = "fw-bold d-block mb-1";
     info.innerHTML = `${msg.from === "user" ? this.user.name : this.botName} <span class="text-muted fs-7 ms-2" style="font-size:0.75rem;">${this.showTime ? msg.time : ""}</span>`;
 
-    const textP = document.createElement("p");
-    textP.className = "mb-0";
-    textP.style.whiteSpace = "pre-wrap";
-    textP.innerHTML = this._parseMarkdown(msg.text);
+         const textP = document.createElement("p");
+     textP.className = "mb-0";
+     textP.style.whiteSpace = "pre-wrap";
+     
+     // Si es un mensaje con streaming, agregar clases especiales
+     if (msg.isStreaming) {
+       textP.classList.add('streaming-cursor');
+       textP.style.borderLeft = `3px solid ${this.primaryColor}`;
+       textP.style.paddingLeft = '10px';
+       textP.style.background = `linear-gradient(90deg, rgba(59, 130, 246, 0.05) 0%, rgba(59, 130, 246, 0) 100%)`;
+     }
+     
+     textP.innerHTML = this._parseMarkdown(msg.text);
 
     bubble.appendChild(info);
     bubble.appendChild(textP);
@@ -1174,12 +1203,13 @@ class ChatBot {
     if (!msg || this.loading) return;
 
     // Debug: Log del estado actual
-    console.log('_sendMessage - Estado actual:', {
+    this._log('_sendMessage - Estado actual:', {
       register: this.register,
       registered: this.registered,
       registrationScreen: this.registrationScreen,
       registrationCompleted: this.registrationCompleted,
       testMode: this.testMode,
+      stream: this.stream,
       message: msg
     });
 
@@ -1195,26 +1225,36 @@ class ChatBot {
     try {
       // Si está en modo test, usar respuestas automáticas
       if (this.testMode) {
-        console.log('_sendMessage - Usando modo test');
+        this._log('_sendMessage - Usando modo test');
         await this._handleTestResponse(msg);
       } else {
         // Verificar si estamos en pantalla de registro
         if (this.registrationScreen && !this.registrationCompleted) {
-          console.log('_sendMessage - Procesando registro en pantalla de registro');
+          this._log('_sendMessage - Procesando registro en pantalla de registro');
           await this._handleRegistrationResponse(msg);
         } else if (this.registered && this.registrationCompleted) {
           // Envío normal de mensaje solo si está registrado y completado
-          console.log('_sendMessage - Enviando mensaje al API');
+          this._log('_sendMessage - Enviando mensaje al API');
           const answer = await this._sendMessageToAPI(msg);
-          this._addMessage("bot", answer);
+          
+          // Si streaming está habilitado, mostrar el texto carácter por carácter
+          if (this.stream) {
+            // Ocultar el indicador de typing antes de mostrar el streaming
+            this._hideTypingIndicator();
+            await this._displayMessageWithStreaming(answer);
+          } else {
+            // Ocultar el indicador de typing y mostrar el mensaje completo
+            this._hideTypingIndicator();
+            this._addMessage("bot", answer);
+          }
         } else {
           // Si no está registrado y no está en modo registro, mostrar mensaje de error
-          console.log('_sendMessage - Usuario no registrado');
+          this._log('_sendMessage - Usuario no registrado');
           this._addMessage("bot", "Por favor, completa el registro primero. Necesito saber tu nombre para poder ayudarte.");
         }
       }
     } catch (error) {
-      console.error('Error enviando mensaje:', error);
+      this._logError('Error enviando mensaje:', error);
       this._addMessage("bot", "Error al obtener respuesta. Intenta nuevamente.");
     } finally {
       this.loading = false;
@@ -1225,6 +1265,66 @@ class ChatBot {
         this.input.focus();
       }
     }
+  }
+
+  // Nuevo método para simular streaming de texto
+  async _displayMessageWithStreaming(text) {
+    this._log('_displayMessageWithStreaming - Iniciando simulación de streaming');
+    
+    // Crear mensaje vacío inicial
+    const streamingMessage = {
+      from: "bot",
+      text: "",
+      time: this._getCurrentTime(),
+      isStreaming: true
+    };
+    
+    this.messages.push(streamingMessage);
+    this._renderMessages();
+    
+    // Obtener el elemento del mensaje para actualizarlo
+    const messageElement = this.messagesContainer.lastElementChild;
+    let textElement = messageElement.querySelector('p');
+    
+    // Si no encuentra el elemento p, buscar en la estructura del mensaje
+    if (!textElement) {
+      this._log('_displayMessageWithStreaming - No se encontró elemento p, buscando alternativa');
+      // Buscar el elemento que contiene el texto del mensaje
+      const bubble = messageElement.querySelector('.bg-light, .bg-primary');
+      if (bubble) {
+        const textElementAlt = bubble.querySelector('p');
+        if (textElementAlt) {
+          textElement = textElementAlt;
+        }
+      }
+    }
+    
+    // Simular typing carácter por carácter
+    let currentText = "";
+    const characters = text.split('');
+    
+    for (let i = 0; i < characters.length; i++) {
+      currentText += characters[i];
+      streamingMessage.text = currentText;
+      
+      // Actualizar el elemento en el DOM
+      if (textElement) {
+        textElement.innerHTML = this._parseMarkdown(currentText);
+      }
+      
+      // Scroll al final del contenedor
+      this.messagesContainer.scrollTop = this.messagesContainer.scrollHeight;
+      
+      // Delay aleatorio entre 20-80ms para simular typing humano
+      const delay = Math.random() * 60 + 20;
+      await new Promise(resolve => setTimeout(resolve, delay));
+    }
+    
+    // Streaming completado
+    streamingMessage.isStreaming = false;
+    this._renderMessages();
+    
+    this._log('_displayMessageWithStreaming - Streaming completado');
   }
 
   // Nuevo método para mostrar indicador de "está escribiendo..."
@@ -1325,59 +1425,43 @@ class ChatBot {
 
   // Nuevo método para manejar respuestas en modo test
   async _handleTestResponse(userMessage) {
-    const message = userMessage.toLowerCase();
+    this._log('_handleTestResponse - Procesando mensaje de test:', userMessage);
     
-    // Simular delay de respuesta (más realista)
-    await new Promise(resolve => setTimeout(resolve, 1500 + Math.random() * 2000));
+    // Simular delay de procesamiento
+    await new Promise(resolve => setTimeout(resolve, 500 + Math.random() * 1000));
     
-    // Detectar el nombre del usuario
-    if (!this.user.name || this.user.name === "Usuario") {
-      if (message.includes("me llamo") || message.includes("soy") || message.includes("mi nombre es")) {
-        const nameMatch = message.match(/(?:me llamo|soy|mi nombre es)\s+([a-zA-ZáéíóúÁÉÍÓÚñÑ\s]+)/i);
-        if (nameMatch) {
-          this.user.name = nameMatch[1].trim();
-          const greeting = this.testMessages.greetings[Math.floor(Math.random() * this.testMessages.greetings.length)];
-          this._addMessage("bot", greeting);
-          return;
-        }
-      }
-      
-      // Si no se detectó nombre, pedir el nombre
-      const welcome = this.testMessages.welcome[Math.floor(Math.random() * this.testMessages.welcome.length)];
-      this._addMessage("bot", welcome);
-      return;
-    }
+    let response = "";
     
-    // Respuestas basadas en palabras clave
-    if (message.includes("hola") || message.includes("buenos días") || message.includes("buenas")) {
-      const greeting = this.testMessages.greetings[Math.floor(Math.random() * this.testMessages.greetings.length)];
-      this._addMessage("bot", greeting);
-    } else if (message.includes("ayuda") || message.includes("qué puedes hacer") || message.includes("funciones")) {
-      const help = this.testMessages.help[Math.floor(Math.random() * this.testMessages.help.length)];
-      this._addMessage("bot", help);
-    } else if (message.includes("curiosidad") || message.includes("dato") || message.includes("interesante") || message.includes("sabías")) {
-      const curiosity = this.testMessages.curiosities[Math.floor(Math.random() * this.testMessages.curiosities.length)];
-      this._addMessage("bot", curiosity);
-    } else if (message.includes("gracias") || message.includes("grax")) {
-      this._addMessage("bot", `¡De nada, ${this.user.name}! 😊 Me alegra poder ayudarte.`);
-    } else if (message.includes("adiós") || message.includes("chao") || message.includes("hasta luego")) {
-      this._addMessage("bot", `¡Hasta luego, ${this.user.name}! 👋 Que tengas un excelente día.`);
+    // Lógica de respuesta basada en el mensaje del usuario
+    const lowerMessage = userMessage.toLowerCase();
+    
+    if (lowerMessage.includes('hola') || lowerMessage.includes('hello') || lowerMessage.includes('hi')) {
+      response = this.testMessages.greetings[Math.floor(Math.random() * this.testMessages.greetings.length)];
+    } else if (lowerMessage.includes('ayuda') || lowerMessage.includes('help') || lowerMessage.includes('qué puedes hacer')) {
+      response = this.testMessages.help[Math.floor(Math.random() * this.testMessages.help.length)];
+    } else if (lowerMessage.includes('curiosidad') || lowerMessage.includes('dato') || lowerMessage.includes('interesante')) {
+      response = this.testMessages.curiosities[Math.floor(Math.random() * this.testMessages.curiosities.length)];
     } else {
-      // Respuesta aleatoria para mensajes no reconocidos
-      const unknown = this.testMessages.unknown[Math.floor(Math.random() * this.testMessages.unknown.length)];
-      this._addMessage("bot", unknown);
+      response = this.testMessages.unknown[Math.floor(Math.random() * this.testMessages.unknown.length)];
     }
+    
+          // Si streaming está habilitado, mostrar el texto carácter por carácter
+      if (this.stream) {
+        // Ocultar el indicador de typing antes de mostrar el streaming
+        this._hideTypingIndicator();
+        await this._displayMessageWithStreaming(response);
+      } else {
+        // Ocultar el indicador de typing y mostrar el mensaje completo
+        this._hideTypingIndicator();
+        this._addMessage("bot", response);
+      }
+    
+    this._log('_handleTestResponse - Respuesta generada:', response);
   }
 
   // Nuevo método para verificar el estado de registro
   _checkRegistrationStatus() {
-    console.log('_checkRegistrationStatus - Verificando estado:', {
-      register: this.register,
-      registered: this.registered,
-      userExists: this.user.name && this.user.name !== "Usuario",
-      session: this.session
-    });
-
+    this._log('_checkRegistrationStatus - Verificando estado de registro');
     // Condiciones para mostrar pantalla de registro:
     // 1. Cuando register es true
     // 2. Cuando register es true o el nombre del usuario no existe
@@ -1388,19 +1472,20 @@ class ChatBot {
                                  !this.registered;
 
     if (shouldShowRegistration && this.session) {
-      console.log('_checkRegistrationStatus - Mostrando pantalla de registro');
+      this._log('_checkRegistrationStatus - Mostrando pantalla de registro');
       this._showRegistrationScreen();
     } else if (this.session) {
-      console.log('_checkRegistrationStatus - Mostrando chat normal');
+      this._log('_checkRegistrationStatus - Mostrando chat normal');
       this._showChatScreen();
     } else {
-      console.log('_checkRegistrationStatus - No hay sesión, mostrando error');
+      this._log('_checkRegistrationStatus - No hay sesión, mostrando error');
       this._showBotInfoWithRetry();
     }
   }
 
   // Nuevo método para mostrar la pantalla de registro
   _showRegistrationScreen() {
+    this._log('_showRegistrationScreen - Mostrando pantalla de registro');
     this.registrationScreen = true;
     this.registrationCompleted = false;
     
@@ -1443,6 +1528,7 @@ class ChatBot {
 
   // Nuevo método para mostrar la pantalla de chat normal
   _showChatScreen() {
+    this._log('_showChatScreen - Mostrando pantalla de chat');
     this.registrationScreen = false;
     this.registrationCompleted = true;
     
@@ -1480,14 +1566,14 @@ class ChatBot {
   // Métodos públicos para manejar caché
   clearCache() {
     this._clearCache();
-    console.log('Caché limpiado');
+    this._log('Caché limpiado');
   }
 
   clearHistory() {
     this.messages = [];
     this.messagesContainer.innerHTML = '';
     this._saveToCache();
-    console.log('Historial de chat limpiado');
+    this._log('Historial de chat limpiado');
   }
 
   reloadFromCache() {
@@ -1495,12 +1581,12 @@ class ChatBot {
       const loaded = this._loadFromCache();
       if (loaded) {
         this._renderMessages();
-        console.log('Datos recargados desde caché');
+        this._log('Datos recargados desde caché');
       } else {
-        console.log('No hay datos en caché para recargar');
+        this._log('No hay datos en caché para recargar');
       }
     } else {
-      console.log('Caché está deshabilitado');
+      this._log('Caché está deshabilitado');
     }
   }
 
@@ -1617,7 +1703,40 @@ class ChatBot {
         this[key] = null;
       }
     }
-    console.log('ChatBot instance destroyed');
+    this._log('ChatBot instance destroyed');
+  }
+
+  // Método de logging que respeta el modo desarrollo
+  _log(...args) {
+    if (this.devMode) {
+      console.log('[ChatBot SDK]', ...args);
+    }
+  }
+  
+  // Método de logging de errores (siempre se muestra)
+  _logError(...args) {
+    console.error('[ChatBot SDK] ERROR:', ...args);
+  }
+  
+  // Método de logging de warnings (solo en modo desarrollo)
+  _logWarn(...args) {
+    if (this.devMode) {
+      console.warn('[ChatBot SDK] WARNING:', ...args);
+    }
+  }
+  
+  // Método de logging de información (solo en modo desarrollo)
+  _logInfo(...args) {
+    if (this.devMode) {
+      console.info('[ChatBot SDK] INFO:', ...args);
+    }
+  }
+  
+  // Método de logging de debug (solo en modo desarrollo)
+  _logDebug(...args) {
+    if (this.devMode) {
+      console.debug('[ChatBot SDK] DEBUG:', ...args);
+    }
   }
 }
 
