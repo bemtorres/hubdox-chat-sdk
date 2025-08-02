@@ -30,11 +30,7 @@ Un SDK de JavaScript ligero y fácil de usar para integrar un chatbot flotante e
 
 ### CDN (Recomendado)
 
-```html
-<script src="https://cdn.jsdelivr.net/npm/hubdox-chat-sdk@1"></script>
-```
-
-las versiones disponibles son:
+last version:
 ```html
 <script src="https://cdn.jsdelivr.net/npm/hubdox-chat-sdk"></script>
 ```

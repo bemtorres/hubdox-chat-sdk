@@ -4,7 +4,10 @@
   "description": "SDK de JavaScript para integrar chatbots flotantes en sitios web con soporte para registro de usuarios y APIs personalizables",
   "main": "src/index.js",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "test": "jest",
+    "test:watch": "jest --watch",
+    "test:coverage": "jest --coverage",
+    "test:debug": "jest --detectOpenHandles"
   },
   "keywords": [
     "chat",
@@ -26,5 +29,28 @@
   "bugs": {
     "url": "https://github.com/bemtorres/hubdox-chat-sdk/issues"
   },
-  "homepage": "https://github.com/bemtorres/hubdox-chat-sdk#readme"
+  "homepage": "https://github.com/bemtorres/hubdox-chat-sdk#readme",
+  "devDependencies": {
+    "jest": "^29.7.0",
+    "jest-environment-jsdom": "^29.7.0",
+    "@testing-library/jest-dom": "^6.1.5"
+  },
+  "jest": {
+    "testEnvironment": "jsdom",
+    "setupFilesAfterEnv": ["<rootDir>/tests/setup.js"],
+    "collectCoverageFrom": [
+      "src/**/*.js",
+      "!src/**/*.test.js"
+    ],
+    "coverageDirectory": "coverage",
+    "coverageReporters": ["text", "lcov", "html"],
+    "moduleFileExtensions": ["js", "json"],
+    "testMatch": ["**/tests/**/*.test.js"],
+    "transform": {},
+    "transformIgnorePatterns": [
+      "node_modules/(?!(@testing-library)/)"
+    ],
+    "watchman": false,
+    "watchPathIgnorePatterns": []
+  }
 }

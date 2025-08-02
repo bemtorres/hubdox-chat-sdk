@@ -1,58 +1,281 @@
 <!DOCTYPE html>
 <html lang="es">
 <head>
-<meta charset="UTF-8" />
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Prueba Hubdox Chat SDK</title>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Ejemplo Corregido - Hubdox Chat SDK</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 20px;
+            background-color: #f5f5f5;
+        }
+        .container {
+            max-width: 800px;
+            margin: 0 auto;
+            background: white;
+            padding: 30px;
+            border-radius: 10px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+        h1 {
+            color: #333;
+            text-align: center;
+            margin-bottom: 30px;
+        }
+        .config-section {
+            background: #f8f9fa;
+            padding: 20px;
+            border-radius: 8px;
+            margin-bottom: 20px;
+            border-left: 4px solid #007bff;
+        }
+        .config-section h3 {
+            margin-top: 0;
+            color: #007bff;
+        }
+        .code-block {
+            background: #1e1e1e;
+            color: #00ff00;
+            padding: 15px;
+            border-radius: 5px;
+            font-family: 'Courier New', monospace;
+            font-size: 14px;
+            overflow-x: auto;
+            margin: 10px 0;
+        }
+        .explanation {
+            background: #e7f3ff;
+            padding: 15px;
+            border-radius: 5px;
+            margin: 10px 0;
+            border-left: 4px solid #007bff;
+        }
+        .warning {
+            background: #fff3cd;
+            padding: 15px;
+            border-radius: 5px;
+            margin: 10px 0;
+            border-left: 4px solid #ffc107;
+        }
+        .success {
+            background: #d4edda;
+            padding: 15px;
+            border-radius: 5px;
+            margin: 10px 0;
+            border-left: 4px solid #28a745;
+        }
+    </style>
 </head>
 <body>
-  <script src="../src/index.js"></script>
-  <!-- <script src="https://cdn.jsdelivr.net/npm/hubdox-chat-sdk@0.1.0"></script> -->
-  <script>
-    const chat = new ChatBot({
-      baseUrl: 'https://botbee.nomed.org',
-      apiKey: 'A857c5ca-f92f-47b1-98ea-4a5aa54b51b4',
-      tenant: 'dicapi',
-      user: { 
-        name: '', 
-        email: '', 
-        photo: "" 
-      },
-      bot: { 
-        name: 'Mari, DICAPI', 
-        img: "https://res.cloudinary.com/dienilw2p/image/upload/v1747635921/hubdox/xevgjbvb1ri3ytpletzk.png"  
-      },
-      options: {
-        show: false,
-        register: false,
-        cache: true,
-        testMode: false,
-      },
-      custom: {
-        primaryColor: "#000",
-        botName: "Social Media",
-        headerBgColor: "#000",
-        headerTextColor: "#fff",
-        sendButtonText: "",
-        // Configuración de tamaño del chat
-        chatWidth: "500px",           // Ancho del chat (por defecto 400px)
-        chatHeight: "70vh",           // Alto del chat (por defecto 60vh)
-        chatMaxWidth: "600px",        // Ancho máximo del chat
-        chatMaxHeight: "80vh",        // Alto máximo del chat
-        // Configuración para modo pantalla completa
-        fullscreenEnabled: true,      // Habilitar modo pantalla completa
-        // Configuración del área de mensajes
-        messagesHeight: "450px",      // Altura del área de mensajes (por defecto 350px)
-        // Configuración del botón flotante
-        buttonSize: "64px",           // Tamaño del botón flotante (por defecto 56px)
-        // Posición del chat
-        position: {
-          bottom: "20px",
-          right: "24px"
-        }
-      }
-    });
-  </script>
+    <div class="container">
+        <h1>🔧 Solución para Problemas de Registro y Caché</h1>
+        
+        <div class="config-section">
+            <h3>📋 Problemas Identificados</h3>
+            <ul>
+                <li><strong>Registro repetitivo:</strong> El sistema solicita el nombre múltiples veces</li>
+                <li><strong>Caché no funciona:</strong> La información no se guarda correctamente</li>
+                <li><strong>Lógica confusa:</strong> No se verifica adecuadamente el estado de registro</li>
+            </ul>
+        </div>
+
+        <div class="config-section">
+            <h3>✅ Configuración Correcta</h3>
+            
+            <div class="explanation">
+                <strong>Para registro con caché (recomendado):</strong>
+                <ul>
+                    <li><code>register: true</code> - Solicita nombre al usuario</li>
+                    <li><code>cache: true</code> - Guarda la información en localStorage</li>
+                    <li><code>testMode: false</code> - Usa el API real</li>
+                </ul>
+            </div>
+
+            <div class="code-block">
+const chat = new ChatBot({
+  baseUrl: 'https://hubdocs.test',
+  apiKey: 'Ae812043-87ed-4bde-ba4a-0daaff8aadad',
+  tenant: 'nomed',
+  user: { 
+    name: 'Benjamín', 
+    email: 'benja@hubdox.com', 
+    photo: "https://res.cloudinary.com/dienilw2p/image/upload/v1747635921/hubdox/lgvqg0648leq6meeusid.png" 
+  },
+  bot: { 
+    name: 'Boti', 
+    img: "../src/img/bot_icon.png"  
+  },
+  options: {
+    show: true,
+    register: true,    // ✅ Solicita registro
+    cache: true,       // ✅ Guarda en caché
+    testMode: false,   // ✅ Usa API real
+  },
+  custom: {
+    primaryColor: "#007bff",
+    botName: "Asistente Virtual",
+    headerBgColor: "#007bff",
+    headerTextColor: "#fff",
+    sendButtonText: "Enviar",
+    chatWidth: "400px",
+    chatHeight: "60vh",
+    chatMaxWidth: "90vw",
+    chatMaxHeight: "80vh",
+    fullscreenEnabled: true,
+    messagesHeight: "350px",
+    buttonSize: "56px",
+    position: {
+      bottom: "24px",
+      right: "24px"
+    }
+  }
+});
+            </div>
+        </div>
+
+        <div class="config-section">
+            <h3>🚫 Configuración SIN Registro</h3>
+            
+            <div class="explanation">
+                <strong>Para usar sin registro (nombre por defecto):</strong>
+                <ul>
+                    <li><code>register: false</code> - Usa el nombre de user.name</li>
+                    <li><code>cache: true</code> - Guarda conversación</li>
+                </ul>
+            </div>
+
+            <div class="code-block">
+const chat = new ChatBot({
+  baseUrl: 'https://hubdocs.test',
+  apiKey: 'Ae812043-87ed-4bde-ba4a-0daaff8aadad',
+  tenant: 'nomed',
+  user: { 
+    name: 'Benjamín',  // ✅ Este nombre se usará directamente
+    email: 'benja@hubdox.com', 
+    photo: "https://res.cloudinary.com/dienilw2p/image/upload/v1747635921/hubdox/lgvqg0648leq6meeusid.png" 
+  },
+  bot: { 
+    name: 'Boti', 
+    img: "../src/img/bot_icon.png"  
+  },
+  options: {
+    show: true,
+    register: false,   // ✅ NO solicita registro
+    cache: true,       // ✅ Guarda conversación
+    testMode: false,
+  },
+  // ... resto de configuración
+});
+            </div>
+        </div>
+
+        <div class="config-section">
+            <h3>🗑️ Configuración SIN Caché</h3>
+            
+            <div class="warning">
+                <strong>⚠️ Sin caché - Se pierde todo al recargar:</strong>
+                <ul>
+                    <li><code>cache: false</code> - No guarda nada</li>
+                    <li>Se reinicia completamente al recargar la página</li>
+                    <li>Útil para testing o cuando no quieres persistencia</li>
+                </ul>
+            </div>
+
+            <div class="code-block">
+const chat = new ChatBot({
+  // ... configuración básica
+  options: {
+    show: true,
+    register: true,    // Solicita registro cada vez
+    cache: false,      // ❌ NO guarda nada
+    testMode: false,
+  },
+  // ... resto de configuración
+});
+            </div>
+        </div>
+
+        <div class="config-section">
+            <h3>🔍 Verificar Estado de Caché</h3>
+            
+            <div class="explanation">
+                <strong>Para verificar si la caché funciona:</strong>
+            </div>
+
+            <div class="code-block">
+// Verificar estado de caché
+const status = chat.getCacheStatus();
+console.log('Estado de caché:', status);
+
+// Verificar estado de registro
+const regStatus = chat.getRegistrationStatus();
+console.log('Estado de registro:', regStatus);
+
+// Limpiar caché si es necesario
+chat.clearCache();
+            </div>
+        </div>
+
+        <div class="success">
+            <h3>✅ Recomendaciones</h3>
+            <ol>
+                <li><strong>Para producción:</strong> Usa <code>register: true</code> y <code>cache: true</code></li>
+                <li><strong>Para testing:</strong> Usa <code>testMode: true</code> para respuestas automáticas</li>
+                <li><strong>Para desarrollo:</strong> Usa <code>cache: false</code> para evitar datos persistentes</li>
+                <li><strong>Verifica siempre:</strong> El estado de caché y registro antes de reportar problemas</li>
+            </ol>
+        </div>
+
+        <!-- Chat Bot -->
+        <script src="../src/index.js"></script>
+        <script>
+            const chat = new ChatBot({
+                baseUrl: 'https://hubdocs.test',
+                apiKey: 'Ae812043-87ed-4bde-ba4a-0daaff8aadad',
+                tenant: 'nomed',
+                bot: { 
+                    name: 'Boti', 
+                    img: "../src/img/bot_icon.png"  
+                },
+                options: {
+                    show: true,
+                    register: true,    // Solicita registro
+                    cache: true,       // Guarda en caché
+                    testMode: false,   // Usa API real
+                },
+                custom: {
+                    primaryColor: "#007bff",
+                    botName: "Asistente Virtual",
+                    headerBgColor: "#007bff",
+                    headerTextColor: "#fff",
+                    sendButtonText: "",
+                    chatWidth: "400px",
+                    chatHeight: "60vh",
+                    chatMaxWidth: "90vw",
+                    chatMaxHeight: "80vh",
+                    fullscreenEnabled: true,
+                    messagesHeight: "350px",
+                    buttonSize: "56px",
+                    position: {
+                        bottom: "24px",
+                        right: "24px"
+                    }
+                }
+            });
+
+            // Verificar estado después de 2 segundos
+            setTimeout(() => {
+                const cacheStatus = chat.getCacheStatus();
+                const regStatus = chat.getRegistrationStatus();
+                
+                console.log('=== ESTADO DEL CHAT ===');
+                console.log('Caché:', cacheStatus);
+                console.log('Registro:', regStatus);
+                console.log('======================');
+            }, 2000);
+        </script>
+    </div>
 </body>
 </html>
 

@@ -1,7 +1,9 @@
 class ChatBot {
   constructor(options) {
-    // Generar ID único para el chat
-    this.chatId = 'hubdox-chat-' + Math.random().toString(36).substr(2, 9);
+    // Validar parámetros requeridos
+    if (!options || !options.baseUrl || !options.apiKey) {
+      throw new Error('baseUrl y apiKey son requeridos');
+    }
     
     // Configuración requerida
     this.baseUrl = options.baseUrl;
@@ -18,11 +20,11 @@ class ChatBot {
     this.user = options.user || {
       email: 'test@mail.com',
       name: "Usuario",
-      photo: "https://res.cloudinary.com/dienilw2p/image/upload/v1747635921/hubdox/lgvqg0648leq6meeusid.png",
+      photo: "../src/img/user_icon.png",
     };
     this.bot = options.bot || {
       name: options.botName || "Bot",
-      img: "https://res.cloudinary.com/dienilw2p/image/upload/v1747635921/hubdox/xevgjbvb1ri3ytpletzk.png",
+      img: "../src/img/bot_icon.png",
     };
     
     // Personalización desde objeto custom
@@ -239,10 +241,19 @@ class ChatBot {
       this.license = data.license; // name, logo, active, url, showFooter
       
       // Solo marcar como registrado si la licencia está activa Y register es true
-      if (this.license.active && this.register) {
+      console.log('DEBUG: Verificando registro:', {
+        license: this.license,
+        licenseActive: this.license?.active,
+        register: this.register,
+        willRegister: this.license && this.license.active && this.register
+      });
+      
+      if (this.license && this.license.active && this.register) {
         this.registered = true;
+        console.log('DEBUG: Usuario registrado exitosamente');
       } else {
         this.registered = false;
+        console.log('DEBUG: Usuario NO registrado');
       }
       
       // Actualizar configuración del bot desde la respuesta del registro
@@ -270,6 +281,19 @@ class ChatBot {
 
   async _sendMessageToAPI(message) {
     console.log('_sendMessageToAPI - Llamando al API con mensaje:', message);
+    
+    // Si está en modo test, devolver respuesta simulada
+    if (this.testMode) {
+      console.log('_sendMessageToAPI - Modo test activado');
+      return {
+        success: true,
+        data: {
+          response: 'Este es un mensaje de prueba. El modo test está activado.',
+          session: this.session
+        }
+      };
+    }
+    
     const response = await fetch(`${this.baseUrl}/api/sdk/v1/message`, {
       method: 'POST',
       headers: {
@@ -291,7 +315,7 @@ class ChatBot {
 
     const data = await response.json();
     console.log('_sendMessageToAPI - Respuesta recibida:', data);
-    return data.answer;
+    return data;
   }
 
   // Registro dentro del chat
@@ -535,580 +559,10 @@ class ChatBot {
       link.rel = 'stylesheet';
       link.href = 'https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css';
       link.dataset.bootstrap = 'injected';
-      link.onload = () => {
-        // Crear estilos encapsulados después de cargar Bootstrap
-        this._createEncapsulatedStyles();
-        resolve();
-      };
+      link.onload = () => resolve();
       link.onerror = () => reject(new Error('Error cargando Bootstrap CSS'));
       document.head.appendChild(link);
     });
-  }
-
-  _createEncapsulatedStyles() {
-    // Crear elemento de estilo encapsulado
-    const style = document.createElement('style');
-    style.id = `${this.chatId}-styles`;
-    
-    const css = `
-      /* Estilos encapsulados para ${this.chatId} */
-      #${this.chatId} {
-        font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif !important;
-        font-size: 14px !important;
-        line-height: 1.5 !important;
-        color: #212529 !important;
-        box-sizing: border-box !important;
-      }
-
-      #${this.chatId} * {
-        box-sizing: border-box !important;
-      }
-
-      #${this.chatId} .btn {
-        display: inline-block !important;
-        font-weight: 400 !important;
-        line-height: 1.5 !important;
-        color: #212529 !important;
-        text-align: center !important;
-        text-decoration: none !important;
-        vertical-align: middle !important;
-        cursor: pointer !important;
-        user-select: none !important;
-        background-color: transparent !important;
-        border: 1px solid transparent !important;
-        padding: 0.375rem 0.75rem !important;
-        font-size: 1rem !important;
-        border-radius: 0.375rem !important;
-        transition: color 0.15s ease-in-out, background-color 0.15s ease-in-out, border-color 0.15s ease-in-out, box-shadow 0.15s ease-in-out !important;
-      }
-
-      #${this.chatId} .btn-primary {
-        color: #fff !important;
-        background-color: ${this.primaryColor} !important;
-        border-color: ${this.primaryColor} !important;
-      }
-
-      #${this.chatId} .btn-secondary {
-        color: #fff !important;
-        background-color: #6c757d !important;
-        border-color: #6c757d !important;
-      }
-
-      #${this.chatId} .btn-danger {
-        color: #fff !important;
-        background-color: #dc3545 !important;
-        border-color: #dc3545 !important;
-      }
-
-      #${this.chatId} .btn-sm {
-        padding: 0.25rem 0.5rem !important;
-        font-size: 0.875rem !important;
-        border-radius: 0.25rem !important;
-      }
-
-      #${this.chatId} .btn-close {
-        box-sizing: content-box !important;
-        width: 1em !important;
-        height: 1em !important;
-        padding: 0.25em 0.25em !important;
-        color: #000 !important;
-        background: transparent url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16' fill='%23000'%3e%3cpath d='M.293.293a1 1 0 011.414 0L8 6.586 14.293.293a1 1 0 111.414 1.414L9.414 8l6.293 6.293a1 1 0 01-1.414 1.414L8 9.414l-6.293 6.293a1 1 0 01-1.414-1.414L6.586 8 .293 1.707a1 1 0 010-1.414z'/%3e%3c/svg%3e") center/1em auto no-repeat !important;
-        border: 0 !important;
-        border-radius: 0.375rem !important;
-        opacity: 0.5 !important;
-        cursor: pointer !important;
-      }
-
-      #${this.chatId} .btn-close:hover {
-        color: #000 !important;
-        text-decoration: none !important;
-        opacity: 0.75 !important;
-      }
-
-      #${this.chatId} .d-flex {
-        display: flex !important;
-      }
-
-      #${this.chatId} .align-items-center {
-        align-items: center !important;
-      }
-
-      #${this.chatId} .justify-content-between {
-        justify-content: space-between !important;
-      }
-
-      #${this.chatId} .justify-content-end {
-        justify-content: flex-end !important;
-      }
-
-      #${this.chatId} .justify-content-start {
-        justify-content: flex-start !important;
-      }
-
-      #${this.chatId} .text-center {
-        text-align: center !important;
-      }
-
-      #${this.chatId} .text-white {
-        color: #fff !important;
-      }
-
-      #${this.chatId} .text-secondary {
-        color: #6c757d !important;
-      }
-
-      #${this.chatId} .text-muted {
-        color: #6c757d !important;
-      }
-
-      #${this.chatId} .text-danger {
-        color: #dc3545 !important;
-      }
-
-      #${this.chatId} .bg-light {
-        background-color: #f8f9fa !important;
-      }
-
-      #${this.chatId} .bg-dark {
-        background-color: #212529 !important;
-      }
-
-      #${this.chatId} .rounded {
-        border-radius: 0.375rem !important;
-      }
-
-      #${this.chatId} .rounded-3 {
-        border-radius: 0.5rem !important;
-      }
-
-      #${this.chatId} .rounded-circle {
-        border-radius: 50% !important;
-      }
-
-      #${this.chatId} .rounded-pill {
-        border-radius: 50rem !important;
-      }
-
-      #${this.chatId} .p-2 {
-        padding: 0.5rem !important;
-      }
-
-      #${this.chatId} .p-3 {
-        padding: 1rem !important;
-      }
-
-      #${this.chatId} .px-3 {
-        padding-left: 1rem !important;
-        padding-right: 1rem !important;
-      }
-
-      #${this.chatId} .py-2 {
-        padding-top: 0.5rem !important;
-        padding-bottom: 0.5rem !important;
-      }
-
-      #${this.chatId} .mx-2 {
-        margin-left: 0.5rem !important;
-        margin-right: 0.5rem !important;
-      }
-
-      #${this.chatId} .mb-1 {
-        margin-bottom: 0.25rem !important;
-      }
-
-      #${this.chatId} .mb-2 {
-        margin-bottom: 0.5rem !important;
-      }
-
-      #${this.chatId} .mb-3 {
-        margin-bottom: 1rem !important;
-      }
-
-      #${this.chatId} .mb-4 {
-        margin-bottom: 1.5rem !important;
-      }
-
-      #${this.chatId} .mt-2 {
-        margin-top: 0.5rem !important;
-      }
-
-      #${this.chatId} .mt-3 {
-        margin-top: 1rem !important;
-      }
-
-      #${this.chatId} .me-2 {
-        margin-right: 0.5rem !important;
-      }
-
-      #${this.chatId} .ms-2 {
-        margin-left: 0.5rem !important;
-      }
-
-      #${this.chatId} .w-auto {
-        width: auto !important;
-      }
-
-      #${this.chatId} .h-100 {
-        height: 100% !important;
-      }
-
-      #${this.chatId} .position-relative {
-        position: relative !important;
-      }
-
-      #${this.chatId} .position-absolute {
-        position: absolute !important;
-      }
-
-      #${this.chatId} .position-fixed {
-        position: fixed !important;
-      }
-
-      #${this.chatId} .top-0 {
-        top: 0 !important;
-      }
-
-      #${this.chatId} .bottom-0 {
-        bottom: 0 !important;
-      }
-
-      #${this.chatId} .start-0 {
-        left: 0 !important;
-      }
-
-      #${this.chatId} .end-0 {
-        right: 0 !important;
-      }
-
-      #${this.chatId} .d-none {
-        display: none !important;
-      }
-
-      #${this.chatId} .d-block {
-        display: block !important;
-      }
-
-      #${this.chatId} .fw-bold {
-        font-weight: 700 !important;
-      }
-
-      #${this.chatId} .small {
-        font-size: 0.875em !important;
-      }
-
-      #${this.chatId} .fs-7 {
-        font-size: 0.75rem !important;
-      }
-
-      #${this.chatId} .mb-0 {
-        margin-bottom: 0 !important;
-      }
-
-      #${this.chatId} .mx-auto {
-        margin-left: auto !important;
-        margin-right: auto !important;
-      }
-
-      #${this.chatId} .form-control {
-        display: block !important;
-        width: 100% !important;
-        padding: 0.375rem 0.75rem !important;
-        font-size: 1rem !important;
-        font-weight: 400 !important;
-        line-height: 1.5 !important;
-        color: #212529 !important;
-        background-color: #fff !important;
-        background-clip: padding-box !important;
-        border: 1px solid #ced4da !important;
-        border-radius: 0.375rem !important;
-        transition: border-color 0.15s ease-in-out, box-shadow 0.15s ease-in-out !important;
-      }
-
-      #${this.chatId} .form-control:focus {
-        color: #212529 !important;
-        background-color: #fff !important;
-        border-color: #86b7fe !important;
-        outline: 0 !important;
-        box-shadow: 0 0 0 0.25rem rgba(13, 110, 253, 0.25) !important;
-      }
-
-      #${this.chatId} .modal {
-        position: fixed !important;
-        top: 0 !important;
-        left: 0 !important;
-        z-index: 1055 !important;
-        display: none !important;
-        width: 100% !important;
-        height: 100% !important;
-        overflow-x: hidden !important;
-        overflow-y: auto !important;
-        outline: 0 !important;
-      }
-
-      #${this.chatId} .modal.fade .modal-dialog {
-        transition: transform 0.3s ease-out !important;
-        transform: translate(0, -50px) !important;
-      }
-
-      #${this.chatId} .modal.show .modal-dialog {
-        transform: none !important;
-      }
-
-      #${this.chatId} .modal-dialog {
-        position: relative !important;
-        width: auto !important;
-        margin: 0.5rem !important;
-        pointer-events: none !important;
-      }
-
-      #${this.chatId} .modal-dialog-centered {
-        display: flex !important;
-        align-items: center !important;
-        min-height: calc(100% - 1rem) !important;
-      }
-
-      #${this.chatId} .modal-content {
-        position: relative !important;
-        display: flex !important;
-        flex-direction: column !important;
-        width: 100% !important;
-        color: #212529 !important;
-        pointer-events: auto !important;
-        background-color: #fff !important;
-        background-clip: padding-box !important;
-        border: 1px solid rgba(0, 0, 0, 0.175) !important;
-        border-radius: 0.5rem !important;
-        outline: 0 !important;
-        box-shadow: 0 0.5rem 1rem rgba(0, 0, 0, 0.15) !important;
-      }
-
-      #${this.chatId} .modal-header {
-        display: flex !important;
-        flex-shrink: 0 !important;
-        align-items: center !important;
-        justify-content: space-between !important;
-        padding: 1rem !important;
-        border-bottom: 1px solid #dee2e6 !important;
-        border-top-left-radius: calc(0.5rem - 1px) !important;
-        border-top-right-radius: calc(0.5rem - 1px) !important;
-      }
-
-      #${this.chatId} .modal-body {
-        position: relative !important;
-        flex: 1 1 auto !important;
-        padding: 1rem !important;
-      }
-
-      #${this.chatId} .modal-footer {
-        display: flex !important;
-        flex-shrink: 0 !important;
-        flex-wrap: wrap !important;
-        align-items: center !important;
-        justify-content: flex-end !important;
-        padding: 0.75rem !important;
-        border-top: 1px solid #dee2e6 !important;
-        border-bottom-right-radius: calc(0.5rem - 1px) !important;
-        border-bottom-left-radius: calc(0.5rem - 1px) !important;
-      }
-
-      #${this.chatId} .modal-title {
-        margin-bottom: 0 !important;
-        line-height: 1.5 !important;
-      }
-
-      #${this.chatId} .fade {
-        transition: opacity 0.15s linear !important;
-      }
-
-      #${this.chatId} .fade:not(.show) {
-        opacity: 0 !important;
-      }
-
-      #${this.chatId} .show {
-        display: block !important;
-      }
-
-      #${this.chatId} .typing-indicator {
-        opacity: 0.7 !important;
-      }
-
-      #${this.chatId} .typing-dots {
-        display: inline-flex !important;
-        align-items: center !important;
-      }
-
-      #${this.chatId} .typing-dots .dot {
-        width: 4px !important;
-        height: 4px !important;
-        margin: 0 1px !important;
-        background-color: #6c757d !important;
-        border-radius: 50% !important;
-        animation: typing 1.4s infinite ease-in-out !important;
-      }
-
-      #${this.chatId} .typing-dots .dot:nth-child(1) {
-        animation-delay: -0.32s !important;
-      }
-
-      #${this.chatId} .typing-dots .dot:nth-child(2) {
-        animation-delay: -0.16s !important;
-      }
-
-      @keyframes typing {
-        0%, 80%, 100% {
-          transform: scale(0) !important;
-        }
-        40% {
-          transform: scale(1) !important;
-        }
-      }
-
-      /* Estilos específicos para el botón flotante */
-      #${this.chatId}-floating-btn {
-        position: fixed !important;
-        z-index: 1000 !important;
-        border: none !important;
-        border-radius: 50% !important;
-        cursor: pointer !important;
-        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15) !important;
-        transition: all 0.3s ease !important;
-        background-color: ${this.primaryColor} !important;
-        color: white !important;
-        display: flex !important;
-        align-items: center !important;
-        justify-content: center !important;
-        width: ${this.buttonSize} !important;
-        height: ${this.buttonSize} !important;
-        bottom: ${this.buttonPosition.bottom} !important;
-        right: ${this.buttonPosition.right} !important;
-      }
-
-      #${this.chatId}-floating-btn:hover {
-        transform: scale(1.1) !important;
-        box-shadow: 0 6px 20px rgba(0, 0, 0, 0.2) !important;
-      }
-
-      /* Estilos específicos para el panel de chat */
-      #${this.chatId}-chat-panel {
-        position: fixed !important;
-        z-index: 999 !important;
-        background: white !important;
-        border-radius: 12px !important;
-        box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1) !important;
-        display: flex !important;
-        flex-direction: column !important;
-        width: ${this.chatWidth} !important;
-        max-width: ${this.chatMaxWidth} !important;
-        height: ${this.chatHeight} !important;
-        max-height: ${this.chatMaxHeight} !important;
-        bottom: ${this.buttonPosition.bottom} !important;
-        right: ${this.buttonPosition.right} !important;
-        font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif !important;
-      }
-
-      #${this.chatId}-chat-panel.fullscreen {
-        width: 100vw !important;
-        height: 100vh !important;
-        max-width: 100vw !important;
-        max-height: 100vh !important;
-        bottom: 0 !important;
-        right: 0 !important;
-        border-radius: 0 !important;
-      }
-
-      /* Estilos para el header del chat */
-      #${this.chatId}-chat-header {
-        background-color: ${this.headerBgColor} !important;
-        color: ${this.headerTextColor} !important;
-        padding: 1rem !important;
-        border-top-left-radius: 12px !important;
-        border-top-right-radius: 12px !important;
-        border-bottom: 1px solid rgba(255, 255, 255, 0.1) !important;
-      }
-
-      /* Estilos para el área de mensajes */
-      #${this.chatId}-messages-container {
-        flex: 1 !important;
-        overflow-y: auto !important;
-        padding: 1rem !important;
-        background-color: #f8f9fa !important;
-        height: ${this.messagesHeight} !important;
-      }
-
-      /* Estilos para el área de input */
-      #${this.chatId}-input-container {
-        padding: 1rem !important;
-        background: white !important;
-        border-top: 1px solid #dee2e6 !important;
-        border-bottom-left-radius: 12px !important;
-        border-bottom-right-radius: 12px !important;
-      }
-
-      /* Estilos para el footer */
-      #${this.chatId}-chat-footer {
-        padding: 0.5rem 1rem !important;
-        background-color: #f8f9fa !important;
-        border-top: 1px solid #dee2e6 !important;
-        font-size: 0.75rem !important;
-        color: #6c757d !important;
-        text-align: center !important;
-      }
-
-      /* Responsive */
-      @media (max-width: 768px) {
-        #${this.chatId}-chat-panel {
-          width: 95vw !important;
-          height: 80vh !important;
-          max-width: 95vw !important;
-          max-height: 80vh !important;
-          bottom: 10px !important;
-          right: 10px !important;
-        }
-
-        #${this.chatId}-chat-panel.fullscreen {
-          width: 100vw !important;
-          height: 100vh !important;
-          bottom: 0 !important;
-          right: 0 !important;
-        }
-      }
-
-      /* Aislamiento completo del chat */
-      #${this.chatId} {
-        all: initial !important;
-        font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif !important;
-        font-size: 14px !important;
-        line-height: 1.5 !important;
-        color: #212529 !important;
-        box-sizing: border-box !important;
-        isolation: isolate !important;
-      }
-
-      #${this.chatId} * {
-        box-sizing: border-box !important;
-      }
-
-      /* Reset específico para elementos del chat */
-      #${this.chatId} button,
-      #${this.chatId} input,
-      #${this.chatId} textarea,
-      #${this.chatId} select {
-        font-family: inherit !important;
-        font-size: inherit !important;
-        line-height: inherit !important;
-        color: inherit !important;
-      }
-
-      /* Asegurar que los estilos del chat no afecten elementos externos */
-      #${this.chatId}-floating-btn,
-      #${this.chatId}-chat-panel,
-      #${this.chatId}-modal {
-        contain: layout style paint !important;
-      }
-    `;
-    
-    style.textContent = css;
-    document.head.appendChild(style);
   }
 
   _getCurrentTime() {
@@ -1176,12 +630,11 @@ class ChatBot {
 
   _renderFloatingButton() {
     this.floatingBtn = document.createElement("button");
-    this.floatingBtn.id = `${this.chatId}-floating-btn`;
     this.floatingBtn.type = "button";
     this.floatingBtn.title = "Abrir chat";
     
     // Tamaño del botón según dispositivo y configuración personalizada
-    const buttonSize = this.isMobile ? "120px" : this.buttonSize;
+    const buttonSize = this.isMobile ? "60px" : this.buttonSize;
     const iconSize = this.isMobile ? "48" : "24";
     
     // Usar ícono personalizado si está disponible, sino usar el SVG por defecto
@@ -1191,8 +644,26 @@ class ChatBot {
       this.floatingBtn.innerHTML = `<svg xmlns="http://www.w3.org/2000/svg" fill="white" width="${iconSize}" height="${iconSize}" viewBox="0 0 24 24"><path d="M20 2H4a2 2 0 0 0-2 2v18l4-4h14a2 2 0 0 0 2-2V4a2 2 0 0 0-2-2z"/></svg>`;
     }
     
-    // Usar clases CSS encapsuladas en lugar de estilos inline
-    this.floatingBtn.className = `${this.chatId}-floating-btn`;
+    // Aplicar estilos directamente para evitar conflictos
+    this.floatingBtn.style.position = "fixed";
+    this.floatingBtn.style.bottom = this.buttonPosition.bottom || "24px";
+    this.floatingBtn.style.right = this.buttonPosition.right || "24px";
+    this.floatingBtn.style.top = this.buttonPosition.top || "auto";
+    this.floatingBtn.style.left = this.buttonPosition.left || "auto";
+    this.floatingBtn.style.transform = this.buttonPosition.transform || "none";
+    this.floatingBtn.style.backgroundColor = this.iconButton && this.iconButton !== this.bot.img ? 'transparent' : this.primaryColor;
+    this.floatingBtn.style.border = "none";
+    this.floatingBtn.style.borderRadius = "50%";
+    this.floatingBtn.style.width = buttonSize;
+    this.floatingBtn.style.height = buttonSize;
+    this.floatingBtn.style.cursor = "pointer";
+    this.floatingBtn.style.boxShadow = `0 4px 10px ${this._hexToRgba(this.primaryColor, 0.5)}`;
+    this.floatingBtn.style.display = this.iconButton && this.iconButton !== this.bot.img ? 'block' : 'flex';
+    this.floatingBtn.style.alignItems = "center";
+    this.floatingBtn.style.justifyContent = "center";
+    this.floatingBtn.style.zIndex = "1050";
+    this.floatingBtn.style.transition = "transform 0.2s ease";
+    this.floatingBtn.style.overflow = "hidden";
     
     document.body.appendChild(this.floatingBtn);
 
@@ -1211,42 +682,68 @@ class ChatBot {
 
   _renderChatPanel() {
     this.chatPanel = document.createElement("div");
-    this.chatPanel.id = `${this.chatId}-chat-panel`;
-    this.chatPanel.className = `${this.chatId} card shadow`;
+    this.chatPanel.className = "card shadow";
     
     // Aplicar tamaño inicial
     this._updateChatPanelSize();
 
     this.chatPanel.innerHTML = `
-      <div id="${this.chatId}-chat-header" class="card-header d-flex justify-content-between align-items-center">
+      <div class="card-header d-flex justify-content-between align-items-center" style="
+        background-color: ${this.headerBgColor};
+        color: ${this.headerTextColor};
+        border-radius: ${this.isFullscreen ? '0' : '0.375rem 0.375rem 0 0'};
+      ">
         <div class="d-flex align-items-center">
           <img src="${this.bot.img}" alt="${this.bot.name}" class="rounded-circle me-2" style="width: 32px; height: 32px; object-fit: cover;">
           <h5 class="mb-0">${this.botName}</h5>
         </div>
         <div class="d-flex align-items-center">
-          <button type="button" class="btn btn-sm text-white" id="${this.chatId}-clear-history-btn" title="Clear History">
-              <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-trash" viewBox="0 0 16 16">
-                <path d="M5.5 5.5A.5.5 0 0 1 6 6v6a.5.5 0 0 1-1 0V6a.5.5 0 0 1 .5-.5zm2.5 0a.5.5 0 0 1 .5.5v6a.5.5 0 0 1-1 0V6a.5.5 0 0 1 .5-.5zm3 .5a.5.5 0 0 0-1 0v6a.5.5 0 0 0 1 0V6z"/>
-                <path fill-rule="evenodd" d="M14.5 3a1 1 0 0 1-1 1H13v9a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V4h-.5a1 1 0 0 1-1-1V2a1 1 0 0 1 1-1H6a1 1 0 0 1 1-1h2a1 1 0 0 1 1 1h3.5a1 1 0 0 1 1 1v1zM4.118 4 4 4.059V13a1 1 0 0 0 1 1h6a1 1 0 0 0 1-1V4.059L11.882 4H4.118zM2.5 3V2h11v1h-11z"/>
+          <div class="dropdown">
+            <button type="button" class="btn btn-sm text-white dropdown-toggle" id="actions-menu" data-bs-toggle="dropdown" aria-expanded="false" title="Acciones">
+              <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-three-dots-vertical" viewBox="0 0 16 16">
+                <path d="M9.5 13a1.5 1.5 0 1 1-3 0 1.5 1.5 0 0 1 3 0zm0-5a1.5 1.5 0 1 1-3 0 1.5 1.5 0 0 1 3 0zm0-5a1.5 1.5 0 1 1-3 0 1.5 1.5 0 0 1 3 0z"/>
               </svg>
             </button>
-          ${this.fullscreenEnabled ? `
-            <button type="button" class="btn btn-sm text-secondary" id="${this.chatId}-fullscreen-toggle" title="${this.isFullscreen ? 'Minimizar' : 'Pantalla completa'}">
-              <svg class="w-6 h-6 text-gray-800 dark:text-white" aria-hidden="true" xmlns="http://www.w3.org/2000/svg" width="24" height="24" fill="none" viewBox="0 0 24 24">
-  <path stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 4H4m0 0v4m0-4 5 5m7-5h4m0 0v4m0-4-5 5M8 20H4m0 0v-4m0 4 5-5m7 5h4m0 0v-4m0 4-5-5"/>
-</svg>
-
-            </button>
-          ` : ''}
-          <button type="button" class="btn-close btn-close-white" aria-label="Cerrar"></button>
+            <ul class="dropdown-menu dropdown-menu-end" aria-labelledby="actions-menu">
+              <li>
+                <button class="dropdown-item" type="button" id="clear-history-btn">
+                  <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-trash me-2" viewBox="0 0 16 16">
+                    <path d="M5.5 5.5A.5.5 0 0 1 6 6v6a.5.5 0 0 1-1 0V6a.5.5 0 0 1 .5-.5zm2.5 0a.5.5 0 0 1 .5.5v6a.5.5 0 0 1-1 0V6a.5.5 0 0 1 .5-.5zm3 .5a.5.5 0 0 0-1 0v6a.5.5 0 0 0 1 0V6z"/>
+                    <path fill-rule="evenodd" d="M14.5 3a1 1 0 0 1-1 1H13v9a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V4h-.5a1 1 0 0 1-1-1V2a1 1 0 0 1 1-1H6a1 1 0 0 1 1-1h2a1 1 0 0 1 1 1h3.5a1 1 0 0 1 1 1v1zM4.118 4 4 4.059V13a1 1 0 0 0 1 1h6a1 1 0 0 0 1-1V4.059L11.882 4H4.118zM2.5 3V2h11v1h-11z"/>
+                  </svg>
+                  Limpiar historial
+                </button>
+              </li>
+              ${this.fullscreenEnabled ? `
+              <li>
+                <button class="dropdown-item" type="button" id="fullscreen-toggle">
+                  <svg class="me-2" aria-hidden="true" xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" viewBox="0 0 24 24">
+                    <path stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 4H4m0 0v4m0-4 5 5m7-5h4m0 0v4m0-4-5 5M8 20H4m0 0v-4m0 4 5-5m7 5h4m0 0v-4m0 4-5-5"/>
+                  </svg>
+                  ${this.isFullscreen ? 'Minimizar' : 'Pantalla completa'}
+                </button>
+              </li>
+              ` : ''}
+              <li><hr class="dropdown-divider"></li>
+              <li>
+                <button class="dropdown-item" type="button" id="chat-info-btn">
+                  <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-info-circle me-2" viewBox="0 0 16 16">
+                    <path d="M8 15A7 7 0 1 1 8 1a7 7 0 0 1 0 14zm0 1A8 8 0 1 0 8 0a8 8 0 0 0 0 16z"/>
+                    <path d="m8.93 6.588-2.29.287-.082.38.45.083c.294.07.352.176.288.469l-.738 3.468c-.194.897.105 1.319.808 1.319.545 0 1.178-.252 1.465-.598l.088-.416c-.2.176-.492.246-.686.246-.275 0-.375-.193-.304-.533L8.93 6.588zM9 4.5a1 1 0 1 1-2 0 1 1 0 0 1 2 0z"/>
+                  </svg>
+                  Información del chat
+                </button>
+              </li>
+            </ul>
+          </div>
+          <button type="button" class="btn-close btn-close-white ms-2" aria-label="Cerrar"></button>
         </div>
       </div>
-      <div id="${this.chatId}-messages-container" class="card-body overflow-auto">
-      </div>
-      <div id="${this.chatId}-input-container" class="card-footer bg-white">
-        <form id="${this.chatId}-chat-form" class="d-flex gap-2 align-items-center" autocomplete="off" novalidate>
+      <div class="card-body overflow-auto" style="flex-grow: 1; ${this.isFullscreen ? 'height: calc(100vh - 140px);' : `height: ${this.messagesHeight};`}" id="chat-messages"></div>
+      <div class="card-footer bg-white" style="border-radius: ${this.isFullscreen ? '0' : '0 0 0.375rem 0.375rem'};">
+        <form id="chat-form" class="d-flex gap-2 align-items-center" autocomplete="off" novalidate>
           <input
-            id="${this.chatId}-chat-input"
+            id="chat-input"
             type="text"
             class="form-control rounded-pill"
             placeholder="Escribe un mensaje..."
@@ -1254,9 +751,10 @@ class ChatBot {
             required
           />
           <button
-            id="${this.chatId}-chat-send"
+            id="chat-send"
             type="submit"
-            class="btn btn-primary rounded-pill px-2 align-items-center"
+            class="btn rounded-pill px-2 align-items-center"
+            style="background-color: ${this.primaryColor}; color: white;"
             disabled
           >
             
@@ -1272,17 +770,17 @@ class ChatBot {
     // Actualizar el footer después de renderizar el panel
     this._updateFooter();
 
-    this.messagesContainer = this.chatPanel.querySelector(`#${this.chatId}-messages-container`);
-    this.form = this.chatPanel.querySelector(`#${this.chatId}-chat-form`);
-    this.input = this.chatPanel.querySelector(`#${this.chatId}-chat-input`);
-    this.sendButton = this.chatPanel.querySelector(`#${this.chatId}-chat-send`);
+    this.messagesContainer = this.chatPanel.querySelector("#chat-messages");
+    this.form = this.chatPanel.querySelector("#chat-form");
+    this.input = this.chatPanel.querySelector("#chat-input");
+    this.sendButton = this.chatPanel.querySelector("#chat-send");
     this.closeBtn = this.chatPanel.querySelector(".btn-close");
-    this.clearHistoryBtn = this.chatPanel.querySelector(`#${this.chatId}-clear-history-btn`);
+    this.clearHistoryBtn = this.chatPanel.querySelector("#clear-history-btn");
     
     this._renderConfirmationModal();
 
     if (this.fullscreenEnabled) {
-      this.fullscreenToggle = this.chatPanel.querySelector(`#${this.chatId}-fullscreen-toggle`);
+      this.fullscreenToggle = this.chatPanel.querySelector("#fullscreen-toggle");
       if (this.fullscreenToggle) {
         this.fullscreenToggle.addEventListener("click", () => {
           this._toggleFullscreen();
@@ -1301,12 +799,17 @@ class ChatBot {
 
     this.closeBtn.addEventListener("click", () => this._hideChatPanel());
     this.clearHistoryBtn.addEventListener("click", () => this._showConfirmationModal());
+    
+    // Agregar event listener para el botón de información del chat
+    const chatInfoBtn = this.chatPanel.querySelector("#chat-info-btn");
+    if (chatInfoBtn) {
+      chatInfoBtn.addEventListener("click", () => this._showChatInfo());
+    }
   }
 
   _renderConfirmationModal() {
     this.modal = document.createElement("div");
-    this.modal.id = `${this.chatId}-modal`;
-    this.modal.className = `${this.chatId} modal fade`;
+    this.modal.className = "modal fade";
     this.modal.tabIndex = -1;
     this.modal.innerHTML = `
       <div class="modal-dialog modal-dialog-centered">
@@ -1349,6 +852,56 @@ class ChatBot {
     }
   }
 
+  _showChatInfo() {
+    const cacheStatus = this.getCacheStatus();
+    const regStatus = this.getRegistrationStatus();
+    
+    const infoModal = document.createElement("div");
+    infoModal.className = "modal fade";
+    infoModal.tabIndex = -1;
+    infoModal.innerHTML = `
+      <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content">
+          <div class="modal-header border-0">
+            <h5 class="modal-title">Información del Chat</h5>
+            <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+          </div>
+          <div class="modal-body">
+            <div class="row">
+              <div class="justify-content-center text-center">
+                <h6>Bot</h6>
+                <img src="${this.bot.img}" alt="${this.botName}" class="rounded-circle mb-3" style="width: 80px; height: 80px; object-fit: cover;">
+                <p>${this.botName}</p>
+                <p>${this.testMode ? '🧪 Test' : '🌐 Producción'}</p>
+              </div>
+              
+              ${this.license.showFooter ? `
+              <div class="d-flex justify-content-center">
+                <small class="text-muted text-center my-3 px-2" style="font-size: 16px;">
+                  <a href="${this.license.url}" target="_blank">
+                    <img class="me-2" src="${this.license.logo}" alt="${this.license.name}" style="width: 20px; height: 20px; object-fit: cover;">
+                    <span class="text-muted">Powered by ${this.license.name ?? ""}</span>
+                  </a>
+                </small>
+              </div>
+              ` : ''}
+            </div>
+          </div>
+        </div>
+      </div>
+    `;
+    
+    document.body.appendChild(infoModal);
+    
+    const modal = new bootstrap.Modal(infoModal);
+    modal.show();
+    
+    // Limpiar el modal del DOM después de cerrarlo
+    infoModal.addEventListener("hidden.bs.modal", () => {
+      document.body.removeChild(infoModal);
+    });
+  }
+
   _toggleFullscreen() {
     // Solo permitir pantalla completa si está habilitado
     if (!this.fullscreenEnabled) return;
@@ -1356,21 +909,19 @@ class ChatBot {
     this.isFullscreen = !this.isFullscreen;
     this._updateChatPanelSize();
     
-    // Actualizar ícono del botón
+    // Actualizar ícono y texto del botón en el menú dropdown
     if (this.fullscreenToggle) {
-      this.fullscreenToggle.innerHTML = `
-          <svg class="w-6 h-6 text-gray-800 dark:text-white" aria-hidden="true" xmlns="http://www.w3.org/2000/svg" width="24" height="24" fill="none" viewBox="0 0 24 24">
+      const iconSvg = this.isFullscreen ? `
+        <svg class="me-2" aria-hidden="true" xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" viewBox="0 0 24 24">
+          <path stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 9h4m0 0V5m0 4L4 4m15 5h-4m0 0V5m0 4 5-5M5 15h4m0 0v4m0-4-5 5m15-5h-4m0 0v4m0-4 5 5"/>
+        </svg>
+      ` : `
+        <svg class="me-2" aria-hidden="true" xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" viewBox="0 0 24 24">
           <path stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 4H4m0 0v4m0-4 5 5m7-5h4m0 0v4m0-4-5 5M8 20H4m0 0v-4m0 4 5-5m7 5h4m0 0v-4m0 4-5-5"/>
-          </svg>
-        `;
-      if (this.isFullscreen) {
-        this.fullscreenToggle.innerHTML = `
-          <svg class="w-6 h-6 text-gray-800 dark:text-white" aria-hidden="true" xmlns="http://www.w3.org/2000/svg" width="24" height="24" fill="none" viewBox="0 0 24 24">
-            <path stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 9h4m0 0V5m0 4L4 4m15 5h-4m0 0V5m0 4 5-5M5 15h4m0 0v4m0-4-5 5m15-5h-4m0 0v4m0-4 5 5"/>
-          </svg>
-
-        `;
-      }
+        </svg>
+      `;
+      
+      this.fullscreenToggle.innerHTML = iconSvg + (this.isFullscreen ? 'Minimizar' : 'Pantalla completa');
     }
   }
 
@@ -1639,6 +1190,7 @@ class ChatBot {
     }
   }
 
+
   _updateBotUI() {
     if (!this.chatPanel) return;
     
@@ -1768,7 +1320,7 @@ class ChatBot {
     </div>
   `;
     
-    // Estilos para los puntos animados
+    // Estilos para los puntos animados y dropdown personalizado
     const dotsStyle = document.createElement("style");
     dotsStyle.textContent = `
       .typing-dots {
@@ -1960,12 +1512,6 @@ class ChatBot {
     if (this.floatingBtn) this.floatingBtn.remove();
     if (this.chatPanel) this.chatPanel.remove();
     if (this.modal) this.modal.remove();
-
-    // Remove encapsulated styles
-    const styleElement = document.getElementById(`${this.chatId}-styles`);
-    if (styleElement) {
-      styleElement.remove();
-    }
 
     // Remove event listeners
     window.removeEventListener('resize', this._boundHandleResize);

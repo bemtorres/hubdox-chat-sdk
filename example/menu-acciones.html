@@ -1,0 +1,251 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Menú de Acciones - Hubdox Chat SDK</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 20px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+        }
+        .container {
+            max-width: 800px;
+            margin: 0 auto;
+            background: white;
+            padding: 30px;
+            border-radius: 15px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.2);
+        }
+        h1 {
+            color: #333;
+            text-align: center;
+            margin-bottom: 30px;
+            font-size: 2.5em;
+        }
+        .feature {
+            background: #f8f9fa;
+            padding: 20px;
+            border-radius: 10px;
+            margin-bottom: 20px;
+            border-left: 5px solid #007bff;
+        }
+        .feature h3 {
+            color: #007bff;
+            margin-top: 0;
+        }
+        .code {
+            background: #2d3748;
+            color: #e2e8f0;
+            padding: 20px;
+            border-radius: 8px;
+            font-family: 'Courier New', monospace;
+            font-size: 14px;
+            overflow-x: auto;
+            margin: 15px 0;
+        }
+        .menu-preview {
+            background: #e7f3ff;
+            padding: 20px;
+            border-radius: 10px;
+            margin: 20px 0;
+            border: 2px dashed #007bff;
+        }
+        .menu-item {
+            display: flex;
+            align-items: center;
+            padding: 10px;
+            margin: 5px 0;
+            background: white;
+            border-radius: 5px;
+            border: 1px solid #dee2e6;
+        }
+        .menu-item svg {
+            margin-right: 10px;
+            width: 16px;
+            height: 16px;
+        }
+        .divider {
+            border-top: 1px solid #dee2e6;
+            margin: 10px 0;
+        }
+        .btn {
+            background: #007bff;
+            color: white;
+            padding: 10px 20px;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            margin: 5px;
+            font-size: 14px;
+        }
+        .btn:hover {
+            background: #0056b3;
+        }
+        .btn-success {
+            background: #28a745;
+        }
+        .btn-success:hover {
+            background: #218838;
+        }
+        .controls {
+            text-align: center;
+            margin: 20px 0;
+            padding: 20px;
+            background: #f8f9fa;
+            border-radius: 10px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🎛️ Menú de Acciones</h1>
+        
+        <div class="feature">
+            <h3>✨ Nueva Funcionalidad</h3>
+            <p>Se ha implementado un menú desplegable en el header del chat que incluye todas las acciones disponibles de forma organizada y accesible.</p>
+        </div>
+
+        <div class="menu-preview">
+            <h4>📋 Vista Previa del Menú</h4>
+            <div class="menu-item">
+                <svg xmlns="http://www.w3.org/2000/svg" fill="currentColor" viewBox="0 0 16 16">
+                    <path d="M5.5 5.5A.5.5 0 0 1 6 6v6a.5.5 0 0 1-1 0V6a.5.5 0 0 1 .5-.5zm2.5 0a.5.5 0 0 1 .5.5v6a.5.5 0 0 1-1 0V6a.5.5 0 0 1 .5-.5zm3 .5a.5.5 0 0 0-1 0v6a.5.5 0 0 0 1 0V6z"/>
+                    <path fill-rule="evenodd" d="M14.5 3a1 1 0 0 1-1 1H13v9a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V4h-.5a1 1 0 0 1-1-1V2a1 1 0 0 1 1-1H6a1 1 0 0 1 1-1h2a1 1 0 0 1 1 1h3.5a1 1 0 0 1 1 1v1zM4.118 4 4 4.059V13a1 1 0 0 0 1 1h6a1 1 0 0 0 1-1V4.059L11.882 4H4.118zM2.5 3V2h11v1h-11z"/>
+                </svg>
+                🗑️ Limpiar historial
+            </div>
+            <div class="menu-item">
+                <svg viewBox="0 0 24 24" fill="currentColor">
+                    <path stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 4H4m0 0v4m0-4 5 5m7-5h4m0 0v4m0-4-5 5M8 20H4m0 0v-4m0 4 5-5m7 5h4m0 0v-4m0 4-5-5"/>
+                </svg>
+                📺 Pantalla completa
+            </div>
+            <div class="divider"></div>
+            <div class="menu-item">
+                <svg xmlns="http://www.w3.org/2000/svg" fill="currentColor" viewBox="0 0 16 16">
+                    <path d="M8 15A7 7 0 1 1 8 1a7 7 0 0 1 0 14zm0 1A8 8 0 1 0 8 0a8 8 0 0 0 0 16z"/>
+                    <path d="m8.93 6.588-2.29.287-.082.38.45.083c.294.07.352.176.288.469l-.738 3.468c-.194.897.105 1.319.808 1.319.545 0 1.178-.252 1.465-.598l.088-.416c-.2.176-.492.246-.686.246-.275 0-.375-.193-.304-.533L8.93 6.588zM9 4.5a1 1 0 1 1-2 0 1 1 0 0 1 2 0z"/>
+                </svg>
+                📊 Información del chat
+            </div>
+        </div>
+
+        <div class="feature">
+            <h3>🔧 Acciones Disponibles</h3>
+            <ul>
+                <li><strong>🗑️ Limpiar historial:</strong> Elimina todos los mensajes del chat con confirmación</li>
+                <li><strong>📺 Pantalla completa:</strong> Alterna entre modo normal y pantalla completa</li>
+                <li><strong>📊 Información del chat:</strong> Muestra detalles del usuario, bot, caché y configuración</li>
+            </ul>
+        </div>
+
+        <div class="feature">
+            <h3>💡 Características del Menú</h3>
+            <ul>
+                <li><strong>🎯 Acceso fácil:</strong> Un solo botón con tres puntos verticales</li>
+                <li><strong>📱 Responsive:</strong> Se adapta a diferentes tamaños de pantalla</li>
+                <li><strong>🎨 Iconos intuitivos:</strong> Cada acción tiene su icono representativo</li>
+                <li><strong>🔒 Confirmación:</strong> Acciones destructivas requieren confirmación</li>
+                <li><strong>📊 Información detallada:</strong> Modal con toda la información del sistema</li>
+            </ul>
+        </div>
+
+        <div class="controls">
+            <h3>🎮 Controles de Prueba</h3>
+            <button class="btn" onclick="toggleChat()">💬 Mostrar/Ocultar Chat</button>
+            <button class="btn btn-success" onclick="showInfo()">📊 Ver Información</button>
+            <button class="btn" onclick="clearHistory()">🗑️ Limpiar Historial</button>
+        </div>
+
+        <div class="feature">
+            <h3>🔍 Cómo Usar</h3>
+            <ol>
+                <li>Haz clic en el botón de tres puntos (⋮) en el header del chat</li>
+                <li>Selecciona la acción que deseas realizar</li>
+                <li>Para acciones destructivas, confirma en el modal</li>
+                <li>La información del chat se muestra en un modal detallado</li>
+            </ol>
+        </div>
+
+        <!-- Chat Bot -->
+        <script src="../src/index.js"></script>
+        <script>
+            const chat = new ChatBot({
+                baseUrl: 'https://hubdocs.test',
+                apiKey: 'Ae812043-87ed-4bde-ba4a-0daaff8aadad',
+                tenant: 'nomed',
+                user: { 
+                    name: 'Benjamín', 
+                    email: 'benja@hubdox.com', 
+                    photo: "https://res.cloudinary.com/dienilw2p/image/upload/v1747635921/hubdox/lgvqg0648leq6meeusid.png" 
+                },
+                bot: { 
+                    name: 'Boti', 
+                    img: "../src/img/bot_icon.png"  
+                },
+                options: {
+                    show: true,
+                    register: true,
+                    cache: true,
+                    testMode: false,
+                },
+                custom: {
+                    primaryColor: "#007bff",
+                    botName: "Asistente Virtual",
+                    headerBgColor: "#007bff",
+                    headerTextColor: "#fff",
+                    sendButtonText: "",
+                    chatWidth: "400px",
+                    chatHeight: "60vh",
+                    chatMaxWidth: "90vw",
+                    chatMaxHeight: "80vh",
+                    fullscreenEnabled: true,
+                    messagesHeight: "350px",
+                    buttonSize: "56px",
+                    position: {
+                        bottom: "24px",
+                        right: "24px"
+                    }
+                }
+            });
+
+            // Funciones de control
+            function toggleChat() {
+                chat.toggleChatPanel();
+            }
+
+            function showInfo() {
+                // Simular clic en el botón de información
+                const infoBtn = document.querySelector("#chat-info-btn");
+                if (infoBtn) {
+                    infoBtn.click();
+                } else {
+                    alert("Abre el chat primero y luego haz clic en el menú de acciones (⋮)");
+                }
+            }
+
+            function clearHistory() {
+                // Simular clic en el botón de limpiar historial
+                const clearBtn = document.querySelector("#clear-history-btn");
+                if (clearBtn) {
+                    clearBtn.click();
+                } else {
+                    alert("Abre el chat primero y luego haz clic en el menú de acciones (⋮)");
+                }
+            }
+
+            // Mostrar instrucciones después de 2 segundos
+            setTimeout(() => {
+                console.log("=== INSTRUCCIONES ===");
+                console.log("1. Haz clic en el botón flotante del chat");
+                console.log("2. En el header, haz clic en el menú de acciones (⋮)");
+                console.log("3. Prueba las diferentes opciones disponibles");
+                console.log("=====================");
+            }, 2000);
+        </script>
+    </div>
+</body>
+</html> 
