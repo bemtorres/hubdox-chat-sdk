@@ -1,6 +1,6 @@
 {
   "name": "hubdox-chat-sdk",
-  "version": "1.4.0",
+  "version": "1.4.1",
   "description": "SDK de JavaScript para integrar chatbots flotantes en sitios web con soporte para registro de usuarios y APIs personalizables",
   "main": "src/index.js",
   "scripts": {
