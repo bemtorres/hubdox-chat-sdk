@@ -1,0 +1,276 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Test de Respuestas Traducidas - Hubdox Chat SDK</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 20px;
+            background: #f5f5f5;
+        }
+        .container {
+            max-width: 800px;
+            margin: 0 auto;
+            background: white;
+            padding: 20px;
+            border-radius: 10px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+        h1 {
+            color: #333;
+            text-align: center;
+        }
+        .controls {
+            text-align: center;
+            margin: 20px 0;
+            padding: 15px;
+            background: #f8f9fa;
+            border-radius: 5px;
+        }
+        .btn {
+            background: #007bff;
+            color: white;
+            padding: 8px 16px;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            margin: 5px;
+        }
+        .btn:hover {
+            background: #0056b3;
+        }
+        .btn-success {
+            background: #28a745;
+        }
+        .btn-warning {
+            background: #ffc107;
+            color: #212529;
+        }
+        .status {
+            background: #e9ecef;
+            padding: 10px;
+            border-radius: 4px;
+            margin: 10px 0;
+            font-family: monospace;
+            font-size: 12px;
+        }
+        .test-commands {
+            background: #f8f9fa;
+            padding: 15px;
+            border-radius: 5px;
+            margin: 15px 0;
+        }
+        .test-commands h4 {
+            margin-top: 0;
+            color: #007bff;
+        }
+        .test-commands ul {
+            margin: 10px 0;
+            padding-left: 20px;
+        }
+        .test-commands li {
+            margin: 5px 0;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🧪 Test de Respuestas Traducidas</h1>
+        
+        <div class="controls">
+            <button class="btn" onclick="initChat()">🚀 Inicializar Chat</button>
+            <button class="btn btn-success" onclick="changeToEnglish()">🇺🇸 Inglés</button>
+            <button class="btn btn-success" onclick="changeToSpanish()">🇪🇸 Español</button>
+            <button class="btn btn-success" onclick="changeToPortuguese()">🇧🇷 Portugués</button>
+            <button class="btn btn-warning" onclick="testCommands()">📝 Probar Comandos</button>
+            <button class="btn" onclick="showStatus()">📊 Estado</button>
+        </div>
+        
+        <div class="status" id="status">
+            Estado: No inicializado
+        </div>
+        
+        <div class="test-commands">
+            <h4>📋 Comandos de Prueba</h4>
+            <p><strong>Instrucciones:</strong></p>
+            <ol>
+                <li>Inicializa el chat</li>
+                <li>Cambia el idioma</li>
+                <li>Abre el chat y prueba estos comandos:</li>
+            </ol>
+            <ul>
+                <li><strong>Saludos:</strong> "hola", "hello", "hi"</li>
+                <li><strong>Ayuda:</strong> "ayuda", "help", "qué puedes hacer"</li>
+                <li><strong>Curiosidades:</strong> "curiosidad", "dato", "interesante"</li>
+                <li><strong>Cualquier otra cosa:</strong> Para ver respuestas genéricas</li>
+            </ul>
+        </div>
+        
+        <div style="text-align: center; margin-top: 20px;">
+            <p><strong>🎯 Objetivo:</strong> Verificar que las respuestas del bot en modo test se traduzcan correctamente al cambiar el idioma.</p>
+        </div>
+    </div>
+
+    <script src="../src/index.js"></script>
+    <script>
+        let chat;
+
+        function initChat() {
+            if (chat) {
+                chat.destroy();
+            }
+            
+            chat = new ChatBot({
+                baseUrl: 'https://hubdocs.test',
+                apiKey: 'test-key',
+                tenant: 'test',
+                user: {
+                    name: 'Test User',
+                    email: 'test@example.com'
+                },
+                bot: { 
+                    name: 'Bot de Test', 
+                    img: "../src/img/bot_icon.png"  
+                },
+                options: {
+                    show: true,
+                    register: false,
+                    cache: true,
+                    testMode: true,
+                    stream: false,
+                    devMode: true,
+                },
+                custom: {
+                    primaryColor: "#007bff",
+                    botName: "Bot de Test",
+                    headerBgColor: "#007bff",
+                    headerTextColor: "#fff",
+                    showTime: true,
+                    sound: false,
+                    reminderTimeout: 30000,
+                    language: 'es',
+                    position: {
+                        bottom: "24px",
+                        right: "24px"
+                    }
+                }
+            });
+            
+            console.log('✅ Chat inicializado con idioma:', chat.getLanguage());
+            updateStatus();
+            alert('Chat inicializado en modo test. Abre el chat y prueba cambiar el idioma, luego envía mensajes para ver las respuestas traducidas.');
+        }
+
+        function changeToEnglish() {
+            if (!chat) {
+                alert('Primero inicializa un chat');
+                return;
+            }
+            const success = chat.setLanguage('en');
+            if (success) {
+                console.log('✅ Cambiado a inglés');
+                updateStatus();
+                alert('Idioma cambiado a inglés. Las respuestas del bot ahora estarán en inglés.');
+            } else {
+                alert('Error al cambiar idioma');
+            }
+        }
+
+        function changeToSpanish() {
+            if (!chat) {
+                alert('Primero inicializa un chat');
+                return;
+            }
+            const success = chat.setLanguage('es');
+            if (success) {
+                console.log('✅ Cambiado a español');
+                updateStatus();
+                alert('Idioma cambiado a español. Las respuestas del bot ahora estarán en español.');
+            } else {
+                alert('Error al cambiar idioma');
+            }
+        }
+
+        function changeToPortuguese() {
+            if (!chat) {
+                alert('Primero inicializa un chat');
+                return;
+            }
+            const success = chat.setLanguage('pt');
+            if (success) {
+                console.log('✅ Cambiado a portugués');
+                updateStatus();
+                alert('Idioma cambiado a portugués. Las respuestas del bot ahora estarán en portugués.');
+            } else {
+                alert('Error al cambiar idioma');
+            }
+        }
+
+        function testCommands() {
+            if (!chat) {
+                alert('Primero inicializa un chat');
+                return;
+            }
+            
+            const commands = [
+                'hola',
+                'ayuda',
+                'curiosidad',
+                'hello',
+                'help',
+                'interesante'
+            ];
+            
+            let message = 'Comandos de prueba:\n\n';
+            commands.forEach((cmd, index) => {
+                message += `${index + 1}. "${cmd}"\n`;
+            });
+            
+            message += '\nEnvía estos comandos en el chat para ver las respuestas traducidas.';
+            
+            alert(message);
+        }
+
+        function showStatus() {
+            if (!chat) {
+                alert('Primero inicializa un chat');
+                return;
+            }
+            
+            const currentLang = chat.getLanguage();
+            const supported = chat.getSupportedLanguages();
+            
+            const statusText = `Idioma Actual: ${currentLang}
+Idiomas Soportados: ${supported.join(', ')}
+Modo Test: ${chat.testMode ? 'Activado' : 'Desactivado'}`;
+            
+            alert(statusText);
+            console.log('📊 Estado del chat:', { current: currentLang, supported, testMode: chat.testMode });
+        }
+
+        function updateStatus() {
+            if (chat) {
+                const currentLang = chat.getLanguage();
+                const supported = chat.getSupportedLanguages();
+                
+                document.getElementById('status').innerHTML = `
+<strong>Estado Actual:</strong><br>
+🌍 Idioma: ${currentLang}<br>
+📚 Soportados: ${supported.join(', ')}<br>
+💾 Caché: ${chat.cache ? '✅ Habilitado' : '❌ Deshabilitado'}<br>
+🧪 Modo Test: ${chat.testMode ? '✅ Activado' : '❌ Desactivado'}
+                `;
+            } else {
+                document.getElementById('status').innerHTML = 'Estado: Chat no inicializado';
+            }
+        }
+
+        // Inicializar chat por defecto
+        window.addEventListener('load', () => {
+            initChat();
+        });
+    </script>
+</body>
+</html> 

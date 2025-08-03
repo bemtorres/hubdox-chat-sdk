@@ -88,6 +88,13 @@
                         <p class="mb-0 mt-2">Sistema completo de testing para garantizar la calidad del código</p>
                     </div>
                     <div class="card-body">
+                        <div class="text-center mb-4">
+                            <h4>🎮 Controles de Prueba</h4>
+                            <button class="btn btn-primary me-2" onclick="showTestInfo()">📊 Ver Info de Tests</button>
+                            <button class="btn btn-success me-2" onclick="runTests()">🧪 Ejecutar Tests</button>
+                            <button class="btn" onclick="clearCacheAndReset()" style="background: #dc3545; color: white;">🔄 Limpiar Caché y Reiniciar</button>
+                        </div>
+                        
                         <div class="row">
                             <div class="col-md-6">
                                 <h3>📋 Tipos de Tests Implementados</h3>
@@ -382,6 +389,20 @@ describe('Registro de Usuario', () => {
                   '• Envío de mensajes\n' +
                   '• Interfaz de usuario\n' +
                   '• Manejo de errores');
+        }
+
+        // Función para limpiar caché y reiniciar
+        function clearCacheAndReset() {
+            // Limpiar caché
+            chat.clearCache();
+            
+            // Limpiar historial
+            chat.clearHistory();
+            
+            // Recargar desde caché (que ahora está vacío)
+            chat.reloadFromCache();
+            
+            alert("✅ Caché limpiado y chat reiniciado completamente.\n\nEl chat ahora está como nuevo, sin datos pegados.");
         }
     </script>
 </body>

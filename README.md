@@ -27,6 +27,88 @@ A lightweight and easy-to-use JavaScript SDK for integrating a floating chatbot 
 - **Markdown support**: Automatic rendering of Markdown text in bot responses.
 - **Simulated streaming**: Character-by-character typing effect to simulate real-time writing.
 - **Development mode**: Configurable logging system for development and production.
+- **Sound notifications**: Optional sound notification on the bot's first message.
+- **Auto-reminder system**: Automatically asks the user if they need help after a configurable timeout.
+- **Complete multi-language support**: 7 languages fully supported with comprehensive translations for all UI elements, messages, and test responses.
+- **Dynamic language switching**: Change language at runtime with automatic UI updates.
+- **Internationalization ready**: All texts use translation system, no hardcoded strings.
+
+## 🌍 Multi-Language Support
+
+The SDK includes a comprehensive multi-language system that supports 7 different languages with complete translations for all features:
+
+### Supported Languages
+
+- **Spanish (es)**: Default language with complete translations
+- **English (en)**: Complete English translations
+- **Portuguese (pt)**: Complete Portuguese translations
+- **Russian (ru)**: Complete Russian translations
+- **German (de)**: Complete German translations
+- **Chinese (zh)**: Complete Chinese translations
+- **Japanese (ja)**: Complete Japanese translations
+
+### Translation Coverage
+
+All UI elements and messages are fully translated:
+
+#### UI Elements
+- Button texts (Send, Clear history, Close, etc.)
+- Placeholders (Write a message...)
+- Modal titles and confirmations
+- Error messages and notifications
+- Footer text and branding
+
+#### Test Mode Messages
+- Welcome messages (4 variations)
+- Greeting messages (4 variations)
+- Curiosity facts (10 variations)
+- Help messages (4 variations)
+- Unknown question responses (4 variations)
+
+#### Registration System
+- Registration prompts and instructions
+- Name validation messages
+- Welcome and completion messages
+
+### Language Configuration
+
+```javascript
+const chat = new ChatBot({
+  // ... other options
+  custom: {
+    language: 'en',  // Change language
+    // language: 'pt',  // Portuguese
+    // language: 'ru',  // Russian
+    // language: 'de',  // German
+    // language: 'zh',  // Chinese
+    // language: 'ja',  // Japanese
+  }
+});
+```
+
+### Dynamic Language Switching
+
+```javascript
+// Change language at runtime
+chat.setLanguage('en'); // Returns true if successful, false if not
+
+// Get current language
+const currentLang = chat.getLanguage(); // 'es', 'en', 'pt', etc.
+
+// Get supported languages
+const supported = chat.getSupportedLanguages();
+// ['es', 'en', 'pt', 'ru', 'de', 'zh', 'ja']
+```
+
+### Language Features
+
+- **Default language**: Spanish (es)
+- **Dynamic switching**: Change language at runtime with automatic UI updates
+- **Complete translation**: All UI elements, messages, and placeholders are translated
+- **Persistent state**: Language preference is saved in cache
+- **Variable replacement**: Supports dynamic content like user names and bot names
+- **No hardcoded strings**: All texts use the translation system
+- **Test mode support**: All test responses are fully translated in all languages
 
 ## 📦 Installation
 
@@ -86,7 +168,7 @@ const chat = new ChatBot({
 | `register` | boolean | `false` | If `true`, shows a registration screen where the bot asks for the user's name before starting the chat. |
 | `show`     | boolean | `true`  | Shows or hides the chat widget on initialization.                           |
 | `cache`    | boolean | `true`  | Enables or disables caching of chat session and messages.                   |
-| `testMode` | boolean | `false` | Enables or disables test mode.                                             |
+| `testMode` | boolean | `false` | Enables or disables test mode with fully translated responses.             |
 | `stream`   | boolean | `false` | If `true`, simulates typing effect showing the message character by character. |
 | `devMode`  | boolean | `false` | Enables development logs. Should be `false` in production.                 |
 
@@ -118,11 +200,14 @@ const chat = new ChatBot({
 | `chatWidth`         | string  | `'400px'`      | The width of the chat panel on desktop.                                  |
 | `chatHeight`        | string  | `'60vh'`       | The height of the chat panel on desktop.                                 |
 | `chatMaxWidth`      | string  | `'90vw'`       | The maximum width of the chat panel on mobile.                           |
-| `chatMaxHeight`     | string  | `'60vh'`       | The maximum height of the chat panel on mobile.                          |
+| `chatMaxHeight`     | string  | `'90vh'`       | The maximum height of the chat panel on mobile.                          |
 | `messagesHeight`    | string  | `'350px'`      | The height of the messages container.                                    |
 | `buttonSize`        | string  | `'56px'`       | The size of the floating button.                                         |
 | `fullscreenEnabled` | boolean | `true`         | Enables or disables fullscreen mode on mobile.                           |
 | `showTime`          | boolean | `true`         | If `true`, shows the time in each chat message.                          |
+| `sound`             | boolean | `false`        | If `true`, plays a notification sound on the bot's first message.        |
+| `reminderTimeout`   | number  | `60000`        | Time in milliseconds before showing a reminder message (default: 60 seconds). |
+| `language`          | string  | `'es'`         | Language for the chat interface (es, en, pt, ru, de, zh, ja).           |
 | `position`          | object  | `{ bottom: '24px', right: '24px' }` | The position of the floating button with `top`, `bottom`, `left`, `right` and `transform` properties. |
 
 ## 📝 Examples
@@ -162,6 +247,40 @@ const chat = new ChatBot({
 </html>
 ```
 
+### Multi-Language Example
+
+```javascript
+const chat = new ChatBot({
+  baseUrl: 'https://api.mycompany.com',
+  apiKey: 'sk-1234567890abcdef',
+  tenant: 'mycompany-prod',
+  options: {
+    register: true,
+    testMode: true, // Test mode with translated responses
+  },
+  user: {
+    name: 'User',
+    email: 'user@mycompany.com',
+    photo: 'https://mycompany.com/avatars/default.jpg'
+  },
+  bot: {
+    name: 'AI Assistant',
+    img: 'https://mycompany.com/bots/assistant.jpg'
+  },
+  custom: {
+    language: 'en', // Set initial language
+    primaryColor: '#6366f1',
+    botName: 'Virtual Assistant',
+    headerBgColor: '#4f46e5',
+    headerTextColor: '#ffffff',
+    showTime: true
+  }
+});
+
+// Change language dynamically
+chat.setLanguage('pt'); // Switch to Portuguese
+```
+
 ### Registration Screen Example
 
 ```javascript
@@ -187,7 +306,8 @@ const chat = new ChatBot({
     headerBgColor: '#2c3e50',
     headerTextColor: '#ecf0f1',
     sendButtonText: 'Send Message',
-    showTime: true
+    showTime: true,
+    language: 'es' // Spanish interface
   }
 });
 ```
@@ -217,7 +337,8 @@ const chat = new ChatBot({
     headerBgColor: '#2c3e50',
     headerTextColor: '#ecf0f1',
     sendButtonText: 'Send Message',
-    showTime: true
+    showTime: true,
+    language: 'de' // German interface
   }
 });
 ```
@@ -248,7 +369,8 @@ const chat = new ChatBot({
     botName: 'Virtual Assistant',
     headerBgColor: '#4f46e5',
     headerTextColor: '#ffffff',
-    showTime: true
+    showTime: true,
+    language: 'ja' // Japanese interface
   }
 });
 ```
@@ -435,6 +557,55 @@ const status = chat.getRegistrationStatus();
 console.log(status);
 ```
 
+### `setLanguage(language)`
+
+Changes the chat interface language dynamically.
+
+```javascript
+// Change to English
+chat.setLanguage('en');
+
+// Change to Portuguese
+chat.setLanguage('pt');
+
+// Change to Russian
+chat.setLanguage('ru');
+```
+
+### `getLanguage()`
+
+Gets the current language.
+
+```javascript
+const currentLang = chat.getLanguage(); // Returns 'es', 'en', 'pt', etc.
+```
+
+### `getSupportedLanguages()`
+
+Gets the list of supported languages.
+
+```javascript
+const languages = chat.getSupportedLanguages();
+// Returns ['es', 'en', 'pt', 'ru', 'de', 'zh', 'ja']
+```
+
+### `setReminderTimeout(timeout)`
+
+Configures the reminder timeout.
+
+```javascript
+chat.setReminderTimeout(30000); // 30 seconds
+```
+
+### `getReminderStatus()`
+
+Gets the reminder system status.
+
+```javascript
+const status = chat.getReminderStatus();
+console.log(status);
+```
+
 ## 🎯 Registration Screen
 
 The new registration screen functionality clearly separates the registration process from normal chat, avoiding confusion and improving user experience.
@@ -474,15 +645,51 @@ const chat = new ChatBot({
 
 ## 🧪 Test Mode
 
-When `testMode: true` is enabled, the chat widget uses a predefined set of responses for testing purposes, without needing a live API.
+When `testMode: true` is enabled, the chat widget uses a predefined set of responses for testing purposes, without needing a live API. All responses are fully translated in all supported languages.
+
+### Test Mode Features
+
+- **Complete translations**: All test responses are available in 7 languages
+- **Dynamic responses**: Responses change based on user input keywords
+- **Realistic interactions**: Simulates real bot behavior
+- **No API required**: Perfect for development and testing
+
+### Test Response Categories
+
+1. **Welcome messages** (4 variations) - Shown during registration
+2. **Greeting messages** (4 variations) - For hello/hi messages
+3. **Curiosity facts** (10 variations) - For curiosity/dato questions
+4. **Help messages** (4 variations) - For help/ayuda questions
+5. **Unknown responses** (4 variations) - For unrecognized messages
+
+### Configuration
 
 ```javascript
 const chat = new ChatBot({
   // ... other options
   options: {
-    testMode: true,
+    testMode: true, // Enables test mode with translated responses
+  },
+  custom: {
+    language: 'en', // Test responses will be in English
   }
 });
+```
+
+### Example Test Interactions
+
+```javascript
+// User: "Hola" or "Hello"
+// Bot: Random greeting message in selected language
+
+// User: "Ayuda" or "Help"
+// Bot: Random help message in selected language
+
+// User: "Curiosidad" or "Interesting fact"
+// Bot: Random curiosity fact in selected language
+
+// User: "Random question"
+// Bot: Random unknown response in selected language
 ```
 
 ## 📝 Markdown Support
@@ -653,6 +860,12 @@ The SDK includes several example files for different use cases:
 - **`example/options-menu.html`**: Visual configurator with Bootstrap
 - **`example/options-menu-tailwind.html`**: Visual configurator with Tailwind CSS
 - **`example/registration-screen-example.html`**: Registration screen example
+- **`example/sound-test.html`**: Sound notification testing
+- **`example/reminder-test.html`**: Auto-reminder system testing
+- **`example/multilanguage-test.html`**: Multi-language system testing
+- **`example/server-limit-test.html`**: Server-side message limit testing
+- **`example/simple-language-test.html`**: Simple language switching test
+- **`example/test-language-test.html`**: Test mode with different languages
 - **`index.html`**: 30 different configuration examples
 
 ### Tests
@@ -668,13 +881,121 @@ The SDK includes several example files for different use cases:
 1. Clone the repository.
 2. Open `example/streaming-test.html` to test streaming.
 3. Open `example/text.html` to see all functionalities.
-4. Modify the configuration according to your needs.
+4. Open `example/multilanguage-test.html` to test language switching.
+5. Modify the configuration according to your needs.
 
 ### Production
 
 1. Include the script from CDN.
 2. Configure your API endpoint.
 3. Customize the appearance according to your brand.
+4. Set the appropriate language for your users.
+
+## 🔊 Sound Notifications
+
+The SDK includes an optional sound notification feature that plays when the bot sends its first message.
+
+### Configuration
+
+```javascript
+const chat = new ChatBot({
+  // ... other options
+  custom: {
+    sound: true,  // Enable sound notifications
+  }
+});
+```
+
+### Sound Features
+
+- **Disabled by default**: `sound: false`
+- **Plays only once**: Sound is reproduced only on the bot's first message
+- **Persistent state**: The sound state is saved in cache
+- **Fixed sound**: Uses the provided notification sound (cannot be modified)
+- **Volume control**: Plays at 50% volume for better user experience
+
+### Sound Attribution
+
+The notification sound used in this SDK is:
+
+**Sound Effect by [Universfield](https://pixabay.com/es/users/universfield-28281460/?utm_source=link-attribution&utm_medium=referral&utm_campaign=music&utm_content=352755) from [Pixabay](https://pixabay.com/sound-effects//?utm_source=link-attribution&utm_medium=referral&utm_campaign=music&utm_content=352755)**
+
+**URL**: `https://res.cloudinary.com/dhqqkf4hy/video/upload/v1754209978/new-notification-010-352755_jjgjfu.mp3`
+
+## ⏰ Auto-Reminder System
+
+The SDK includes an automatic reminder system that prompts the user if they haven't written anything for a configurable period.
+
+### Configuration
+
+```javascript
+const chat = new ChatBot({
+  // ... other options
+  custom: {
+    sound: true,             // Enable sound notifications
+    reminderTimeout: 30000,  // 30 seconds
+    // reminderTimeout: 60000,  // 60 seconds (default)
+    // reminderTimeout: 120000, // 2 minutes
+  }
+});
+```
+
+### Reminder Features
+
+- **Configurable timeout**: Default is 60 seconds, can be customized
+- **Sound notification**: Plays notification sound when reminder is shown (if sound is enabled)
+- **Smart behavior**: Only works when chat is open and not in registration screen
+- **Waits for complete response**: Timer starts only after the bot finishes responding completely
+- **Streaming compatible**: Waits for typing effect to finish before starting the timer
+- **Auto-reset**: Timer resets every time the user sends a message
+- **Persistent state**: Reminder state is saved in cache
+- **Intelligent pausing**: Automatically pauses when chat is closed
+
+### Reminder Message
+
+When the timeout is reached, the bot automatically sends:
+> "¿Hay algo más en lo que pueda ayudarte? 😊"
+
+**Note**: If sound is enabled (`sound: true`), a notification sound will also play when the reminder message is shown.
+
+### Public Methods
+
+```javascript
+// Configure reminder timeout
+chat.setReminderTimeout(30000); // 30 seconds
+
+// Get reminder status
+const status = chat.getReminderStatus();
+console.log(status);
+// {
+//   reminderTimeout: 30000,
+//   lastUserMessageTime: 1234567890,
+//   hasActiveTimer: true,
+//   timeSinceLastMessage: 45000
+// }
+```
+
+## 🔄 Recent Updates
+
+### Version 0.1.0 (Latest)
+
+- ✅ **Complete multi-language support**: All 7 languages now have full translations
+- ✅ **Fixed hardcoded texts**: All UI elements now use the translation system
+- ✅ **Enhanced test mode**: Test responses are fully translated in all languages
+- ✅ **Dynamic language switching**: Real-time language changes with automatic UI updates
+- ✅ **Improved registration system**: Better user experience with translated prompts
+- ✅ **Comprehensive translation coverage**: UI elements, messages, placeholders, and test responses
+- ✅ **No hardcoded strings**: All texts use the internationalization system
+
+### Previous Updates
+
+- ✅ **Registration screen**: Dedicated welcome screen with name collection
+- ✅ **Test mode**: Complete testing environment with translated responses
+- ✅ **Markdown support**: Full Markdown rendering in bot responses
+- ✅ **Streaming simulation**: Character-by-character typing effect
+- ✅ **Sound notifications**: Optional notification sounds
+- ✅ **Auto-reminder system**: Configurable reminder messages
+- ✅ **Development mode**: Comprehensive logging system
 
 ## 🤝 Contributing
 
@@ -698,3 +1019,4 @@ This project is under the ISC License. See the `LICENSE` file for more details.
 
 - [Bootstrap](https://getbootstrap.com/) for the CSS framework.
 - [Cloudinary](https://cloudinary.com/) for default image hosting.
+- [Universfield](https://pixabay.com/es/users/universfield-28281460/) for the notification sound effect.

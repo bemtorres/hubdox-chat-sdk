@@ -236,6 +236,39 @@ chat.clearCache();
 
         // Mostrar estado después de un delay
         setTimeout(showRegistrationStatus, 2000);
+
+        // Función para limpiar caché y reiniciar
+        function clearCacheAndReset() {
+            // Limpiar caché
+            chat.clearCache();
+            
+            // Limpiar historial
+            chat.clearHistory();
+            
+            // Recargar desde caché (que ahora está vacío)
+            chat.reloadFromCache();
+            
+            alert("✅ Caché limpiado y chat reiniciado completamente.\n\nEl chat ahora está como nuevo, sin datos pegados.");
+        }
+
+        // Agregar botón de control
+        const controlButton = document.createElement('button');
+        controlButton.innerHTML = '🔄 Limpiar Caché y Reiniciar';
+        controlButton.style.cssText = `
+            position: fixed;
+            bottom: 20px;
+            right: 20px;
+            background: #dc3545;
+            color: white;
+            border: none;
+            padding: 10px 15px;
+            border-radius: 5px;
+            cursor: pointer;
+            z-index: 1000;
+            font-size: 12px;
+        `;
+        controlButton.onclick = clearCacheAndReset;
+        document.body.appendChild(controlButton);
     </script>
 </body>
 </html> 

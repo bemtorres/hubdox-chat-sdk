@@ -72,6 +72,7 @@
             <button onclick="testStreaming()">🚀 Probar Streaming</button>
             <button onclick="clearChat()">🗑️ Limpiar Chat</button>
             <button onclick="toggleStreaming()">🔄 Cambiar Streaming</button>
+            <button onclick="clearCacheAndReset()" style="background: #dc3545; color: white;">🔄 Limpiar Caché y Reiniciar</button>
         </div>
 
         <div class="status" id="status">
@@ -140,6 +141,23 @@
             if (chat) {
                 chat.clearHistory();
                 updateStatus('Chat limpiado');
+            }
+        }
+
+        // Limpiar caché y reiniciar
+        function clearCacheAndReset() {
+            if (chat) {
+                // Limpiar caché
+                chat.clearCache();
+                
+                // Limpiar historial
+                chat.clearHistory();
+                
+                // Recargar desde caché (que ahora está vacío)
+                chat.reloadFromCache();
+                
+                updateStatus('Caché limpiado y chat reiniciado');
+                alert("✅ Caché limpiado y chat reiniciado completamente.\n\nEl chat ahora está como nuevo, sin datos pegados.");
             }
         }
 

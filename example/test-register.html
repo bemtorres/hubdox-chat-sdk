@@ -63,6 +63,7 @@
     <button onclick="testRegister()">🧪 Probar Registro</button>
     <button onclick="testRegisterWithCache()">🔄 Probar con Caché</button>
     <button onclick="clearCache()">🗑️ Limpiar Caché</button>
+    <button onclick="clearCacheAndReset()" style="background: #dc3545; color: white;">🔄 Limpiar Caché y Reiniciar</button>
     <button onclick="showDebugInfo()">🔍 Mostrar Info Debug</button>
   </div>
 
@@ -251,6 +252,16 @@
         updateStatus('Caché limpiado exitosamente', 'success');
       } else {
         log('No hay instancia de chat disponible para limpiar caché', 'error');
+      }
+    }
+
+    function clearCacheAndReset() {
+      if (chat && chat.clearCache) {
+        chat.clearCache();
+        log('Caché limpiado y sesión reiniciada', 'success');
+        updateStatus('Caché limpiado y sesión reiniciada', 'success');
+      } else {
+        log('No hay instancia de chat disponible para limpiar caché y reiniciar', 'error');
       }
     }
 

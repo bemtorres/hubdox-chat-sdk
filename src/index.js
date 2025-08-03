@@ -25,11 +25,11 @@ class ChatBot {
     this.user = options.user || {
       email: 'test@mail.com',
       name: "Usuario",
-      photo: "../src/img/user_icon.png",
+      photo: "https://res.cloudinary.com/dhqqkf4hy/image/upload/v1754206933/user_icon_wbwkja.png",
     };
     this.bot = options.bot || {
       name: options.botName || "Bot",
-      img: "../src/img/bot_icon.png",
+      img: "https://res.cloudinary.com/dhqqkf4hy/image/upload/v1754206932/bot_icon_zgo153.png",
     };
     
     // Personalización desde objeto custom
@@ -50,7 +50,13 @@ class ChatBot {
     this.messagesHeight = custom.messagesHeight || "350px";
     this.buttonSize = custom.buttonSize || "56px";
     this.fullscreenEnabled = custom.fullscreenEnabled !== undefined ? custom.fullscreenEnabled : true;
-    
+    this.sound = custom.sound !== undefined ? custom.sound : false;
+    this.soundPlayed = false; // Para controlar que solo se reproduzca una vez
+    this.reminderTimeout = custom.reminderTimeout || 60000; // 60 segundos por defecto
+    this.reminderTimer = null;
+    this.lastUserMessageTime = null;
+    this.language = custom.language || 'es'; // Idioma por defecto: español
+
     // Posición del botón flotante
     this.buttonPosition = custom.position || {
       bottom: "24px",
@@ -322,7 +328,562 @@ class ChatBot {
 
     const data = await response.json();
     this._log('_sendMessageToAPI - Respuesta recibida:', data);
+    
+    // Verificar si el servidor indica que se superó el límite
+    if (data.type === 'limit_completed') {
+      this._log('_sendMessageToAPI - Límite de mensajes alcanzado según el servidor');
+      this._showLimitCompletedMessage();
+      return null; // No mostrar respuesta normal
+    }
+    
     return data.answer || 'No se pudo obtener respuesta del bot';
+  }
+
+  // Sistema de traducciones
+  _getTranslation(key) {
+    const translations = {
+      es: {
+        // Español
+        welcome_message: "Hola {name}, soy {botName} y estoy aquí para ayudarte. ¿En qué puedo asistirte?",
+        reminder_message: "¿Hay algo más en lo que pueda ayudarte? 😊",
+        limit_reached_message: "⚠️ Has alcanzado el límite de mensajes para esta sesión. El chat ha sido bloqueado temporalmente.",
+        limit_reached_placeholder: "Límite de mensajes alcanzado",
+        write_message_placeholder: "Escribe un mensaje...",
+        send_button_text: "Enviar",
+        clear_history: "Limpiar historial",
+        fullscreen: "Pantalla completa",
+        minimize: "Minimizar",
+        chat_info: "Información del chat",
+        powered_by: "Desarrollado por",
+        registration_name_prompt: "¡Hola! ¿Cuál es tu nombre?",
+        registration_complete: "¡Perfecto! Ahora puedo ayudarte mejor.",
+        error_message: "Error al obtener respuesta. Intenta nuevamente.",
+        registration_required: "Por favor, completa el registro primero. Necesito saber tu nombre para poder ayudarte.",
+        loading_message: "Está escribiendo...",
+        clear_history_confirm: "¿Estás seguro de que quieres limpiar todo el historial del chat?",
+        clear_history_confirm_title: "Confirmar acción",
+        cancel: "Cancelar",
+        confirm: "Confirmar",
+        close: "Cerrar",
+        // Mensajes de test
+        test_welcome_1: "¡Hola! 👋 Soy tu asistente virtual. ¿Cómo te llamas?",
+        test_welcome_2: "¡Bienvenido! 😊 Me encantaría conocer tu nombre.",
+        test_welcome_3: "¡Hola! Soy tu bot de ayuda. ¿Cuál es tu nombre?",
+        test_welcome_4: "¡Saludos! 🌟 Para personalizar tu experiencia, ¿podrías decirme tu nombre?",
+        test_greeting_1: "¡Hola {name}! 👋 ¿En qué puedo ayudarte hoy?",
+        test_greeting_2: "¡Qué gusto verte, {name}! 👋 ¿Cómo estás?",
+        test_greeting_3: "¡Bienvenido de nuevo, {name}! 🌟 ¿En qué puedo asistirte?",
+        test_greeting_4: "¡Hola {name}! 💫 ¿Qué te gustaría hacer hoy?",
+        test_curiosity_1: "¿Sabías que el primer emoji fue creado en 1999? 😊",
+        test_curiosity_2: "El término 'robot' fue acuñado por el escritor checo Karel Čapek en 1920 🤖",
+        test_curiosity_3: "La primera computadora pesaba 27 toneladas y ocupaba 1800 pies cuadrados 💻",
+        test_curiosity_4: "El internet fue inventado en 1969, pero la World Wide Web no llegó hasta 1989 🌐",
+        test_curiosity_5: "El primer teléfono móvil pesaba 2.5 libras y costaba $3,995 📱",
+        test_curiosity_6: "Los humanos parpadean aproximadamente 15-20 veces por minuto 👁️",
+        test_curiosity_7: "El corazón humano late más de 100,000 veces al día ❤️",
+        test_curiosity_8: "La lengua es el músculo más fuerte del cuerpo humano 👅",
+        test_curiosity_9: "Los delfines duermen con un ojo abierto 🐬",
+        test_curiosity_10: "Las abejas pueden reconocer rostros humanos 🐝",
+        test_help_1: "Puedo ayudarte con información general, datos curiosos y responder preguntas básicas 📚",
+        test_help_2: "Estoy aquí para charlar, compartir curiosidades y ayudarte con lo que necesites 💬",
+        test_help_3: "Puedo contarte datos interesantes, responder preguntas y mantener una conversación amigable 🤝",
+        test_help_4: "Mi función es ser tu compañero de conversación y ayudarte con información útil 🎯",
+        test_unknown_1: "Interesante pregunta 🤔 Déjame pensar en eso...",
+        test_unknown_2: "Hmm, esa es una buena pregunta. ¿Podrías reformularla? 🤷‍♂️",
+        test_unknown_3: "No estoy seguro de entender. ¿Podrías ser más específico? 🤔",
+        test_unknown_4: "Esa pregunta me hace pensar... ¿Qué más te gustaría saber? 💭"
+      },
+      en: {
+        // English
+        welcome_message: "Hello {name}, I'm {botName} and I'm here to help you. How can I assist you?",
+        reminder_message: "Is there anything else I can help you with? 😊",
+        limit_reached_message: "⚠️ You have reached the message limit for this session. The chat has been temporarily blocked.",
+        limit_reached_placeholder: "Message limit reached",
+        write_message_placeholder: "Write a message...",
+        send_button_text: "Send",
+        clear_history: "Clear history",
+        fullscreen: "Fullscreen",
+        minimize: "Minimize",
+        chat_info: "Chat information",
+        powered_by: "Powered by",
+        registration_name_prompt: "Hello! What's your name?",
+        registration_complete: "Perfect! Now I can help you better.",
+        error_message: "Error getting response. Please try again.",
+        registration_required: "Please complete the registration first. I need to know your name to help you.",
+        loading_message: "Typing...",
+        clear_history_confirm: "Are you sure you want to clear all chat history?",
+        clear_history_confirm_title: "Confirm action",
+        cancel: "Cancel",
+        confirm: "Confirm",
+        close: "Close",
+        // Test messages
+        test_welcome_1: "Hello! 👋 I'm your virtual assistant. What's your name?",
+        test_welcome_2: "Welcome! 😊 I'd love to know your name.",
+        test_welcome_3: "Hello! I'm your help bot. What's your name?",
+        test_welcome_4: "Greetings! 🌟 To personalize your experience, could you tell me your name?",
+        test_greeting_1: "Hello {name}! 👋 How can I help you today?",
+        test_greeting_2: "Nice to see you, {name}! 👋 How are you?",
+        test_greeting_3: "Welcome back, {name}! 🌟 How can I assist you?",
+        test_greeting_4: "Hello {name}! 💫 What would you like to do today?",
+        test_curiosity_1: "Did you know the first emoji was created in 1999? 😊",
+        test_curiosity_2: "The term 'robot' was coined by Czech writer Karel Čapek in 1920 🤖",
+        test_curiosity_3: "The first computer weighed 27 tons and occupied 1800 square feet 💻",
+        test_curiosity_4: "The internet was invented in 1969, but the World Wide Web didn't arrive until 1989 🌐",
+        test_curiosity_5: "The first mobile phone weighed 2.5 pounds and cost $3,995 📱",
+        test_curiosity_6: "Humans blink approximately 15-20 times per minute 👁️",
+        test_curiosity_7: "The human heart beats more than 100,000 times per day ❤️",
+        test_curiosity_8: "The tongue is the strongest muscle in the human body 👅",
+        test_curiosity_9: "Dolphins sleep with one eye open 🐬",
+        test_curiosity_10: "Bees can recognize human faces 🐝",
+        test_help_1: "I can help you with general information, fun facts, and answer basic questions 📚",
+        test_help_2: "I'm here to chat, share curiosities, and help you with whatever you need 💬",
+        test_help_3: "I can tell you interesting facts, answer questions, and maintain a friendly conversation 🤝",
+        test_help_4: "My function is to be your conversation companion and help you with useful information 🎯",
+        test_unknown_1: "Interesting question 🤔 Let me think about that...",
+        test_unknown_2: "Hmm, that's a good question. Could you rephrase it? 🤷‍♂️",
+        test_unknown_3: "I'm not sure I understand. Could you be more specific? 🤔",
+        test_unknown_4: "That question makes me think... What else would you like to know? 💭"
+      },
+      pt: {
+        // Português
+        welcome_message: "Olá {name}, sou {botName} e estou aqui para ajudá-lo. Como posso ajudá-lo?",
+        reminder_message: "Há mais alguma coisa em que eu possa ajudá-lo? 😊",
+        limit_reached_message: "⚠️ Você atingiu o limite de mensagens para esta sessão. O chat foi temporariamente bloqueado.",
+        limit_reached_placeholder: "Limite de mensagens atingido",
+        write_message_placeholder: "Escreva uma mensagem...",
+        send_button_text: "Enviar",
+        clear_history: "Limpar histórico",
+        fullscreen: "Tela cheia",
+        minimize: "Minimizar",
+        chat_info: "Informações do chat",
+        powered_by: "Desenvolvido por",
+        registration_name_prompt: "Olá! Qual é o seu nome?",
+        registration_complete: "Perfeito! Agora posso ajudá-lo melhor.",
+        error_message: "Erro ao obter resposta. Tente novamente.",
+        registration_required: "Por favor, complete o registro primeiro. Preciso saber seu nome para ajudá-lo.",
+        loading_message: "Digitando...",
+        clear_history_confirm: "Tem certeza de que deseja limpar todo o histórico do chat?",
+        clear_history_confirm_title: "Confirmar ação",
+        cancel: "Cancelar",
+        confirm: "Confirmar",
+        close: "Fechar",
+        // Mensagens de teste
+        test_welcome_1: "Olá! 👋 Sou seu assistente virtual. Como você se chama?",
+        test_welcome_2: "Bem-vindo! 😊 Adoraria conhecer seu nome.",
+        test_welcome_3: "Olá! Sou seu bot de ajuda. Qual é o seu nome?",
+        test_welcome_4: "Saudações! 🌟 Para personalizar sua experiência, você poderia me dizer seu nome?",
+        test_greeting_1: "Olá {name}! 👋 Como posso ajudá-lo hoje?",
+        test_greeting_2: "Que prazer vê-lo, {name}! 👋 Como você está?",
+        test_greeting_3: "Bem-vindo de volta, {name}! 🌟 Como posso ajudá-lo?",
+        test_greeting_4: "Olá {name}! 💫 O que você gostaria de fazer hoje?",
+        test_curiosity_1: "Você sabia que o primeiro emoji foi criado em 1999? 😊",
+        test_curiosity_2: "O termo 'robô' foi cunhado pelo escritor tcheco Karel Čapek em 1920 🤖",
+        test_curiosity_3: "O primeiro computador pesava 27 toneladas e ocupava 1800 pés quadrados 💻",
+        test_curiosity_4: "A internet foi inventada em 1969, mas a World Wide Web só chegou em 1989 🌐",
+        test_curiosity_5: "O primeiro telefone celular pesava 2.5 libras e custava $3,995 📱",
+        test_curiosity_6: "Os humanos piscam aproximadamente 15-20 vezes por minuto 👁️",
+        test_curiosity_7: "O coração humano bate mais de 100.000 vezes por dia ❤️",
+        test_curiosity_8: "A língua é o músculo mais forte do corpo humano 👅",
+        test_curiosity_9: "Os golfinhos dormem com um olho aberto 🐬",
+        test_curiosity_10: "As abelhas podem reconhecer rostos humanos 🐝",
+        test_help_1: "Posso ajudá-lo com informações gerais, curiosidades e responder perguntas básicas 📚",
+        test_help_2: "Estou aqui para conversar, compartilhar curiosidades e ajudá-lo com o que precisar 💬",
+        test_help_3: "Posso contar fatos interessantes, responder perguntas e manter uma conversa amigável 🤝",
+        test_help_4: "Minha função é ser seu companheiro de conversa e ajudá-lo com informações úteis 🎯",
+        test_unknown_1: "Pergunta interessante 🤔 Deixe-me pensar nisso...",
+        test_unknown_2: "Hmm, essa é uma boa pergunta. Você poderia reformulá-la? 🤷‍♂️",
+        test_unknown_3: "Não tenho certeza se entendo. Você poderia ser mais específico? 🤔",
+        test_unknown_4: "Essa pergunta me faz pensar... O que mais você gostaria de saber? 💭"
+      },
+      ru: {
+        // Русский
+        welcome_message: "Привет {name}, я {botName} и я здесь, чтобы помочь вам. Как я могу вам помочь?",
+        reminder_message: "Могу ли я помочь вам еще с чем-то? 😊",
+        limit_reached_message: "⚠️ Вы достигли лимита сообщений для этой сессии. Чат временно заблокирован.",
+        limit_reached_placeholder: "Достигнут лимит сообщений",
+        write_message_placeholder: "Напишите сообщение...",
+        send_button_text: "Отправить",
+        clear_history: "Очистить историю",
+        fullscreen: "Полный экран",
+        chat_info: "Информация о чате",
+        powered_by: "Разработано",
+        registration_name_prompt: "Привет! Как вас зовут?",
+        registration_complete: "Отлично! Теперь я могу лучше вам помочь.",
+        error_message: "Ошибка получения ответа. Попробуйте еще раз.",
+        registration_required: "Пожалуйста, сначала завершите регистрацию. Мне нужно знать ваше имя, чтобы помочь вам.",
+        loading_message: "Печатает...",
+        clear_history_confirm: "Вы уверены, что хотите очистить всю историю чата?",
+        clear_history_confirm_title: "Подтвердить действие",
+        cancel: "Отмена",
+        confirm: "Подтвердить",
+        close: "Закрыть",
+        // Тестовые сообщения
+        test_welcome_1: "Привет! 👋 Я ваш виртуальный помощник. Как вас зовут?",
+        test_welcome_2: "Добро пожаловать! 😊 Хотел бы узнать ваше имя.",
+        test_welcome_3: "Привет! Я ваш бот-помощник. Как вас зовут?",
+        test_welcome_4: "Приветствия! 🌟 Чтобы персонализировать ваш опыт, не могли бы вы сказать мне ваше имя?",
+        test_greeting_1: "Привет {name}! 👋 Как я могу помочь вам сегодня?",
+        test_greeting_2: "Приятно видеть вас, {name}! 👋 Как дела?",
+        test_greeting_3: "Добро пожаловать обратно, {name}! 🌟 Как я могу помочь вам?",
+        test_greeting_4: "Привет {name}! 💫 Что бы вы хотели сделать сегодня?",
+        test_curiosity_1: "Знаете ли вы, что первый эмодзи был создан в 1999 году? 😊",
+        test_curiosity_2: "Термин 'робот' был придуман чешским писателем Карелом Чапеком в 1920 году 🤖",
+        test_curiosity_3: "Первый компьютер весил 27 тонн и занимал 1800 квадратных футов 💻",
+        test_curiosity_4: "Интернет был изобретен в 1969 году, но Всемирная паутина появилась только в 1989 году 🌐",
+        test_curiosity_5: "Первый мобильный телефон весил 2.5 фунта и стоил $3,995 📱",
+        test_curiosity_6: "Люди моргают примерно 15-20 раз в минуту 👁️",
+        test_curiosity_7: "Человеческое сердце бьется более 100,000 раз в день ❤️",
+        test_curiosity_8: "Язык - самая сильная мышца в человеческом теле 👅",
+        test_curiosity_9: "Дельфины спят с одним открытым глазом 🐬",
+        test_curiosity_10: "Пчелы могут узнавать человеческие лица 🐝",
+        test_help_1: "Я могу помочь вам с общей информацией, интересными фактами и ответить на базовые вопросы 📚",
+        test_help_2: "Я здесь, чтобы общаться, делиться любопытными фактами и помогать вам с тем, что нужно 💬",
+        test_help_3: "Я могу рассказывать интересные факты, отвечать на вопросы и поддерживать дружескую беседу 🤝",
+        test_help_4: "Моя функция - быть вашим собеседником и помогать вам с полезной информацией 🎯",
+        test_unknown_1: "Интересный вопрос 🤔 Дайте мне подумать об этом...",
+        test_unknown_2: "Хм, это хороший вопрос. Можете ли вы переформулировать его? 🤷‍♂️",
+        test_unknown_3: "Я не уверен, что понимаю. Можете ли вы быть более конкретным? 🤔",
+        test_unknown_4: "Этот вопрос заставляет меня думать... Что еще вы хотели бы узнать? 💭"
+      },
+      de: {
+        // Deutsch
+        welcome_message: "Hallo {name}, ich bin {botName} und bin hier, um Ihnen zu helfen. Wie kann ich Ihnen helfen?",
+        reminder_message: "Kann ich Ihnen noch bei etwas anderem helfen? 😊",
+        limit_reached_message: "⚠️ Sie haben das Nachrichtenlimit für diese Sitzung erreicht. Der Chat wurde vorübergehend blockiert.",
+        limit_reached_placeholder: "Nachrichtenlimit erreicht",
+        write_message_placeholder: "Schreiben Sie eine Nachricht...",
+        send_button_text: "Senden",
+        clear_history: "Verlauf löschen",
+        fullscreen: "Vollbild",
+        chat_info: "Chat-Informationen",
+        powered_by: "Entwickelt von",
+        registration_name_prompt: "Hallo! Wie heißen Sie?",
+        registration_complete: "Perfekt! Jetzt kann ich Ihnen besser helfen.",
+        error_message: "Fehler beim Abrufen der Antwort. Versuchen Sie es erneut.",
+        registration_required: "Bitte schließen Sie zuerst die Registrierung ab. Ich muss Ihren Namen kennen, um Ihnen zu helfen.",
+        loading_message: "Schreibt...",
+        clear_history_confirm: "Sind Sie sicher, dass Sie den gesamten Chat-Verlauf löschen möchten?",
+        clear_history_confirm_title: "Aktion bestätigen",
+        cancel: "Abbrechen",
+        confirm: "Bestätigen",
+        close: "Schließen",
+        // Testnachrichten
+        test_welcome_1: "Hallo! 👋 Ich bin Ihr virtueller Assistent. Wie heißen Sie?",
+        test_welcome_2: "Willkommen! 😊 Ich würde gerne Ihren Namen kennenlernen.",
+        test_welcome_3: "Hallo! Ich bin Ihr Hilfsbot. Wie heißen Sie?",
+        test_welcome_4: "Grüße! 🌟 Um Ihre Erfahrung zu personalisieren, könnten Sie mir Ihren Namen sagen?",
+        test_greeting_1: "Hallo {name}! 👋 Wie kann ich Ihnen heute helfen?",
+        test_greeting_2: "Schön, Sie zu sehen, {name}! 👋 Wie geht es Ihnen?",
+        test_greeting_3: "Willkommen zurück, {name}! 🌟 Wie kann ich Ihnen helfen?",
+        test_greeting_4: "Hallo {name}! 💫 Was möchten Sie heute tun?",
+        test_curiosity_1: "Wussten Sie, dass das erste Emoji 1999 erstellt wurde? 😊",
+        test_curiosity_2: "Der Begriff 'Roboter' wurde 1920 vom tschechischen Schriftsteller Karel Čapek geprägt 🤖",
+        test_curiosity_3: "Der erste Computer wog 27 Tonnen und nahm 1800 Quadratfuß ein 💻",
+        test_curiosity_4: "Das Internet wurde 1969 erfunden, aber das World Wide Web kam erst 1989 🌐",
+        test_curiosity_5: "Das erste Mobiltelefon wog 2,5 Pfund und kostete $3.995 📱",
+        test_curiosity_6: "Menschen blinzeln etwa 15-20 Mal pro Minute 👁️",
+        test_curiosity_7: "Das menschliche Herz schlägt mehr als 100.000 Mal pro Tag ❤️",
+        test_curiosity_8: "Die Zunge ist der stärkste Muskel im menschlichen Körper 👅",
+        test_curiosity_9: "Delfine schlafen mit einem offenen Auge 🐬",
+        test_curiosity_10: "Bienen können menschliche Gesichter erkennen 🐝",
+        test_help_1: "Ich kann Ihnen mit allgemeinen Informationen, interessanten Fakten und der Beantwortung grundlegender Fragen helfen 📚",
+        test_help_2: "Ich bin hier, um zu chatten, Kuriositäten zu teilen und Ihnen bei allem zu helfen, was Sie brauchen 💬",
+        test_help_3: "Ich kann Ihnen interessante Fakten erzählen, Fragen beantworten und eine freundliche Konversation führen 🤝",
+        test_help_4: "Meine Funktion ist es, Ihr Gesprächspartner zu sein und Ihnen mit nützlichen Informationen zu helfen 🎯",
+        test_unknown_1: "Interessante Frage 🤔 Lassen Sie mich darüber nachdenken...",
+        test_unknown_2: "Hmm, das ist eine gute Frage. Könnten Sie sie umformulieren? 🤷‍♂️",
+        test_unknown_3: "Ich bin mir nicht sicher, ob ich verstehe. Könnten Sie spezifischer sein? 🤔",
+        test_unknown_4: "Diese Frage lässt mich nachdenken... Was möchten Sie sonst noch wissen? 💭"
+      },
+      zh: {
+        // 中文
+        welcome_message: "你好 {name}，我是 {botName}，我在这里帮助你。我如何能协助你？",
+        reminder_message: "还有什么我可以帮助你的吗？😊",
+        limit_reached_message: "⚠️ 您已达到本次会话的消息限制。聊天已被临时阻止。",
+        limit_reached_placeholder: "已达到消息限制",
+        write_message_placeholder: "写一条消息...",
+        send_button_text: "发送",
+        clear_history: "清除历史",
+        fullscreen: "全屏",
+        chat_info: "聊天信息",
+        powered_by: "由开发",
+        registration_name_prompt: "你好！你叫什么名字？",
+        registration_complete: "完美！现在我可以更好地帮助你。",
+        error_message: "获取响应时出错。请重试。",
+        registration_required: "请先完成注册。我需要知道你的名字才能帮助你。",
+        loading_message: "正在输入...",
+        clear_history_confirm: "您确定要清除所有聊天历史吗？",
+        clear_history_confirm_title: "确认操作",
+        close: "关闭",
+        cancel: "取消",
+        confirm: "确认",
+        // 测试消息
+        test_welcome_1: "你好！👋 我是您的虚拟助手。您叫什么名字？",
+        test_welcome_2: "欢迎！😊 我很想知道您的名字。",
+        test_welcome_3: "你好！我是您的帮助机器人。您叫什么名字？",
+        test_welcome_4: "问候！🌟 为了个性化您的体验，您能告诉我您的名字吗？",
+        test_greeting_1: "你好 {name}！👋 我今天能为您做些什么？",
+        test_greeting_2: "很高兴见到您，{name}！👋 您怎么样？",
+        test_greeting_3: "欢迎回来，{name}！🌟 我能为您提供什么帮助？",
+        test_greeting_4: "你好 {name}！💫 您今天想做什么？",
+        test_curiosity_1: "您知道第一个表情符号是在1999年创建的吗？😊",
+        test_curiosity_2: "'机器人'这个词是由捷克作家卡雷尔·恰佩克在1920年创造的 🤖",
+        test_curiosity_3: "第一台计算机重27吨，占地1800平方英尺 💻",
+        test_curiosity_4: "互联网是在1969年发明的，但万维网直到1989年才出现 🌐",
+        test_curiosity_5: "第一部手机重2.5磅，售价3,995美元 📱",
+        test_curiosity_6: "人类每分钟大约眨眼15-20次 👁️",
+        test_curiosity_7: "人类心脏每天跳动超过10万次 ❤️",
+        test_curiosity_8: "舌头是人体最强的肌肉 👅",
+        test_curiosity_9: "海豚睁着一只眼睛睡觉 🐬",
+        test_curiosity_10: "蜜蜂能识别人脸 🐝",
+        test_help_1: "我可以帮助您了解一般信息、有趣的事实并回答基本问题 📚",
+        test_help_2: "我在这里聊天、分享有趣的事情并帮助您解决任何需要 💬",
+        test_help_3: "我可以告诉您有趣的事实、回答问题并保持友好的对话 🤝",
+        test_help_4: "我的功能是成为您的对话伙伴并帮助您获得有用的信息 🎯",
+        test_unknown_1: "有趣的问题 🤔 让我想想...",
+        test_unknown_2: "嗯，这是一个好问题。您能重新表述一下吗？🤷‍♂️",
+        test_unknown_3: "我不确定我是否理解。您能更具体一些吗？🤔",
+        test_unknown_4: "这个问题让我思考...您还想知道什么？💭"
+      },
+      ja: {
+        // 日本語
+        welcome_message: "こんにちは {name}、私は {botName} です。お手伝いできることがあればお気軽にお声かけください。",
+        reminder_message: "他に何かお手伝いできることはありますか？😊",
+        limit_reached_message: "⚠️ このセッションのメッセージ制限に達しました。チャットは一時的にブロックされています。",
+        limit_reached_placeholder: "メッセージ制限に達しました",
+        write_message_placeholder: "メッセージを入力...",
+        send_button_text: "送信",
+        clear_history: "履歴をクリア",
+        fullscreen: "全画面",
+        chat_info: "チャット情報",
+        powered_by: "開発者",
+        registration_name_prompt: "こんにちは！お名前は何ですか？",
+        registration_complete: "完璧です！これでより良くお手伝いできます。",
+        error_message: "応答の取得中にエラーが発生しました。もう一度お試しください。",
+        registration_required: "まず登録を完了してください。お手伝いするためにあなたの名前を知る必要があります。",
+        loading_message: "入力中...",
+        clear_history_confirm: "すべてのチャット履歴をクリアしてもよろしいですか？",
+        clear_history_confirm_title: "アクションの確認",
+        cancel: "キャンセル",
+        confirm: "確認",
+        close: "閉じる",
+        // テストメッセージ
+        test_welcome_1: "こんにちは！👋 私はあなたの仮想アシスタントです。お名前は何ですか？",
+        test_welcome_2: "ようこそ！😊 あなたの名前を知りたいです。",
+        test_welcome_3: "こんにちは！私はあなたのヘルプボットです。お名前は何ですか？",
+        test_welcome_4: "ご挨拶！🌟 あなたの体験をパーソナライズするために、お名前を教えていただけますか？",
+        test_greeting_1: "こんにちは {name}！👋 今日はどのようにお手伝いできますか？",
+        test_greeting_2: "お会いできて嬉しいです、{name}！👋 お元気ですか？",
+        test_greeting_3: "おかえりなさい、{name}！🌟 どのようにお手伝いできますか？",
+        test_greeting_4: "こんにちは {name}！💫 今日は何をしたいですか？",
+        test_curiosity_1: "最初の絵文字は1999年に作成されたことをご存知でしたか？😊",
+        test_curiosity_2: "'ロボット'という用語は1920年にチェコの作家カレル・チャペックによって作られました 🤖",
+        test_curiosity_3: "最初のコンピューターは27トンの重さで1800平方フィートを占めていました 💻",
+        test_curiosity_4: "インターネットは1969年に発明されましたが、World Wide Webは1989年まで登場しませんでした 🌐",
+        test_curiosity_5: "最初の携帯電話は2.5ポンドの重さで$3,995の価格でした 📱",
+        test_curiosity_6: "人間は1分間に約15-20回まばたきします 👁️",
+        test_curiosity_7: "人間の心臓は1日に10万回以上鼓動します ❤️",
+        test_curiosity_8: "舌は人体で最も強い筋肉です 👅",
+        test_curiosity_9: "イルカは片目を開けて眠ります 🐬",
+        test_curiosity_10: "ミツバチは人間の顔を認識できます 🐝",
+        test_help_1: "一般的な情報、興味深い事実、基本的な質問への回答をお手伝いできます 📚",
+        test_help_2: "私はここでチャットし、好奇心を共有し、必要なことをお手伝いします 💬",
+        test_help_3: "興味深い事実を話し、質問に答え、友好的な会話を維持できます 🤝",
+        test_help_4: "私の機能はあなたの会話パートナーになり、有用な情報でお手伝いすることです 🎯",
+        test_unknown_1: "興味深い質問ですね 🤔 それについて考えてみましょう...",
+        test_unknown_2: "うーん、それは良い質問です。言い換えていただけますか？🤷‍♂️",
+        test_unknown_3: "理解しているかどうかわかりません。もっと具体的にしていただけますか？🤔",
+        test_unknown_4: "その質問は私に考えさせます...他に何を知りたいですか？💭"
+      }
+    };
+
+    const currentTranslations = translations[this.language] || translations['es'];
+    let translation = currentTranslations[key] || key;
+    
+    // Reemplazar variables en la traducción
+    translation = translation.replace('{name}', this.user.name || 'User');
+    translation = translation.replace('{botName}', this.botName || 'Bot');
+    
+    return translation;
+  }
+
+  // Obtener mensajes de test traducidos
+  _getTestMessages() {
+    return {
+      welcome: [
+        this._getTranslation('test_welcome_1'),
+        this._getTranslation('test_welcome_2'),
+        this._getTranslation('test_welcome_3'),
+        this._getTranslation('test_welcome_4')
+      ],
+      greetings: [
+        this._getTranslation('test_greeting_1'),
+        this._getTranslation('test_greeting_2'),
+        this._getTranslation('test_greeting_3'),
+        this._getTranslation('test_greeting_4')
+      ],
+      curiosities: [
+        this._getTranslation('test_curiosity_1'),
+        this._getTranslation('test_curiosity_2'),
+        this._getTranslation('test_curiosity_3'),
+        this._getTranslation('test_curiosity_4'),
+        this._getTranslation('test_curiosity_5'),
+        this._getTranslation('test_curiosity_6'),
+        this._getTranslation('test_curiosity_7'),
+        this._getTranslation('test_curiosity_8'),
+        this._getTranslation('test_curiosity_9'),
+        this._getTranslation('test_curiosity_10')
+      ],
+      help: [
+        this._getTranslation('test_help_1'),
+        this._getTranslation('test_help_2'),
+        this._getTranslation('test_help_3'),
+        this._getTranslation('test_help_4')
+      ],
+      unknown: [
+        this._getTranslation('test_unknown_1'),
+        this._getTranslation('test_unknown_2'),
+        this._getTranslation('test_unknown_3'),
+        this._getTranslation('test_unknown_4')
+      ]
+    };
+  }
+
+  // Reproducir sonido de notificación (solo una vez)
+  _playNotificationSound() {
+    if (!this.sound || this.soundPlayed) return;
+    
+    try {
+      const audio = new Audio('https://res.cloudinary.com/dhqqkf4hy/video/upload/v1754209978/new-notification-010-352755_jjgjfu.mp3');
+      audio.volume = 0.5; // Volumen al 50%
+      audio.play().then(() => {
+        this._log('_playNotificationSound - Sonido reproducido correctamente');
+        this.soundPlayed = true; // Marcar como reproducido
+      }).catch(error => {
+        this._logError('_playNotificationSound - Error reproduciendo sonido:', error);
+      });
+    } catch (error) {
+      this._logError('_playNotificationSound - Error creando audio:', error);
+    }
+  }
+
+  // Reproducir sonido de recordatorio (siempre que esté habilitado)
+  _playReminderSound() {
+    if (!this.sound) return; // Solo si el sonido está habilitado
+    
+    try {
+      const audio = new Audio('https://res.cloudinary.com/dhqqkf4hy/video/upload/v1754209978/new-notification-010-352755_jjgjfu.mp3');
+      audio.volume = 0.4; // Volumen ligeramente más bajo para recordatorios
+      audio.play().then(() => {
+        this._log('_playReminderSound - Sonido de recordatorio reproducido correctamente');
+      }).catch(error => {
+        this._logError('_playReminderSound - Error reproduciendo sonido de recordatorio:', error);
+      });
+    } catch (error) {
+      this._logError('_playReminderSound - Error creando audio de recordatorio:', error);
+    }
+  }
+
+  // Iniciar temporizador de recordatorio
+  _startReminderTimer() {
+    // Limpiar temporizador existente
+    this._clearReminderTimer();
+    
+    // Solo iniciar si el chat está visible y no estamos en pantalla de registro
+    if (!this.chatVisible || this.registrationScreen) {
+      return;
+    }
+    
+    // Verificar que no haya streaming activo
+    const hasActiveStreaming = this.messages.some(msg => msg.isStreaming === true);
+    if (hasActiveStreaming) {
+      this._log('_startReminderTimer - Streaming activo detectado, no iniciando temporizador');
+      return;
+    }
+    
+    // Verificar que no esté cargando
+    if (this.loading) {
+      this._log('_startReminderTimer - Chat cargando, no iniciando temporizador');
+      return;
+    }
+    
+    this.reminderTimer = setTimeout(() => {
+      this._showReminderMessage();
+    }, this.reminderTimeout);
+    
+    this._log('_startReminderTimer - Temporizador iniciado para', this.reminderTimeout / 1000, 'segundos');
+  }
+
+  // Limpiar temporizador de recordatorio
+  _clearReminderTimer() {
+    if (this.reminderTimer) {
+      clearTimeout(this.reminderTimer);
+      this.reminderTimer = null;
+      this._log('_clearReminderTimer - Temporizador limpiado');
+    }
+  }
+
+  // Mostrar mensaje de recordatorio
+  _showReminderMessage() {
+    // Verificar que el chat esté visible y no estemos en registro
+    if (!this.chatVisible || this.registrationScreen) {
+      return;
+    }
+    
+    const reminderMessage = {
+      from: "bot",
+      text: this._getTranslation('reminder_message'),
+      time: this._getCurrentTime(),
+      isReminder: true,
+      isSystem: true
+    };
+    
+    this.messages.push(reminderMessage);
+    
+    // Crear y agregar el elemento del mensaje
+    const messageElement = this._createMessageElement(reminderMessage);
+    if (this.messagesContainer) {
+      this.messagesContainer.appendChild(messageElement);
+      this.messagesContainer.scrollTop = this.messagesContainer.scrollHeight;
+    }
+    
+    // Reproducir sonido de notificación para el recordatorio
+    this._playReminderSound();
+    
+    this._saveToCache();
+    this._log('_showReminderMessage - Mensaje de recordatorio mostrado con sonido');
+  }
+
+  // Mostrar mensaje cuando el servidor indica que se superó el límite
+  _showLimitCompletedMessage() {
+    const limitMessage = {
+      from: "bot",
+      text: this._getTranslation('limit_reached_message'),
+      time: this._getCurrentTime(),
+      isLimitCompleted: true,
+      isSystem: true
+    };
+    
+    this.messages.push(limitMessage);
+    
+    // Crear y agregar el elemento del mensaje
+    const messageElement = this._createMessageElement(limitMessage);
+    if (this.messagesContainer) {
+      this.messagesContainer.appendChild(messageElement);
+      this.messagesContainer.scrollTop = this.messagesContainer.scrollHeight;
+    }
+    
+    // Bloquear el input y botón de envío
+            if (this.input) {
+          this.input.disabled = true;
+          this.input.placeholder = this._getTranslation('limit_reached_placeholder');
+        }
+    if (this.sendButton) {
+      this.sendButton.disabled = true;
+    }
+    
+    this._saveToCache();
+    this._log('_showLimitCompletedMessage - Chat bloqueado por límite del servidor');
   }
 
 
@@ -334,7 +895,7 @@ class ChatBot {
     // Validar que el nombre no esté vacío
     if (!userMessage.trim()) {
       this._log('_handleRegistrationResponse - Nombre vacío, solicitando nombre');
-      this._addMessage("bot", "Por favor, escribe tu nombre para continuar.");
+      this._addMessage("bot", this._getTranslation('registration_name_prompt'));
       return;
     }
     
@@ -348,7 +909,7 @@ class ChatBot {
     this._saveToCache();
     
     // Mostrar mensaje de confirmación
-    this._addMessage("bot", `¡Perfecto, ${this.user.name}! 👋 Ahora puedo ayudarte mejor.`);
+    this._addMessage("bot", this._getTranslation('registration_complete'));
     
     // Transicionar al chat normal después de un breve delay
     setTimeout(() => {
@@ -367,10 +928,10 @@ class ChatBot {
     // Limpiar todos los mensajes anteriores
     this.messages = [];
     
-    // Mostrar información del bot con opción de reintentar
+    // Mostrar mensaje de error con opción de reintentar
     const errorMessage = {
       from: "bot",
-      text: `¡Hola! Soy ${this.botName}. Parece que hubo un problema con la conexión. Por favor, verifica que tu API Key y Tenant sean correctos, luego intenta nuevamente.`,
+      text: this._getTranslation('error_message'),
       time: this._getCurrentTime(),
       isError: true,
       showRetry: true
@@ -444,6 +1005,9 @@ class ChatBot {
         botName: this.botName,
         saludoInicial: this.saludoInicial,
         license: this.license,
+        soundPlayed: this.soundPlayed,
+        lastUserMessageTime: this.lastUserMessageTime,
+        language: this.language,
         timestamp: Date.now()
       };
       
@@ -486,6 +1050,15 @@ class ChatBot {
           }
           if (cacheData.license) {
             this.license = { ...this.license, ...cacheData.license };
+          }
+          if (cacheData.soundPlayed !== undefined) {
+            this.soundPlayed = cacheData.soundPlayed;
+          }
+          if (cacheData.lastUserMessageTime !== undefined) {
+            this.lastUserMessageTime = cacheData.lastUserMessageTime;
+          }
+          if (cacheData.language !== undefined) {
+            this.language = cacheData.language;
           }
           
           this._log('Datos cargados desde caché');
@@ -664,6 +1237,7 @@ class ChatBot {
         height: 100%;
         object-fit: cover;
         border-radius: 50%;
+        display: block;
       }
       
       .floating-btn svg {
@@ -682,7 +1256,7 @@ class ChatBot {
     
     // Usar ícono personalizado si está disponible
     if (this.iconButton && this.iconButton !== this.bot.img) {
-      this.floatingBtn.innerHTML = `<img src="${this.iconButton}" alt="Chat">`;
+      this.floatingBtn.innerHTML = `<img src="${this.iconButton}" alt="Chat" onerror="this.style.display='none'; this.parentElement.innerHTML='<svg xmlns=\\"http://www.w3.org/2000/svg\\" fill=\\"white\\" viewBox=\\"0 0 24 24\\"><path d=\\"M20 2H4a2 2 0 0 0-2 2v18l4-4h14a2 2 0 0 0 2-2V4a2 2 0 0 0-2-2z\\"/></svg>'; this.parentElement.style.backgroundColor='${this.primaryColor}'; this.parentElement.style.display='flex'; this.parentElement.style.alignItems='center'; this.parentElement.style.justifyContent='center';">`;
     } else {
       this.floatingBtn.innerHTML = `<svg xmlns="http://www.w3.org/2000/svg" fill="white" viewBox="0 0 24 24"><path d="M20 2H4a2 2 0 0 0-2 2v18l4-4h14a2 2 0 0 0 2-2V4a2 2 0 0 0-2-2z"/></svg>`;
     }
@@ -707,7 +1281,7 @@ class ChatBot {
     
     // Usar ícono personalizado si está disponible, sino usar el SVG por defecto
     if (this.iconButton && this.iconButton !== this.bot.img) {
-      this.floatingBtn.innerHTML = `<img src="${this.iconButton}" alt="Chat" style="width: 100%; height: 100%; object-fit: cover; border-radius: 50%;">`;
+      this.floatingBtn.innerHTML = `<img src="${this.iconButton}" alt="Chat" style="width: 100%; height: 100%; object-fit: cover; border-radius: 50%;" onerror="this.style.display='none'; this.parentElement.innerHTML='<svg xmlns=\\"http://www.w3.org/2000/svg\\" fill=\\"white\\" width=\\"${this.isMobile ? '48' : '24'}\\" height=\\"${this.isMobile ? '48' : '24'}\\" viewBox=\\"0 0 24 24\\"><path d=\\"M20 2H4a2 2 0 0 0-2 2v18l4-4h14a2 2 0 0 0 2-2V4a2 2 0 0 0-2-2z\\"/></svg>'; this.parentElement.style.backgroundColor='${this.primaryColor}'; this.parentElement.style.display='flex'; this.parentElement.style.alignItems='center'; this.parentElement.style.justifyContent='center';">`;
     } else {
       this.floatingBtn.innerHTML = `<svg xmlns="http://www.w3.org/2000/svg" fill="white" width="${iconSize}" height="${iconSize}" viewBox="0 0 24 24"><path d="M20 2H4a2 2 0 0 0-2 2v18l4-4h14a2 2 0 0 0 2-2V4a2 2 0 0 0-2-2z"/></svg>`;
     }
@@ -1211,14 +1785,14 @@ class ChatBot {
                     <path d="M5.5 5.5A.5.5 0 0 1 6 6v6a.5.5 0 0 1-1 0V6a.5.5 0 0 1 .5-.5zm2.5 0a.5.5 0 0 1 .5.5v6a.5.5 0 0 1-1 0V6a.5.5 0 0 1 .5-.5zm3 .5a.5.5 0 0 0-1 0v6a.5.5 0 0 0 1 0V6z"/>
                     <path fill-rule="evenodd" d="M14.5 3a1 1 0 0 1-1 1H13v9a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V4h-.5a1 1 0 0 1-1-1V2a1 1 0 0 1 1-1H6a1 1 0 0 1 1-1h2a1 1 0 0 1 1 1h3.5a1 1 0 0 1 1 1v1zM4.118 4 4 4.059V13a1 1 0 0 0 1 1h6a1 1 0 0 0 1-1V4.059L11.882 4H4.118zM2.5 3V2h11v1h-11z"/>
                   </svg>
-                  Limpiar historial
+                  ${this._getTranslation('clear_history')}
                 </button>
                 ${this.fullscreenEnabled ? `
                 <button class="dropdown-item" id="fullscreen-toggle">
                   <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" viewBox="0 0 24 24">
                     <path stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 4H4m0 0v4m0-4 5 5m7-5h4m0 0v4m0-4-5 5M8 20H4m0 0v-4m0 4 5-5m7 5h4m0 0v-4m0 4-5-5"/>
                   </svg>
-                  ${this.isFullscreen ? 'Minimizar' : 'Pantalla completa'}
+                  ${this.isFullscreen ? this._getTranslation('minimize') : this._getTranslation('fullscreen')}
                 </button>
                 ` : ''}
                 <div class="dropdown-divider"></div>
@@ -1227,11 +1801,11 @@ class ChatBot {
                     <path d="M8 15A7 7 0 1 1 8 1a7 7 0 0 1 0 14zm0 1A8 8 0 1 0 8 0a8 8 0 0 0 0 16z"/>
                     <path d="m8.93 6.588-2.29.287-.082.38.45.083c.294.07.352.176.288.469l-.738 3.468c-.194.897.105 1.319.808 1.319.545 0 1.178-.252 1.465-.598l.088-.416c-.2.176-.492.246-.686.246-.275 0-.375-.193-.304-.533L8.93 6.588zM9 4.5a1 1 0 1 1-2 0 1 1 0 0 1 2 0z"/>
                   </svg>
-                  Información del chat
+                  ${this._getTranslation('chat_info')}
                 </button>
               </div>
             </div>
-            <button type="button" class="btn-close" id="close-btn" aria-label="Cerrar">×</button>
+            <button type="button" class="btn-close" id="close-btn" aria-label="${this._getTranslation('close')}">×</button>
           </div>
         </div>
         
@@ -1243,7 +1817,7 @@ class ChatBot {
               type="text"
               class="chat-input"
               id="chat-input"
-              placeholder="Escribe un mensaje..."
+              placeholder="${this._getTranslation('write_message_placeholder')}"
               autocomplete="off"
             />
             <button
@@ -1318,7 +1892,7 @@ class ChatBot {
                     <path d="M5.5 5.5A.5.5 0 0 1 6 6v6a.5.5 0 0 1-1 0V6a.5.5 0 0 1 .5-.5zm2.5 0a.5.5 0 0 1 .5.5v6a.5.5 0 0 1-1 0V6a.5.5 0 0 1 .5-.5zm3 .5a.5.5 0 0 0-1 0v6a.5.5 0 0 0 1 0V6z"/>
                     <path fill-rule="evenodd" d="M14.5 3a1 1 0 0 1-1 1H13v9a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V4h-.5a1 1 0 0 1-1-1V2a1 1 0 0 1 1-1H6a1 1 0 0 1 1-1h2a1 1 0 0 1 1 1h3.5a1 1 0 0 1 1 1v1zM4.118 4 4 4.059V13a1 1 0 0 0 1 1h6a1 1 0 0 0 1-1V4.059L11.882 4H4.118zM2.5 3V2h11v1h-11z"/>
                   </svg>
-                  Limpiar historial
+                  ${this._getTranslation('clear_history')}
                 </button>
               </li>
               ${this.fullscreenEnabled ? `
@@ -1327,7 +1901,7 @@ class ChatBot {
                   <svg class="me-2" aria-hidden="true" xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" viewBox="0 0 24 24">
                     <path stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 4H4m0 0v4m0-4 5 5m7-5h4m0 0v4m0-4-5 5M8 20H4m0 0v-4m0 4 5-5m7 5h4m0 0v-4m0 4-5-5"/>
                   </svg>
-                  ${this.isFullscreen ? 'Minimizar' : 'Pantalla completa'}
+                  ${this.isFullscreen ? this._getTranslation('minimize') : this._getTranslation('fullscreen')}
                 </button>
               </li>
               ` : ''}
@@ -1338,7 +1912,7 @@ class ChatBot {
                     <path d="M8 15A7 7 0 1 1 8 1a7 7 0 0 1 0 14zm0 1A8 8 0 1 0 8 0a8 8 0 0 0 0 16z"/>
                     <path d="m8.93 6.588-2.29.287-.082.38.45.083c.294.07.352.176.288.469l-.738 3.468c-.194.897.105 1.319.808 1.319.545 0 1.178-.252 1.465-.598l.088-.416c-.2.176-.492.246-.686.246-.275 0-.375-.193-.304-.533L8.93 6.588zM9 4.5a1 1 0 1 1-2 0 1 1 0 0 1 2 0z"/>
                   </svg>
-                  Información del chat
+                  ${this._getTranslation('chat_info')}
                 </button>
               </li>
             </ul>
@@ -1353,7 +1927,7 @@ class ChatBot {
             id="chat-input"
             type="text"
             class="form-control rounded-pill"
-            placeholder="Escribe un mensaje..."
+            placeholder="${this._getTranslation('write_message_placeholder')}"
             aria-label="Mensaje"
             required
           />
@@ -1948,15 +2522,14 @@ class ChatBot {
       <div class="modal-overlay" id="info-modal">
         <div class="modal-dialog">
           <div class="modal-header">
-            <h5 class="modal-title">Información del Chat</h5>
-            <button type="button" class="modal-close" id="info-modal-close" aria-label="Cerrar">×</button>
+            <h5 class="modal-title">${this._getTranslation('chat_info')}</h5>
+            <button type="button" class="modal-close" id="info-modal-close" aria-label="${this._getTranslation('close')}">×</button>
           </div>
           <div class="modal-body">
             <div class="bot-info">
               <div class="bot-title">Bot</div>
               <img src="${this.bot.img}" alt="${this.botName}" class="bot-avatar">
               <div class="bot-name">${this.botName}</div>
-              <div class="bot-mode">${this.testMode ? '🧪 Test' : '🌐 Producción'}</div>
             </div>
             
             ${this.license.showFooter ? `
@@ -2019,7 +2592,7 @@ class ChatBot {
       <div class="modal-dialog modal-dialog-centered">
         <div class="modal-content">
           <div class="modal-header border-0">
-            <h5 class="modal-title">Información del Chat</h5>
+            <h5 class="modal-title">${this._getTranslation('chat_info')}</h5>
             <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
           </div>
           <div class="modal-body">
@@ -2028,7 +2601,6 @@ class ChatBot {
                 <h6>Bot</h6>
                 <img src="${this.bot.img}" alt="${this.botName}" class="rounded-circle mb-3" style="width: 80px; height: 80px; object-fit: cover;">
                 <p>${this.botName}</p>
-                <p>${this.testMode ? '🧪 Test' : '🌐 Producción'}</p>
               </div>
               
               ${this.license.showFooter ? `
@@ -2078,7 +2650,7 @@ class ChatBot {
           </svg>
         `;
         
-        this.fullscreenToggle.innerHTML = iconSvg + (this.isFullscreen ? 'Minimizar' : 'Pantalla completa');
+        this.fullscreenToggle.innerHTML = iconSvg + (this.isFullscreen ? this._getTranslation('minimize') : this._getTranslation('fullscreen'));
       } else {
         const iconSvg = this.isFullscreen ? `
           <svg class="me-2" aria-hidden="true" xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" viewBox="0 0 24 24">
@@ -2090,7 +2662,7 @@ class ChatBot {
           </svg>
         `;
         
-        this.fullscreenToggle.innerHTML = iconSvg + (this.isFullscreen ? 'Minimizar' : 'Pantalla completa');
+        this.fullscreenToggle.innerHTML = iconSvg + (this.isFullscreen ? this._getTranslation('minimize') : this._getTranslation('fullscreen'));
       }
     }
   }
@@ -2123,6 +2695,13 @@ class ChatBot {
     
     if (this.chatVisible) {
       this.input.focus();
+      // Iniciar temporizador cuando se abre el chat (si hay mensajes y no estamos en registro)
+      if (this.messages.length > 0 && !this.registrationScreen && (this.testMode || this.registrationCompleted)) {
+        this._startReminderTimer();
+      }
+    } else {
+      // Limpiar temporizador cuando se cierra el chat
+      this._clearReminderTimer();
     }
   }
 
@@ -2145,7 +2724,7 @@ class ChatBot {
       msg.from === "bot" && 
       (msg.text === this.saludoInicial || 
        msg.text.includes("estoy aquí para ayudarte") ||
-       (this.testMode && this.testMessages.welcome.includes(msg.text)))
+       (this.testMode && this._getTestMessages().welcome.includes(msg.text)))
     );
     
     // Si ya existe el mensaje inicial, no agregarlo nuevamente
@@ -2157,15 +2736,19 @@ class ChatBot {
     let message;
     
     if (this.testMode) {
-      // En modo test, usar mensaje de bienvenida del banco de mensajes
-      message = this.testMessages.welcome[Math.floor(Math.random() * this.testMessages.welcome.length)];
+      // En modo test, usar mensaje de bienvenida traducido
+      const testMessages = this._getTestMessages();
+      message = testMessages.welcome[Math.floor(Math.random() * testMessages.welcome.length)];
     } else {
       // Mensaje normal para modo producción
-      message = this.saludoInicial || `Hola ${this.user.name}, soy ${this.botName} y estoy aquí para ayudarte. ¿En qué puedo asistirte?`;
+      message = this.saludoInicial || this._getTranslation('welcome_message');
     }
     
     this._log('_addInitialMessage - Agregando mensaje inicial:', message);
     this._addMessage("bot", message);
+    
+    // Reproducir sonido de notificación en el primer mensaje del bot
+    this._playNotificationSound();
   }
 
   _addMessage(from, text, isRegistration = false) {
@@ -2173,12 +2756,33 @@ class ChatBot {
     const message = { from, text, time, isRegistration };
     this.messages.push(message);
 
-    const messageElement = this._createMessageElement(message);
-    this.messagesContainer.appendChild(messageElement);
-    this.messagesContainer.scrollTop = this.messagesContainer.scrollHeight;
+    // Si es un mensaje del usuario, actualizar el tiempo y limpiar temporizador
+    if (from === "user") {
+      this.lastUserMessageTime = Date.now();
+      this._clearReminderTimer();
+      this._log('_addMessage - Mensaje del usuario, temporizador limpiado');
+    }
+    
+    // Si es un mensaje del bot, iniciar temporizador de recordatorio
+    if (from === "bot" && !isRegistration && !this.registrationScreen) {
+      // Pequeño delay para asegurar que el mensaje se haya renderizado completamente
+      setTimeout(() => {
+        this._startReminderTimer();
+        this._log('_addMessage - Mensaje del bot completado, temporizador iniciado');
+      }, 100);
+    }
+
+    // Renderizar todos los mensajes para evitar duplicados
+    this._renderMessages();
 
     this._saveToCache();
   }
+
+
+
+
+
+
 
   _createMessageElement(msg) {
     if (this.useShadowDOM) {
@@ -2212,15 +2816,44 @@ class ChatBot {
       welcomeText.style.padding = "1rem";
       welcomeText.style.maxWidth = "80%";
       welcomeText.style.margin = "0 auto";
+    //   welcomeText.innerHTML = `
+    //   <p style="margin: 0; font-weight: 600; color: #000000;">${this.botName}</p>
+    //   <p style="margin: 0; color: #6c757d; font-size: 0.875rem;">${msg.time}</p>
+    //   <p style="margin: 0.5rem 0 0; color: #000000;">${this._parseMarkdown(msg.text)}</p>
+    // `;
       welcomeText.innerHTML = `
-        <p style="margin: 0; font-weight: 600;">${this.botName}</p>
-        <p style="margin: 0; color: #6c757d; font-size: 0.875rem;">${msg.time}</p>
-        <p style="margin: 0.5rem 0 0;">${this._parseMarkdown(msg.text)}</p>
+        <p style="margin: 0; font-weight: 600; color: #000000;">${this.botName}</p>
+        <p style="margin: 0.5rem 0 0; color: #000000;">${this._parseMarkdown(msg.text)}</p>
       `;
       
       welcomeWrapper.appendChild(botImage);
       welcomeWrapper.appendChild(welcomeText);
       return welcomeWrapper;
+    }
+
+    // Si es mensaje de límite alcanzado, renderizar de forma especial
+    if (msg.isLimitReached) {
+      const limitWrapper = document.createElement("div");
+      limitWrapper.style.textAlign = "center";
+      limitWrapper.style.marginBottom = "1rem";
+      limitWrapper.style.marginTop = "20px";
+      
+      const limitText = document.createElement("div");
+      limitText.style.backgroundColor = "#fff3cd";
+      limitText.style.border = "1px solid #ffeaa7";
+      limitText.style.borderRadius = "0.5rem";
+      limitText.style.padding = "1rem";
+      limitText.style.maxWidth = "90%";
+      limitText.style.margin = "0 auto";
+      limitText.style.color = "#856404";
+      limitText.innerHTML = `
+        <p style="margin: 0; font-weight: 600; font-size: 1.1rem;">⚠️ ${this._getTranslation('limit_reached_placeholder')}</p>
+        <p style="margin: 0.5rem 0 0; font-size: 0.9rem;">${this._parseMarkdown(msg.text)}</p>
+        <p style="margin: 0.5rem 0 0; font-size: 0.8rem; opacity: 0.8;">${this._getTranslation('limit_reached_message')}</p>
+      `;
+      
+      limitWrapper.appendChild(limitText);
+      return limitWrapper;
     }
 
     // Si es mensaje de error con reintento, renderizar de forma especial
@@ -2260,7 +2893,7 @@ class ChatBot {
       retryButton.style.marginTop = "1rem";
       retryButton.style.cursor = "pointer";
       retryButton.style.fontSize = "0.875rem";
-      retryButton.textContent = "Intentar nuevamente";
+      retryButton.textContent = this._getTranslation('error_message');
       retryButton.addEventListener("click", () => {
         this._retryConnection();
       });
@@ -2292,7 +2925,7 @@ class ChatBot {
     // Si es un mensaje con streaming, agregar clases especiales
     if (msg.isStreaming) {
       textP.classList.add('streaming-cursor');
-      textP.style.borderLeft = `3px solid ${this.primaryColor}`;
+      //textP.style.borderLeft = `3px solid ${this.primaryColor}`;
       textP.style.paddingLeft = '10px';
       textP.style.background = `linear-gradient(90deg, rgba(59, 130, 246, 0.05) 0%, rgba(59, 130, 246, 0) 100%)`;
     }
@@ -2338,6 +2971,26 @@ class ChatBot {
       return welcomeWrapper;
     }
 
+    // Si es mensaje de límite alcanzado, renderizar de forma especial
+    if (msg.isLimitReached) {
+      const limitWrapper = document.createElement("div");
+      limitWrapper.className = "text-center mb-4";
+      limitWrapper.style.marginTop = "20px";
+      
+      const limitText = document.createElement("div");
+      limitText.className = "bg-warning bg-opacity-10 border border-warning rounded-3 p-3 mx-auto";
+      limitText.style.maxWidth = "90%";
+      limitText.style.color = "#856404";
+      limitText.innerHTML = `
+        <p class="mb-0 fw-bold" style="font-size: 1.1rem;">⚠️ ${this._getTranslation('limit_reached_placeholder')}</p>
+        <p class="mb-0 mt-2" style="font-size: 0.9rem;">${this._parseMarkdown(msg.text)}</p>
+        <p class="mb-0 mt-2 text-muted" style="font-size: 0.8rem;">${this._getTranslation('limit_reached_message')}</p>
+      `;
+      
+      limitWrapper.appendChild(limitText);
+      return limitWrapper;
+    }
+
     // Si es mensaje de error con reintento, renderizar de forma especial
     if (msg.isError && msg.showRetry) {
       const errorWrapper = document.createElement("div");
@@ -2364,7 +3017,7 @@ class ChatBot {
       
       const retryButton = document.createElement("button");
       retryButton.className = "btn btn-primary mt-3 btn-sm rounded-pill";
-      retryButton.textContent = "Intentar nuevamente";
+      retryButton.textContent = this._getTranslation('error_message');
       retryButton.addEventListener("click", () => {
         this._retryConnection();
       });
@@ -2419,7 +3072,7 @@ class ChatBot {
     // Si es un mensaje con streaming, agregar clases especiales
     if (msg.isStreaming) {
       textP.classList.add('streaming-cursor');
-      textP.style.borderLeft = `3px solid ${this.primaryColor}`;
+      //textP.style.borderLeft = `3px solid ${this.primaryColor}`;
       textP.style.paddingLeft = '10px';
       textP.style.background = `linear-gradient(90deg, rgba(59, 130, 246, 0.05) 0%, rgba(59, 130, 246, 0) 100%)`;
     }
@@ -2461,7 +3114,9 @@ class ChatBot {
     this.messagesContainer.appendChild(frag);
     this.messagesContainer.scrollTop = this.messagesContainer.scrollHeight;
 
-    this.sendButton.disabled = this.input.value.trim() === "" || this.loading;
+
+    
+
   }
 
   _hexToRgba(hex, alpha = 1) {
@@ -2596,10 +3251,11 @@ class ChatBot {
       botNameElement.textContent = this.botName;
     }
     
-    // Actualizar imagen del bot en el botón flotante si no es personalizada
-    if (this.floatingBtn && this.iconButton === this.bot.img) {
+    // Actualizar imagen del botón flotante
+    if (this.floatingBtn) {
+      // Verificar si hay un iconButton personalizado
       if (this.iconButton && this.iconButton !== this.bot.img) {
-        this.floatingBtn.innerHTML = `<img src="${this.iconButton}" alt="Chat">`;
+        this.floatingBtn.innerHTML = `<img src="${this.iconButton}" alt="Chat" onerror="this.style.display='none'; this.parentElement.innerHTML='<svg xmlns=\\"http://www.w3.org/2000/svg\\" fill=\\"white\\" viewBox=\\"0 0 24 24\\"><path d=\\"M20 2H4a2 2 0 0 0-2 2v18l4-4h14a2 2 0 0 0 2-2V4a2 2 0 0 0-2-2z\\"/></svg>'; this.parentElement.style.backgroundColor='${this.primaryColor}'; this.parentElement.style.display='flex'; this.parentElement.style.alignItems='center'; this.parentElement.style.justifyContent='center';">`;
       } else {
         this.floatingBtn.innerHTML = `<svg xmlns="http://www.w3.org/2000/svg" fill="white" viewBox="0 0 24 24"><path d="M20 2H4a2 2 0 0 0-2 2v18l4-4h14a2 2 0 0 0 2-2V4a2 2 0 0 0-2-2z"/></svg>`;
       }
@@ -2625,10 +3281,11 @@ class ChatBot {
       botNameElement.textContent = this.botName;
     }
     
-    // Actualizar imagen del bot en el botón flotante si no es personalizada
-    if (this.floatingBtn && this.iconButton === this.bot.img) {
+    // Actualizar imagen del botón flotante
+    if (this.floatingBtn) {
+      // Verificar si hay un iconButton personalizado
       if (this.iconButton && this.iconButton !== this.bot.img) {
-        this.floatingBtn.innerHTML = `<img src="${this.iconButton}" alt="Chat" style="width: 100%; height: 100%; object-fit: cover; border-radius: 50%;">`;
+        this.floatingBtn.innerHTML = `<img src="${this.iconButton}" alt="Chat" style="width: 100%; height: 100%; object-fit: cover; border-radius: 50%;" onerror="this.style.display='none'; this.parentElement.innerHTML='<svg xmlns=\\"http://www.w3.org/2000/svg\\" fill=\\"white\\" width=\\"${this.isMobile ? '48' : '24'}\\" height=\\"${this.isMobile ? '48' : '24'}\\" viewBox=\\"0 0 24 24\\"><path d=\\"M20 2H4a2 2 0 0 0-2 2v18l4-4h14a2 2 0 0 0 2-2V4a2 2 0 0 0-2-2z\\"/></svg>'; this.parentElement.style.backgroundColor='${this.primaryColor}'; this.parentElement.style.display='flex'; this.parentElement.style.alignItems='center'; this.parentElement.style.justifyContent='center';">`;
       } else {
         const iconSize = this.isMobile ? "48" : "24";
         this.floatingBtn.innerHTML = `<svg xmlns="http://www.w3.org/2000/svg" fill="white" width="${iconSize}" height="${iconSize}" viewBox="0 0 24 24"><path d="M20 2H4a2 2 0 0 0-2 2v18l4-4h14a2 2 0 0 0 2-2V4a2 2 0 0 0-2-2z"/></svg>`;
@@ -2642,6 +3299,8 @@ class ChatBot {
   async _sendMessage() {
     const msg = this.input.value.trim();
     if (!msg || this.loading) return;
+
+
 
     // Debug: Log del estado actual
     this._log('_sendMessage - Estado actual:', {
@@ -2678,6 +3337,12 @@ class ChatBot {
           this._log('_sendMessage - Enviando mensaje al API');
           const answer = await this._sendMessageToAPI(msg);
           
+          // Si la respuesta es null, significa que el servidor indicó límite alcanzado
+          if (answer === null) {
+            this._log('_sendMessage - Respuesta null, límite alcanzado');
+            return; // No mostrar respuesta normal
+          }
+          
           // Si streaming está habilitado, mostrar el texto carácter por carácter
           if (this.stream) {
             // Ocultar el indicador de typing antes de mostrar el streaming
@@ -2691,17 +3356,20 @@ class ChatBot {
         } else {
           // Si no está registrado y no está en modo registro, mostrar mensaje de error
           this._log('_sendMessage - Usuario no registrado');
-          this._addMessage("bot", "Por favor, completa el registro primero. Necesito saber tu nombre para poder ayudarte.");
+          this._addMessage("bot", this._getTranslation('registration_required'));
         }
       }
     } catch (error) {
       this._logError('Error enviando mensaje:', error);
-      this._addMessage("bot", "Error al obtener respuesta. Intenta nuevamente.");
+      this._addMessage("bot", this._getTranslation('error_message'));
     } finally {
       this.loading = false;
       this.sendButton.disabled = false;
       // Ocultar indicador de "está escribiendo..."
       this._hideTypingIndicator();
+      
+      // El temporizador se iniciará después de que termine el streaming
+      // No se inicia aquí para evitar conflictos con el streaming
       if (this.testMode || this.registrationCompleted) {
         this.input.focus();
       }
@@ -2762,14 +3430,22 @@ class ChatBot {
       // Scroll al final del contenedor
       this.messagesContainer.scrollTop = this.messagesContainer.scrollHeight;
       
-      // Delay aleatorio entre 20-80ms para simular typing humano
-      const delay = Math.random() * 60 + 20;
+      // Delay aleatorio entre 10-30ms para simular typing humano (más rápido)
+      const delay = Math.random() * 20 + 10;
       await new Promise(resolve => setTimeout(resolve, delay));
     }
     
     // Streaming completado
     streamingMessage.isStreaming = false;
     this._renderMessages();
+    
+    // Iniciar temporizador de recordatorio después de que termine el streaming
+    if (!this.registrationScreen && (this.testMode || this.registrationCompleted)) {
+      setTimeout(() => {
+        this._startReminderTimer();
+        this._log('_displayMessageWithStreaming - Streaming completado, temporizador iniciado');
+      }, 100);
+    }
     
     this._log('_displayMessageWithStreaming - Streaming completado');
   }
@@ -2952,29 +3628,32 @@ class ChatBot {
     
     let response = "";
     
+    // Obtener mensajes de test traducidos
+    const testMessages = this._getTestMessages();
+    
     // Lógica de respuesta basada en el mensaje del usuario
     const lowerMessage = userMessage.toLowerCase();
     
     if (lowerMessage.includes('hola') || lowerMessage.includes('hello') || lowerMessage.includes('hi')) {
-      response = this.testMessages.greetings[Math.floor(Math.random() * this.testMessages.greetings.length)];
+      response = testMessages.greetings[Math.floor(Math.random() * testMessages.greetings.length)];
     } else if (lowerMessage.includes('ayuda') || lowerMessage.includes('help') || lowerMessage.includes('qué puedes hacer')) {
-      response = this.testMessages.help[Math.floor(Math.random() * this.testMessages.help.length)];
+      response = testMessages.help[Math.floor(Math.random() * testMessages.help.length)];
     } else if (lowerMessage.includes('curiosidad') || lowerMessage.includes('dato') || lowerMessage.includes('interesante')) {
-      response = this.testMessages.curiosities[Math.floor(Math.random() * this.testMessages.curiosities.length)];
+      response = testMessages.curiosities[Math.floor(Math.random() * testMessages.curiosities.length)];
     } else {
-      response = this.testMessages.unknown[Math.floor(Math.random() * this.testMessages.unknown.length)];
+      response = testMessages.unknown[Math.floor(Math.random() * testMessages.unknown.length)];
     }
     
-          // Si streaming está habilitado, mostrar el texto carácter por carácter
-      if (this.stream) {
-        // Ocultar el indicador de typing antes de mostrar el streaming
-        this._hideTypingIndicator();
-        await this._displayMessageWithStreaming(response);
-      } else {
-        // Ocultar el indicador de typing y mostrar el mensaje completo
-        this._hideTypingIndicator();
-        this._addMessage("bot", response);
-      }
+    // Si streaming está habilitado, mostrar el texto carácter por carácter
+    if (this.stream) {
+      // Ocultar el indicador de typing antes de mostrar el streaming
+      this._hideTypingIndicator();
+      await this._displayMessageWithStreaming(response);
+    } else {
+      // Ocultar el indicador de typing y mostrar el mensaje completo
+      this._hideTypingIndicator();
+      this._addMessage("bot", response);
+    }
     
     this._log('_handleTestResponse - Respuesta generada:', response);
   }
@@ -3022,7 +3701,7 @@ class ChatBot {
     // Mostrar pantalla de bienvenida con imagen del bot
     const welcomeMessage = {
       from: "bot",
-      text: "¡Hola! 👋 Soy tu asistente virtual. Para personalizar tu experiencia, necesito saber tu nombre.",
+      text: this._getTranslation('registration_name_prompt'),
       time: this._getCurrentTime(),
       isWelcome: true,
       isRegistration: true
@@ -3042,7 +3721,7 @@ class ChatBot {
       this.input.focus();
       
       // Cambiar el placeholder del input para indicar que debe escribir su nombre
-      this.input.placeholder = "Escribe tu nombre...";
+      this.input.placeholder = this._getTranslation('write_message_placeholder');
     }
   }
 
@@ -3093,6 +3772,9 @@ class ChatBot {
     this.messages = [];
     this.messagesContainer.innerHTML = '';
     this._clearCache();
+    
+
+    
     this._log('Historial de chat limpiado');
   }
 
@@ -3153,6 +3835,225 @@ class ChatBot {
         email: this.user.email
       }
     };
+  }
+
+  // Configurar tiempo de recordatorio
+  setReminderTimeout(timeout) {
+    this.reminderTimeout = timeout;
+    this._log('setReminderTimeout - Tiempo de recordatorio configurado a', timeout / 1000, 'segundos');
+  }
+
+  // Obtener estado del recordatorio
+  getReminderStatus() {
+    return {
+      reminderTimeout: this.reminderTimeout,
+      lastUserMessageTime: this.lastUserMessageTime,
+      hasActiveTimer: this.reminderTimer !== null,
+      timeSinceLastMessage: this.lastUserMessageTime ? Date.now() - this.lastUserMessageTime : null
+    };
+  }
+
+  // Cambiar idioma del chat
+  setLanguage(language) {
+    const supportedLanguages = ['es', 'en', 'pt', 'ru', 'de', 'zh', 'ja'];
+    if (supportedLanguages.includes(language)) {
+      this.language = language;
+      this._log('setLanguage - Idioma cambiado a:', language);
+      
+      // Actualizar la UI con el nuevo idioma
+      this._updateUILanguage();
+      
+      // Guardar el cambio en el caché
+      if (this.cache) {
+        this._saveToCache();
+        this._log('setLanguage - Idioma guardado en caché');
+      }
+      
+      return true;
+    } else {
+      this._logError('setLanguage - Idioma no soportado:', language);
+      return false;
+    }
+  }
+
+  // Obtener idioma actual
+  getLanguage() {
+    return this.language;
+  }
+
+  // Obtener idiomas soportados
+  getSupportedLanguages() {
+    return ['es', 'en', 'pt', 'ru', 'de', 'zh', 'ja'];
+  }
+
+  // Actualizar UI con el nuevo idioma
+  _updateUILanguage() {
+    // Actualizar placeholders
+    if (this.input) {
+      if (this.registrationScreen) {
+        this.input.placeholder = this._getTranslation('write_message_placeholder');
+      } else {
+        this.input.placeholder = this._getTranslation('write_message_placeholder');
+      }
+    }
+    
+    // Actualizar botones si existen
+    if (this.sendButton) {
+      this.sendButton.textContent = this._getTranslation('send_button_text');
+    }
+    
+    // Actualizar elementos del header si existen
+    if (this.useShadowDOM) {
+      this._updateUILanguageShadowDOM();
+    } else {
+      this._updateUILanguageBootstrap();
+    }
+    
+    // Re-renderizar mensajes para actualizar textos
+    if (this.messagesContainer) {
+      this._renderMessages();
+    }
+    
+    // Si estamos en modo test, actualizar los mensajes de test
+    if (this.testMode) {
+      this._log('_updateUILanguage - Modo test detectado, mensajes de test actualizados');
+    }
+    
+    this._log('_updateUILanguage - UI actualizada con idioma:', this.language);
+  }
+
+  // Actualizar UI de idioma para Shadow DOM
+  _updateUILanguageShadowDOM() {
+    if (!this.chatPanelShadow) return;
+    
+    // Actualizar botones del header
+    const clearHistoryBtn = this.chatPanelShadow.querySelector('.clear-history-btn');
+    if (clearHistoryBtn) {
+      clearHistoryBtn.textContent = this._getTranslation('clear_history');
+    }
+    
+    const fullscreenBtn = this.chatPanelShadow.querySelector('.fullscreen-btn');
+    if (fullscreenBtn) {
+      fullscreenBtn.textContent = this._getTranslation('fullscreen');
+    }
+    
+    // Actualizar botón de pantalla completa en el dropdown
+    const fullscreenToggle = this.chatPanelShadow.querySelector('#fullscreen-toggle');
+    if (fullscreenToggle) {
+      const iconSvg = this.isFullscreen ? `
+        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" viewBox="0 0 24 24">
+          <path stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 9h4m0 0V5m0 4L4 4m15 5h-4m0 0V5m0 4 5-5M5 15h4m0 0v4m0-4-5 5m7 5h4m0 0v-4m0 4-5-5"/>
+        </svg>
+      ` : `
+        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" viewBox="0 0 24 24">
+          <path stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 4H4m0 0v4m0-4 5 5m7-5h4m0 0v4m0-4-5 5M8 20H4m0 0v-4m0 4 5-5m7 5h4m0 0v-4m0 4-5-5"/>
+        </svg>
+      `;
+      fullscreenToggle.innerHTML = iconSvg + (this.isFullscreen ? this._getTranslation('minimize') : this._getTranslation('fullscreen'));
+    }
+    
+    const infoBtn = this.chatPanelShadow.querySelector('.info-btn');
+    if (infoBtn) {
+      infoBtn.textContent = this._getTranslation('chat_info');
+    }
+    
+    // Actualizar footer
+    const footerText = this.chatPanelShadow.querySelector('.footer-text');
+    if (footerText) {
+      footerText.innerHTML = `${this._getTranslation('powered_by')} <strong>Hubdox</strong>`;
+    }
+    
+    // Actualizar modal de confirmación si existe
+    if (this.modalShadow) {
+      const modalTitle = this.modalShadow.querySelector('.modal-title');
+      if (modalTitle) {
+        modalTitle.textContent = this._getTranslation('clear_history_confirm_title');
+      }
+      
+      const modalBody = this.modalShadow.querySelector('.modal-body');
+      if (modalBody) {
+        modalBody.textContent = this._getTranslation('clear_history_confirm');
+      }
+      
+      const cancelBtn = this.modalShadow.querySelector('.btn-secondary');
+      if (cancelBtn) {
+        cancelBtn.textContent = this._getTranslation('cancel');
+      }
+      
+      const confirmBtn = this.modalShadow.querySelector('.btn-primary');
+      if (confirmBtn) {
+        confirmBtn.textContent = this._getTranslation('confirm');
+      }
+    }
+    
+    this._log('_updateUILanguageShadowDOM - Elementos del header actualizados');
+  }
+
+  // Actualizar UI de idioma para Bootstrap
+  _updateUILanguageBootstrap() {
+    if (!this.chatPanel) return;
+    
+    // Actualizar botones del header
+    const clearHistoryBtn = this.chatPanel.querySelector('.clear-history-btn');
+    if (clearHistoryBtn) {
+      clearHistoryBtn.textContent = this._getTranslation('clear_history');
+    }
+    
+    const fullscreenBtn = this.chatPanel.querySelector('.fullscreen-btn');
+    if (fullscreenBtn) {
+      fullscreenBtn.textContent = this._getTranslation('fullscreen');
+    }
+    
+    // Actualizar botón de pantalla completa en el dropdown
+    const fullscreenToggle = this.chatPanel.querySelector('#fullscreen-toggle');
+    if (fullscreenToggle) {
+      const iconSvg = this.isFullscreen ? `
+        <svg class="me-2" aria-hidden="true" xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" viewBox="0 0 24 24">
+          <path stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 9h4m0 0V5m0 4L4 4m15 5h-4m0 0V5m0 4 5-5M5 15h4m0 0v4m0-4-5 5m7 5h4m0 0v-4m0 4-5-5"/>
+        </svg>
+      ` : `
+        <svg class="me-2" aria-hidden="true" xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" viewBox="0 0 24 24">
+          <path stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 4H4m0 0v4m0-4 5 5m7-5h4m0 0v4m0-4-5 5M8 20H4m0 0v-4m0 4 5-5m7 5h4m0 0v-4m0 4-5-5"/>
+        </svg>
+      `;
+      fullscreenToggle.innerHTML = iconSvg + (this.isFullscreen ? this._getTranslation('minimize') : this._getTranslation('fullscreen'));
+    }
+    
+    const infoBtn = this.chatPanel.querySelector('.info-btn');
+    if (infoBtn) {
+      infoBtn.textContent = this._getTranslation('chat_info');
+    }
+    
+    // Actualizar footer
+    const footerText = this.chatPanel.querySelector('.footer-text');
+    if (footerText) {
+      footerText.innerHTML = `${this._getTranslation('powered_by')} <strong>Hubdox</strong>`;
+    }
+    
+    // Actualizar modal de confirmación si existe
+    if (this.modal) {
+      const modalTitle = this.modal.querySelector('.modal-title');
+      if (modalTitle) {
+        modalTitle.textContent = this._getTranslation('clear_history_confirm_title');
+      }
+      
+      const modalBody = this.modal.querySelector('.modal-body');
+      if (modalBody) {
+        modalBody.textContent = this._getTranslation('clear_history_confirm');
+      }
+      
+      const cancelBtn = this.modal.querySelector('.btn-secondary');
+      if (cancelBtn) {
+        cancelBtn.textContent = this._getTranslation('cancel');
+      }
+      
+      const confirmBtn = this.modal.querySelector('.btn-primary');
+      if (confirmBtn) {
+        confirmBtn.textContent = this._getTranslation('confirm');
+      }
+    }
+    
+    this._log('_updateUILanguageBootstrap - Elementos del header actualizados');
   }
 
   /**
@@ -3275,6 +4176,8 @@ class ChatBot {
       console.debug('[ChatBot SDK] DEBUG:', ...args);
     }
   }
+
+
 }
 
 // Exportar para uso global
