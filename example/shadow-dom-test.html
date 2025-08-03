@@ -1,0 +1,200 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Test Shadow DOM - Hubdox Chat SDK</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 20px;
+            background-color: #f5f5f5;
+        }
+        .test-container {
+            max-width: 800px;
+            margin: 0 auto;
+            background: white;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+        .test-button {
+            background: #007bff;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 4px;
+            cursor: pointer;
+            margin: 5px;
+        }
+        .test-button:hover {
+            background: #0056b3;
+        }
+        .test-button.success {
+            background: #28a745;
+        }
+        .test-button.success:hover {
+            background: #1e7e34;
+        }
+        .test-button.danger {
+            background: #dc3545;
+        }
+        .test-button.danger:hover {
+            background: #c82333;
+        }
+        .log {
+            background: #f8f9fa;
+            border: 1px solid #dee2e6;
+            border-radius: 4px;
+            padding: 10px;
+            margin: 10px 0;
+            font-family: monospace;
+            font-size: 12px;
+            max-height: 200px;
+            overflow-y: auto;
+        }
+    </style>
+</head>
+<body>
+    <div class="test-container">
+        <h1>🧪 Test Shadow DOM</h1>
+        <p>Prueba la implementación de Shadow DOM del SDK de chat.</p>
+        
+        <h3>Controles de Prueba:</h3>
+        <button class="test-button" onclick="testShadowDOM()">🚀 Probar Shadow DOM</button>
+        <button class="test-button success" onclick="testBootstrap()">🔄 Probar Bootstrap</button>
+        <button class="test-button danger" onclick="destroyChatbot()">🗑️ Destruir Chatbot</button>
+        <button class="test-button" onclick="clearLog()">🧹 Limpiar Log</button>
+        
+        <h3>Log de Eventos:</h3>
+        <div id="log" class="log"></div>
+        
+        <h3>Instrucciones:</h3>
+        <ol>
+            <li>Haz clic en "Probar Shadow DOM" para inicializar el chat con Shadow DOM</li>
+            <li>Interactúa con el chat para probar todas las funcionalidades</li>
+            <li>Prueba el menú de acciones (tres puntos) y los modales</li>
+            <li>Verifica que no hay errores en la consola</li>
+            <li>Prueba "Probar Bootstrap" para comparar comportamientos</li>
+        </ol>
+    </div>
+
+    <script src="../src/index.js"></script>
+    <script>
+        let currentChatbot = null;
+
+        function log(message) {
+            const logElement = document.getElementById('log');
+            const timestamp = new Date().toLocaleTimeString();
+            logElement.innerHTML += `[${timestamp}] ${message}\n`;
+            logElement.scrollTop = logElement.scrollHeight;
+            console.log(message);
+        }
+
+        function clearLog() {
+            document.getElementById('log').innerHTML = '';
+        }
+
+        function testShadowDOM() {
+            try {
+                if (currentChatbot) {
+                    currentChatbot.destroy();
+                    log('Chatbot anterior destruido');
+                }
+                
+                log('Inicializando chatbot con Shadow DOM...');
+                
+                currentChatbot = new ChatBot({
+                    baseUrl: 'https://api.example.com',
+                    apiKey: 'test-api-key',
+                    tenant: 'test-tenant',
+                    options: {
+                        useShadowDOM: true,
+                        testMode: true,
+                        devMode: true,
+                        stream: true
+                    },
+                    custom: {
+                        primaryColor: '#007bff',
+                        botName: 'Shadow DOM Bot',
+                        chatWidth: '400px',
+                        chatHeight: '60vh'
+                    }
+                });
+                
+                log('✅ Chatbot con Shadow DOM inicializado correctamente');
+            } catch (error) {
+                log(`❌ Error al inicializar Shadow DOM: ${error.message}`);
+                console.error(error);
+            }
+        }
+
+        function testBootstrap() {
+            try {
+                if (currentChatbot) {
+                    currentChatbot.destroy();
+                    log('Chatbot anterior destruido');
+                }
+                
+                log('Inicializando chatbot con Bootstrap...');
+                
+                currentChatbot = new ChatBot({
+                    baseUrl: 'https://api.example.com',
+                    apiKey: 'test-api-key',
+                    tenant: 'test-tenant',
+                    options: {
+                        useShadowDOM: false,
+                        testMode: true,
+                        devMode: true,
+                        stream: true
+                    },
+                    custom: {
+                        primaryColor: '#28a745',
+                        botName: 'Bootstrap Bot',
+                        chatWidth: '400px',
+                        chatHeight: '60vh'
+                    }
+                });
+                
+                log('✅ Chatbot con Bootstrap inicializado correctamente');
+            } catch (error) {
+                log(`❌ Error al inicializar Bootstrap: ${error.message}`);
+                console.error(error);
+            }
+        }
+
+        function destroyChatbot() {
+            try {
+                if (currentChatbot) {
+                    currentChatbot.destroy();
+                    currentChatbot = null;
+                    log('✅ Chatbot destruido correctamente');
+                } else {
+                    log('ℹ️ No hay chatbot activo para destruir');
+                }
+            } catch (error) {
+                log(`❌ Error al destruir chatbot: ${error.message}`);
+                console.error(error);
+            }
+        }
+
+        // Capturar errores globales
+        window.addEventListener('error', function(event) {
+            log(`❌ Error global: ${event.error.message} en ${event.filename}:${event.lineno}`);
+        });
+
+        // Capturar errores de promesas no manejadas
+        window.addEventListener('unhandledrejection', function(event) {
+            log(`❌ Promesa rechazada: ${event.reason}`);
+        });
+
+        // Inicializar automáticamente con Shadow DOM después de 2 segundos
+        window.addEventListener('load', () => {
+            setTimeout(() => {
+                log('🔄 Inicialización automática con Shadow DOM...');
+                testShadowDOM();
+            }, 2000);
+        });
+    </script>
+</body>
+</html> 

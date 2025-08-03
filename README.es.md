@@ -15,7 +15,9 @@ Un SDK de JavaScript ligero y fácil de usar para integrar un chatbot flotante e
 - **Pantalla de registro separada**: Una pantalla de bienvenida independiente donde el bot saluda y solicita el nombre del usuario antes de iniciar el chat.
 - **Altamente personalizable**: Colores, textos, imágenes y estilos configurables.
 - **Integración sencilla**: Una sola línea de código para implementarlo.
-- **Bootstrap incluido**: Utiliza Bootstrap 5 para un diseño moderno y profesional.
+- **Shadow DOM**: Aislamiento total de CSS para evitar conflictos con frameworks existentes
+- **Modales propios**: Sistema de modales independiente sin dependencias externas
+- **Bootstrap opcional**: Soporte para Bootstrap 5 con opción de deshabilitar
 - **Soporte para avatares**: Imágenes de perfil para el usuario y el bot.
 - **Indicador de escritura**: Muestra cuándo el bot está procesando una respuesta.
 - **Gestión de estado**: Manejo automático de mensajes y sesiones, con caché opcional.
@@ -89,6 +91,7 @@ const chat = new ChatBot({
 | `testMode` | boolean | `false`     | Habilita o deshabilita el modo de prueba.                                   |
 | `stream`   | boolean | `false`     | Si es `true`, simula el efecto de typing mostrando el mensaje carácter por carácter. |
 | `devMode`  | boolean | `false`     | Habilita logs de desarrollo. En producción debe ser `false`.               |
+| `useShadowDOM` | boolean | `true`     | Si es `true`, usa Shadow DOM para aislamiento de CSS. Si es `false`, usa Bootstrap. |
 
 ### Objeto `user` (Opcional)
 
@@ -611,6 +614,59 @@ const chat = new ChatBot({
 });
 ```
 
+## 🔒 Shadow DOM
+
+### ¿Qué es Shadow DOM?
+
+El Shadow DOM es una tecnología web que permite encapsular completamente el CSS y JavaScript de un componente, creando un "árbol DOM sombra" aislado del resto de la página. Esto significa que:
+
+- ✅ Los estilos CSS no se filtran hacia afuera
+- ✅ Los estilos externos no afectan al componente
+- ✅ JavaScript completamente encapsulado
+- ✅ **¡Perfecto para evitar conflictos de Bootstrap!**
+
+### Configuración
+
+Por defecto, el SDK usa Shadow DOM para evitar conflictos:
+
+```javascript
+// Configuración por defecto (Shadow DOM activado)
+const chatbot = new ChatBot({
+    baseUrl: 'https://tu-api.com',
+    apiKey: 'tu-api-key',
+    tenant: 'tu-tenant',
+    options: {
+        useShadowDOM: true  // Activado por defecto
+    }
+});
+```
+
+### Usar con Bootstrap (Legacy)
+
+Si necesitas usar Bootstrap por alguna razón específica:
+
+```javascript
+// Para usar con Bootstrap (comportamiento original)
+const chatbot = new ChatBot({
+    baseUrl: 'https://tu-api.com',
+    apiKey: 'tu-api-key',
+    tenant: 'tu-tenant',
+    options: {
+        useShadowDOM: false  // Desactivar Shadow DOM
+    }
+});
+```
+
+### Ventajas del Shadow DOM
+
+| Característica | Shadow DOM | Bootstrap |
+|----------------|------------|-----------|
+| **Aislamiento CSS** | ✅ Total | ❌ Conflictos |
+| **Dependencias** | ✅ Ninguna | ❌ Bootstrap 5.3.0 |
+| **Performance** | ✅ Mejor | ❌ Más peso |
+| **Conflictos** | ✅ Ninguno | ❌ Posibles |
+| **Personalización** | ✅ Fácil | ❌ Limitada |
+
 ## 🎨 Personalización
 
 ### Colores
@@ -650,6 +706,7 @@ El SDK incluye varios archivos de ejemplo para diferentes casos de uso:
 
 - **`example/text.html`**: Ejemplo básico con todas las funcionalidades
 - **`example/streaming-test.html`**: Prueba específica del streaming simulado
+- **`example/shadow-dom-example.html`**: Ejemplo completo con Shadow DOM
 - **`example/options-menu.html`**: Configurador visual con Bootstrap
 - **`example/options-menu-tailwind.html`**: Configurador visual con Tailwind CSS
 - **`example/registration-screen-example.html`**: Ejemplo de pantalla de registro

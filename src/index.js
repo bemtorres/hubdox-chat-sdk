@@ -16,8 +16,11 @@ class ChatBot {
     this.show = optionsConfig.show !== undefined ? optionsConfig.show : true;
     this.cache = optionsConfig.cache !== undefined ? optionsConfig.cache : true;
     this.testMode = optionsConfig.testMode || false;
-    this.devMode = optionsConfig.devMode || false; // Nueva opción para modo desarrollo
-    this.stream = optionsConfig.stream || false; // Opción para streaming simulado
+    this.devMode = optionsConfig.devMode || false;
+    this.stream = optionsConfig.stream || false;
+    
+    // Nueva opción para usar Shadow DOM
+    this.useShadowDOM = optionsConfig.useShadowDOM !== undefined ? optionsConfig.useShadowDOM : true;
     
     this.user = options.user || {
       email: 'test@mail.com',
@@ -119,13 +122,22 @@ class ChatBot {
     
     // Inicialización
     this._boundHandleResize = this._handleResize.bind(this);
-    this._loadBootstrapCSS().then(() => {
-      this._loadBootstrapJS().then(() => {
-        this._renderFloatingButton();
-        this._handleResize();
-        this._initializeChat();
+    
+    if (this.useShadowDOM) {
+      // Inicializar con Shadow DOM
+      this._renderFloatingButton();
+      this._handleResize();
+      this._initializeChat();
+    } else {
+      // Inicializar con Bootstrap (comportamiento original)
+      this._loadBootstrapCSS().then(() => {
+        this._loadBootstrapJS().then(() => {
+          this._renderFloatingButton();
+          this._handleResize();
+          this._initializeChat();
+        });
       });
-    });
+    }
   }
 
   _loadBootstrapJS() {
@@ -533,6 +545,28 @@ class ChatBot {
   }
 
   _updateChatPanelSize() {
+    if (this.useShadowDOM) {
+      this._updateChatPanelSizeShadowDOM();
+    } else {
+      this._updateChatPanelSizeBootstrap();
+    }
+  }
+
+  _updateChatPanelSizeShadowDOM() {
+    if (this.chatPanel) {
+      if (this.isFullscreen) {
+        this.chatPanel.classList.add('fullscreen');
+        this.chatPanel.classList.remove('mobile');
+      } else if (this.isMobile) {
+        this.chatPanel.classList.add('mobile');
+        this.chatPanel.classList.remove('fullscreen');
+      } else {
+        this.chatPanel.classList.remove('fullscreen', 'mobile');
+      }
+    }
+  }
+
+  _updateChatPanelSizeBootstrap() {
     if (this.chatPanel) {
       if (this.isFullscreen) {
         this.chatPanel.style.cssText = `
@@ -580,6 +614,89 @@ class ChatBot {
   }
 
   _renderFloatingButton() {
+    if (this.useShadowDOM) {
+      this._renderFloatingButtonShadowDOM();
+    } else {
+      this._renderFloatingButtonBootstrap();
+    }
+  }
+
+  _renderFloatingButtonShadowDOM() {
+    // Crear contenedor con Shadow DOM
+    this.floatingBtnContainer = document.createElement("div");
+    this.floatingBtnContainer.id = "chatbot-floating-btn-container";
+    
+    // Crear Shadow DOM
+    this.floatingBtnShadow = this.floatingBtnContainer.attachShadow({ mode: 'open' });
+    
+    // Estilos encapsulados
+    const styles = document.createElement('style');
+    styles.textContent = `
+      .floating-btn {
+        position: fixed;
+        bottom: ${this.buttonPosition.bottom || "24px"};
+        right: ${this.buttonPosition.right || "24px"};
+        top: ${this.buttonPosition.top || "auto"};
+        left: ${this.buttonPosition.left || "auto"};
+        transform: ${this.buttonPosition.transform || "none"};
+        width: ${this.isMobile ? "60px" : this.buttonSize};
+        height: ${this.isMobile ? "60px" : this.buttonSize};
+        background-color: ${this.iconButton && this.iconButton !== this.bot.img ? 'transparent' : this.primaryColor};
+        border: none;
+        border-radius: 50%;
+        cursor: pointer;
+        box-shadow: 0 4px 10px ${this._hexToRgba(this.primaryColor, 0.5)};
+        display: ${this.iconButton && this.iconButton !== this.bot.img ? 'block' : 'flex'};
+        align-items: center;
+        justify-content: center;
+        z-index: 1050;
+        transition: transform 0.2s ease;
+        overflow: hidden;
+        font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+      }
+      
+      .floating-btn:hover {
+        transform: ${this.buttonPosition.transform || "none"} scale(1.1);
+      }
+      
+      .floating-btn img {
+        width: 100%;
+        height: 100%;
+        object-fit: cover;
+        border-radius: 50%;
+      }
+      
+      .floating-btn svg {
+        width: ${this.isMobile ? "48px" : "24px"};
+        height: ${this.isMobile ? "48px" : "24px"};
+      }
+    `;
+    
+    this.floatingBtnShadow.appendChild(styles);
+    
+    // Crear botón
+    this.floatingBtn = document.createElement("button");
+    this.floatingBtn.type = "button";
+    this.floatingBtn.title = "Abrir chat";
+    this.floatingBtn.className = "floating-btn";
+    
+    // Usar ícono personalizado si está disponible
+    if (this.iconButton && this.iconButton !== this.bot.img) {
+      this.floatingBtn.innerHTML = `<img src="${this.iconButton}" alt="Chat">`;
+    } else {
+      this.floatingBtn.innerHTML = `<svg xmlns="http://www.w3.org/2000/svg" fill="white" viewBox="0 0 24 24"><path d="M20 2H4a2 2 0 0 0-2 2v18l4-4h14a2 2 0 0 0 2-2V4a2 2 0 0 0-2-2z"/></svg>`;
+    }
+    
+    this.floatingBtnShadow.appendChild(this.floatingBtn);
+    document.body.appendChild(this.floatingBtnContainer);
+    
+    // Event listeners
+    this.floatingBtn.addEventListener("click", () => {
+      this._toggleChatPanel();
+    });
+  }
+
+  _renderFloatingButtonBootstrap() {
     this.floatingBtn = document.createElement("button");
     this.floatingBtn.type = "button";
     this.floatingBtn.title = "Abrir chat";
@@ -632,6 +749,545 @@ class ChatBot {
   }
 
   _renderChatPanel() {
+    if (this.useShadowDOM) {
+      this._renderChatPanelShadowDOM();
+    } else {
+      this._renderChatPanelBootstrap();
+    }
+  }
+
+  _renderChatPanelShadowDOM() {
+    // Crear contenedor con Shadow DOM
+    this.chatPanelContainer = document.createElement("div");
+    this.chatPanelContainer.id = "chatbot-panel-container";
+    
+    // Crear Shadow DOM
+    this.chatPanelShadow = this.chatPanelContainer.attachShadow({ mode: 'open' });
+    
+    // Estilos encapsulados completos
+    const styles = document.createElement('style');
+    styles.textContent = `
+      * {
+        box-sizing: border-box;
+        margin: 0;
+        padding: 0;
+      }
+      
+      .chatbot-panel {
+        position: fixed;
+        bottom: 90px;
+        right: 24px;
+        width: ${this.chatWidth};
+        max-width: ${this.chatMaxWidth};
+        height: ${this.chatHeight};
+        max-height: ${this.chatMaxHeight};
+        background-color: white;
+        border: 1px solid #dee2e6;
+        border-radius: 1.2rem;
+        box-shadow: 0 0.125rem 0.25rem rgba(0,0,0,0.075);
+        display: flex;
+        flex-direction: column;
+        z-index: 1050;
+        font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+        overflow: hidden;
+      }
+      
+      .chatbot-panel.fullscreen {
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100vw;
+        height: 100vh;
+        max-width: none;
+        max-height: none;
+        border-radius: 0;
+      }
+      
+      .chatbot-panel.mobile {
+        width: calc(100vw - 48px);
+        right: 24px;
+        left: 24px;
+      }
+      
+      /* Header */
+      .chat-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        padding: 0.75rem 1rem;
+        background-color: ${this.headerBgColor};
+        color: ${this.headerTextColor};
+        border-radius: 0.375rem 0.375rem 0 0;
+        border-bottom: 1px solid rgba(255,255,255,0.1);
+        flex-shrink: 0;
+      }
+      
+      .chat-header.fullscreen {
+        border-radius: 0;
+      }
+      
+      .header-left {
+        display: flex;
+        align-items: center;
+      }
+      
+      .bot-avatar {
+        width: 32px;
+        height: 32px;
+        border-radius: 50%;
+        object-fit: cover;
+        margin-right: 0.5rem;
+      }
+      
+      .bot-name {
+        font-weight: 600;
+        margin: 0;
+        font-size: 1.1rem;
+      }
+      
+      .header-actions {
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+      }
+      
+      /* Dropdown */
+      .dropdown {
+        position: relative;
+        display: inline-block;
+      }
+      
+      .dropdown-toggle {
+        background: transparent;
+        border: none;
+        color: inherit;
+        padding: 0.25rem 0.5rem;
+        cursor: pointer;
+        border-radius: 0.25rem;
+        transition: background-color 0.15s ease-in-out;
+      }
+      
+      .dropdown-toggle:hover {
+        background-color: rgba(255,255,255,0.1);
+      }
+      
+      .dropdown-menu {
+        position: absolute;
+        top: 100%;
+        right: 0;
+        z-index: 1000;
+        display: none;
+        min-width: 12rem;
+        padding: 0.5rem 0;
+        background-color: white;
+        border: 1px solid #dee2e6;
+        border-radius: 0.375rem;
+        box-shadow: 0 0.5rem 1rem rgba(0,0,0,0.15);
+        margin-top: 0.25rem;
+      }
+      
+      .dropdown-menu.show {
+        display: block;
+      }
+      
+      .dropdown-item {
+        display: flex;
+        align-items: center;
+        width: 100%;
+        padding: 0.5rem 1rem;
+        clear: both;
+        text-decoration: none;
+        color: #212529;
+        background: none;
+        border: 0;
+        cursor: pointer;
+        font-size: 0.875rem;
+        transition: background-color 0.15s ease-in-out;
+      }
+      
+      .dropdown-item:hover {
+        background-color: #f8f9fa;
+      }
+      
+      .dropdown-item svg {
+        width: 16px;
+        height: 16px;
+        margin-right: 0.5rem;
+      }
+      
+      .dropdown-divider {
+        height: 1px;
+        background-color: #dee2e6;
+        margin: 0.5rem 0;
+        border: none;
+      }
+      
+      /* Close button */
+      .btn-close {
+        background: transparent;
+        border: 0;
+        padding: 0.375rem;
+        cursor: pointer;
+        color: inherit;
+        font-size: 1.25rem;
+        line-height: 1;
+        border-radius: 0.25rem;
+        transition: background-color 0.15s ease-in-out;
+      }
+      
+      .btn-close:hover {
+        background-color: rgba(255,255,255,0.1);
+      }
+      
+      /* Messages container */
+      .messages-container {
+        flex-grow: 1;
+        overflow-y: auto;
+        padding: 1rem;
+        min-height: 0;
+        background-color: #ffffff;
+      }
+      
+      .messages-container.fullscreen {
+        height: calc(100vh - 140px);
+      }
+      
+      /* Message styles */
+      .message {
+        display: flex;
+        margin-bottom: 1rem;
+        align-items: flex-start;
+      }
+      
+      .message.user {
+        justify-content: flex-end;
+      }
+      
+      .message.bot {
+        justify-content: flex-start;
+      }
+      
+      .message-avatar {
+        width: 40px;
+        height: 40px;
+        border-radius: 50%;
+        object-fit: cover;
+        flex-shrink: 0;
+      }
+      
+      .message-bubble {
+        max-width: 90%;
+        padding: 0.75rem 1rem;
+        border-radius: 1rem;
+        margin: 0 0.5rem;
+        position: relative;
+        word-wrap: break-word;
+      }
+      
+      .message.user .message-bubble {
+        background-color: ${this.primaryColor};
+        color: white;
+        border-bottom-right-radius: 0.25rem;
+      }
+      
+      .message.bot .message-bubble {
+        background-color: rgb(248, 249, 250);
+        color: #212529;
+        border: 1px solid #dee2e6;
+        border-bottom-left-radius: 0.25rem;
+      }
+      
+      .message-info {
+        font-size: 0.75rem;
+        font-weight: 600;
+        margin-bottom: 0.25rem;
+        opacity: 0.8;
+      }
+      
+      .message-time {
+        font-size: 0.7rem;
+        opacity: 0.7;
+        margin-left: 0.5rem;
+      }
+      
+      .message-text {
+        margin: 0;
+        line-height: 1.4;
+        white-space: pre-wrap;
+      }
+      
+      .message-text code {
+        background-color: rgba(0,0,0,0.1);
+        padding: 0.125rem 0.25rem;
+        border-radius: 0.25rem;
+        font-family: 'Courier New', monospace;
+        font-size: 0.875em;
+      }
+      
+      .message-text pre {
+        background-color: rgba(0,0,0,0.1);
+        padding: 0.5rem;
+        border-radius: 0.25rem;
+        overflow-x: auto;
+        margin: 0.5rem 0;
+      }
+      
+      .message-text a {
+        color: inherit;
+        text-decoration: underline;
+      }
+      
+      /* Footer */
+      .chat-footer {
+        padding: 0.75rem 1rem;
+        border-top: 1px solid #dee2e6;
+        background-color: white;
+        border-radius: 0 0 0.375rem 0.375rem;
+        flex-shrink: 0;
+        margin-top: auto;
+      }
+      
+      .chat-footer.fullscreen {
+        border-radius: 0;
+      }
+      
+      .chat-form {
+        display: flex;
+        gap: 0.5rem;
+        align-items: center;
+      }
+      
+      .chat-input {
+        flex-grow: 1;
+        padding: 0.5rem 1rem;
+        border: 1px solid #ced4da;
+        border-radius: 1.5rem;
+        font-size: 0.875rem;
+        line-height: 1.5;
+        outline: none;
+        transition: border-color 0.15s ease-in-out, box-shadow 0.15s ease-in-out;
+      }
+      
+      .chat-input:focus {
+        border-color: ${this.primaryColor};
+        box-shadow: 0 0 0 0.2rem ${this._hexToRgba(this.primaryColor, 0.25)};
+      }
+      
+      .send-button {
+        background-color: ${this.primaryColor};
+        color: white;
+        border: none;
+        border-radius: 50%;
+        width: 40px;
+        height: 40px;
+        cursor: pointer;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        transition: background-color 0.15s ease-in-out;
+        flex-shrink: 0;
+      }
+      
+      .send-button:hover:not(:disabled) {
+        background-color: ${this._darkenColor(this.primaryColor, 10)};
+      }
+      
+      .send-button:disabled {
+        opacity: 0.6;
+        cursor: not-allowed;
+      }
+      
+      .send-button svg {
+        width: 20px;
+        height: 20px;
+      }
+      
+      /* Typing indicator */
+      .typing-indicator {
+        display: flex;
+        align-items: center;
+        margin-bottom: 1rem;
+      }
+      
+      .typing-dots {
+        display: inline-flex;
+        align-items: center;
+        gap: 2px;
+      }
+      
+      .typing-dots .dot {
+        width: 6px;
+        height: 6px;
+        border-radius: 50%;
+        background-color: #6c757d;
+        animation: typing 1.4s infinite ease-in-out;
+      }
+      
+      .typing-dots .dot:nth-child(1) { animation-delay: -0.32s; }
+      .typing-dots .dot:nth-child(2) { animation-delay: -0.16s; }
+      .typing-dots .dot:nth-child(3) { animation-delay: 0s; }
+      
+      @keyframes typing {
+        0%, 80%, 100% {
+          transform: scale(0.8);
+          opacity: 0.5;
+        }
+        40% {
+          transform: scale(1);
+          opacity: 1;
+        }
+      }
+      
+      /* Streaming cursor */
+      .streaming-cursor::after {
+        content: '|';
+        animation: blink 1s infinite;
+        color: ${this.primaryColor};
+        font-weight: bold;
+      }
+      
+      @keyframes blink {
+        0%, 50% { opacity: 1; }
+        51%, 100% { opacity: 0; }
+      }
+      
+      /* License footer */
+      .license-footer {
+        padding: 0.5rem 1rem;
+        text-align: center;
+        border-top: 1px solid #dee2e6;
+        background-color: #f8f9fa;
+      }
+      
+      .license-footer a {
+        display: inline-flex;
+        align-items: center;
+        text-decoration: none;
+        color: #6c757d;
+        font-size: 0.75rem;
+      }
+      
+      .license-footer img {
+        width: 16px;
+        height: 16px;
+        margin-right: 0.25rem;
+        object-fit: cover;
+      }
+      
+      /* Responsive */
+      @media (max-width: 768px) {
+        .chatbot-panel {
+          width: calc(100vw - 48px);
+          right: 24px;
+          left: 24px;
+        }
+        
+        .message-bubble {
+          max-width: 85%;
+        }
+      }
+    `;
+    
+    this.chatPanelShadow.appendChild(styles);
+    
+    // Crear el HTML del chat
+    const chatHTML = `
+      <div class="chatbot-panel" id="chatbot-panel">
+        <div class="chat-header" id="chat-header">
+          <div class="header-left">
+            <img src="${this.bot.img}" alt="${this.bot.name}" class="bot-avatar">
+            <h5 class="bot-name">${this.botName}</h5>
+          </div>
+          <div class="header-actions">
+            <div class="dropdown">
+              <button type="button" class="dropdown-toggle" id="actions-menu" title="Acciones">
+                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" viewBox="0 0 16 16">
+                  <path d="M9.5 13a1.5 1.5 0 1 1-3 0 1.5 1.5 0 0 1 3 0zm0-5a1.5 1.5 0 1 1-3 0 1.5 1.5 0 0 1 3 0zm0-5a1.5 1.5 0 1 1-3 0 1.5 1.5 0 0 1 3 0z"/>
+                </svg>
+              </button>
+              <div class="dropdown-menu" id="dropdown-menu">
+                <button class="dropdown-item" id="clear-history-btn">
+                  <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" viewBox="0 0 16 16">
+                    <path d="M5.5 5.5A.5.5 0 0 1 6 6v6a.5.5 0 0 1-1 0V6a.5.5 0 0 1 .5-.5zm2.5 0a.5.5 0 0 1 .5.5v6a.5.5 0 0 1-1 0V6a.5.5 0 0 1 .5-.5zm3 .5a.5.5 0 0 0-1 0v6a.5.5 0 0 0 1 0V6z"/>
+                    <path fill-rule="evenodd" d="M14.5 3a1 1 0 0 1-1 1H13v9a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V4h-.5a1 1 0 0 1-1-1V2a1 1 0 0 1 1-1H6a1 1 0 0 1 1-1h2a1 1 0 0 1 1 1h3.5a1 1 0 0 1 1 1v1zM4.118 4 4 4.059V13a1 1 0 0 0 1 1h6a1 1 0 0 0 1-1V4.059L11.882 4H4.118zM2.5 3V2h11v1h-11z"/>
+                  </svg>
+                  Limpiar historial
+                </button>
+                ${this.fullscreenEnabled ? `
+                <button class="dropdown-item" id="fullscreen-toggle">
+                  <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" viewBox="0 0 24 24">
+                    <path stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 4H4m0 0v4m0-4 5 5m7-5h4m0 0v4m0-4-5 5M8 20H4m0 0v-4m0 4 5-5m7 5h4m0 0v-4m0 4-5-5"/>
+                  </svg>
+                  ${this.isFullscreen ? 'Minimizar' : 'Pantalla completa'}
+                </button>
+                ` : ''}
+                <div class="dropdown-divider"></div>
+                <button class="dropdown-item" id="chat-info-btn">
+                  <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" viewBox="0 0 16 16">
+                    <path d="M8 15A7 7 0 1 1 8 1a7 7 0 0 1 0 14zm0 1A8 8 0 1 0 8 0a8 8 0 0 0 0 16z"/>
+                    <path d="m8.93 6.588-2.29.287-.082.38.45.083c.294.07.352.176.288.469l-.738 3.468c-.194.897.105 1.319.808 1.319.545 0 1.178-.252 1.465-.598l.088-.416c-.2.176-.492.246-.686.246-.275 0-.375-.193-.304-.533L8.93 6.588zM9 4.5a1 1 0 1 1-2 0 1 1 0 0 1 2 0z"/>
+                  </svg>
+                  Información del chat
+                </button>
+              </div>
+            </div>
+            <button type="button" class="btn-close" id="close-btn" aria-label="Cerrar">×</button>
+          </div>
+        </div>
+        
+        <div class="messages-container" id="chat-messages"></div>
+        
+        <div class="chat-footer" id="chat-footer">
+          <form class="chat-form" id="chat-form">
+            <input
+              type="text"
+              class="chat-input"
+              id="chat-input"
+              placeholder="Escribe un mensaje..."
+              autocomplete="off"
+            />
+            <button
+              type="submit"
+              class="send-button"
+              id="chat-send"
+              disabled
+            >
+              ${this.sendButtonText && this.sendButtonText !== "" ? this.sendButtonText : `
+                <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" fill="currentColor" viewBox="0 0 24 24">
+                  <g transform="rotate(90 12 12)">
+                    <path fill-rule="evenodd" d="M12 2a1 1 0 0 1 .932.638l7 18a1 1 0 0 1-1.326 1.281L13 19.517V13a1 1 0 1 0-2 0v6.517l-5.606 2.402a1 1 0 0 1-1.326-1.281l7-18A1 1 0 0 1 12 2Z" clip-rule="evenodd"/>
+                  </g>
+                </svg>
+              `}
+            </button>
+          </form>
+        </div>
+      </div>
+    `;
+    
+    this.chatPanelShadow.innerHTML += chatHTML;
+    document.body.appendChild(this.chatPanelContainer);
+    
+    // Configurar referencias a elementos
+    this.chatPanel = this.chatPanelShadow.querySelector("#chatbot-panel");
+    this.messagesContainer = this.chatPanelShadow.querySelector("#chat-messages");
+    this.form = this.chatPanelShadow.querySelector("#chat-form");
+    this.input = this.chatPanelShadow.querySelector("#chat-input");
+    this.sendButton = this.chatPanelShadow.querySelector("#chat-send");
+    this.closeBtn = this.chatPanelShadow.querySelector("#close-btn");
+    this.clearHistoryBtn = this.chatPanelShadow.querySelector("#clear-history-btn");
+    
+    // Configurar event listeners
+    this._setupChatEventListeners();
+    
+    // Renderizar el modal de confirmación
+    this._renderConfirmationModal();
+    
+    // Actualizar el footer después de renderizar el panel
+    this._updateFooter();
+  }
+
+  _renderChatPanelBootstrap() {
     this.chatPanel = document.createElement("div");
     this.chatPanel.className = "card shadow";
     
@@ -775,7 +1431,285 @@ class ChatBot {
     document.head.appendChild(streamingStyles);
   }
 
+  _setupChatEventListeners() {
+    // Form submit
+    this.form.addEventListener("submit", (e) => {
+      e.preventDefault();
+      this._sendMessage();
+    });
+
+    // Input change
+    this.input.addEventListener("input", () => {
+      this.sendButton.disabled = this.input.value.trim() === "" || this.loading;
+    });
+
+    // Close button
+    this.closeBtn.addEventListener("click", () => this._hideChatPanel());
+
+    // Clear history button
+    this.clearHistoryBtn.addEventListener("click", () => this._showConfirmationModal());
+
+    // Dropdown menu
+    const actionsMenu = this.chatPanelShadow.querySelector("#actions-menu");
+    const dropdownMenu = this.chatPanelShadow.querySelector("#dropdown-menu");
+
+    if (actionsMenu && dropdownMenu) {
+      actionsMenu.addEventListener("click", (e) => {
+        e.stopPropagation();
+        dropdownMenu.classList.toggle("show");
+      });
+    }
+
+    // Close dropdown when clicking outside
+    document.addEventListener("click", (e) => {
+      if (this.chatPanelShadow && !this.chatPanelShadow.contains(e.target)) {
+        dropdownMenu.classList.remove("show");
+      }
+    });
+
+    // Fullscreen toggle
+    if (this.fullscreenEnabled) {
+      this.fullscreenToggle = this.chatPanelShadow.querySelector("#fullscreen-toggle");
+      if (this.fullscreenToggle) {
+        this.fullscreenToggle.addEventListener("click", () => {
+          this._toggleFullscreen();
+          if (dropdownMenu) {
+            dropdownMenu.classList.remove("show");
+          }
+        });
+      }
+    }
+
+    // Chat info button
+    const chatInfoBtn = this.chatPanelShadow.querySelector("#chat-info-btn");
+    if (chatInfoBtn) {
+      chatInfoBtn.addEventListener("click", () => {
+        this._showChatInfo();
+        if (dropdownMenu) {
+          dropdownMenu.classList.remove("show");
+        }
+      });
+    }
+  }
+
   _renderConfirmationModal() {
+    if (this.useShadowDOM) {
+      this._renderConfirmationModalShadowDOM();
+    } else {
+      this._renderConfirmationModalBootstrap();
+    }
+  }
+
+  _renderConfirmationModalShadowDOM() {
+    // Crear contenedor del modal con Shadow DOM
+    this.modalContainer = document.createElement("div");
+    this.modalContainer.id = "chatbot-modal-container";
+    
+    // Crear Shadow DOM para el modal
+    this.modalShadow = this.modalContainer.attachShadow({ mode: 'open' });
+    
+    // Estilos del modal
+    const modalStyles = document.createElement('style');
+    modalStyles.textContent = `
+      .modal-overlay {
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100vw;
+        height: 100vh;
+        background-color: rgba(0, 0, 0, 0.5);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        z-index: 1060;
+        opacity: 0;
+        visibility: hidden;
+        transition: opacity 0.3s ease, visibility 0.3s ease;
+      }
+      
+      .modal-overlay.show {
+        opacity: 1;
+        visibility: visible;
+      }
+      
+      .modal-dialog {
+        background: white;
+        border-radius: 0.5rem;
+        box-shadow: 0 0.5rem 1rem rgba(0, 0, 0, 0.15);
+        max-width: 500px;
+        width: 90%;
+        margin: 1.75rem auto;
+        transform: scale(0.8);
+        transition: transform 0.3s ease;
+      }
+      
+      .modal-overlay.show .modal-dialog {
+        transform: scale(1);
+      }
+      
+      .modal-header {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        padding: 1rem 1.5rem;
+        border-bottom: 1px solid #dee2e6;
+        border-radius: 0.5rem 0.5rem 0 0;
+      }
+      
+      .modal-title {
+        margin: 0;
+        font-size: 1.25rem;
+        font-weight: 600;
+        color: #212529;
+      }
+      
+      .modal-close {
+        background: transparent;
+        border: 0;
+        font-size: 1.5rem;
+        font-weight: 700;
+        line-height: 1;
+        color: #000;
+        opacity: 0.5;
+        cursor: pointer;
+        padding: 0;
+        width: 30px;
+        height: 30px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        border-radius: 0.25rem;
+        transition: opacity 0.15s ease-in-out;
+      }
+      
+      .modal-close:hover {
+        opacity: 0.75;
+      }
+      
+      .modal-body {
+        padding: 1rem 1.5rem;
+        color: #212529;
+        line-height: 1.5;
+      }
+      
+      .modal-footer {
+        display: flex;
+        align-items: center;
+        justify-content: flex-end;
+        gap: 0.5rem;
+        padding: 1rem 1.5rem;
+        border-top: 1px solid #dee2e6;
+        border-radius: 0 0 0.5rem 0.5rem;
+      }
+      
+      .btn {
+        display: inline-block;
+        font-weight: 400;
+        text-align: center;
+        vertical-align: middle;
+        user-select: none;
+        border: 1px solid transparent;
+        padding: 0.375rem 0.75rem;
+        font-size: 1rem;
+        line-height: 1.5;
+        border-radius: 0.25rem;
+        transition: color 0.15s ease-in-out, background-color 0.15s ease-in-out, border-color 0.15s ease-in-out, box-shadow 0.15s ease-in-out;
+        cursor: pointer;
+        text-decoration: none;
+      }
+      
+      .btn-secondary {
+        color: #fff;
+        background-color: #6c757d;
+        border-color: #6c757d;
+      }
+      
+      .btn-secondary:hover {
+        color: #fff;
+        background-color: #5a6268;
+        border-color: #545b62;
+      }
+      
+      .btn-danger {
+        color: #fff;
+        background-color: #dc3545;
+        border-color: #dc3545;
+      }
+      
+      .btn-danger:hover {
+        color: #fff;
+        background-color: #c82333;
+        border-color: #bd2130;
+      }
+
+      .border-0 {
+        border: 0;
+      }
+
+      .btn-sm {
+        padding: 0.25rem 0.5rem;
+        font-size: 0.875rem;
+        line-height: 1.5;
+        border-radius: 0.2rem;
+      }
+
+      .rounded-pill {
+        border-radius: 10rem;
+      }
+
+      .text-end {
+        text-align: end;
+      }
+    `;
+    
+    this.modalShadow.appendChild(modalStyles);
+    
+    // HTML del modal
+    const modalHTML = `
+      <div class="modal-overlay" id="confirmation-modal">
+        <div class="modal-dialog">
+          <div class="modal-header border-0">
+            <h5 class="modal-title">Confirmar eliminación</h5>
+            <button type="button" class="modal-close" id="modal-close" aria-label="Cerrar">×</button>
+          </div>
+          <div class="modal-body">
+            <p>¿Estás seguro de que quieres eliminar todo el historial del chat? Esta acción no se puede deshacer.</p>
+            <button type="button" class="btn btn-sm btn-danger text-end rounded-pill" id="confirm-clear-history">Eliminar</button>
+          </div>
+        </div>
+      </div>
+    `;
+    
+    this.modalShadow.innerHTML += modalHTML;
+    document.body.appendChild(this.modalContainer);
+    
+    // Event listeners del modal
+    const modalOverlay = this.modalShadow.querySelector("#confirmation-modal");
+    const modalClose = this.modalShadow.querySelector("#modal-close");
+    const confirmButton = this.modalShadow.querySelector("#confirm-clear-history");
+    
+    modalClose.addEventListener("click", () => this._hideConfirmationModal());
+    confirmButton.addEventListener("click", () => {
+      this.clearHistory();
+      this._hideConfirmationModal();
+    });
+    
+    // Cerrar modal al hacer clic fuera
+    modalOverlay.addEventListener("click", (e) => {
+      if (e.target === modalOverlay) {
+        this._hideConfirmationModal();
+      }
+    });
+    
+    // Cerrar modal con Escape
+    document.addEventListener("keydown", (e) => {
+      if (e.key === "Escape" && modalOverlay.classList.contains("show")) {
+        this._hideConfirmationModal();
+      }
+    });
+  }
+
+  _renderConfirmationModalBootstrap() {
     this.modal = document.createElement("div");
     this.modal.className = "modal fade";
     this.modal.tabIndex = -1;
@@ -809,18 +1743,272 @@ class ChatBot {
   }
 
   _showConfirmationModal() {
-    const modal = new bootstrap.Modal(this.modal);
-    modal.show();
+    if (this.useShadowDOM) {
+      if (this.modalShadow) {
+        const modalOverlay = this.modalShadow.querySelector("#confirmation-modal");
+        if (modalOverlay) {
+          modalOverlay.classList.add("show");
+        }
+      } else {
+        // Si el modal no está renderizado, renderizarlo primero
+        this._renderConfirmationModal();
+        setTimeout(() => {
+          const modalOverlay = this.modalShadow.querySelector("#confirmation-modal");
+          if (modalOverlay) {
+            modalOverlay.classList.add("show");
+          }
+        }, 100);
+      }
+    } else {
+      const modal = new bootstrap.Modal(this.modal);
+      modal.show();
+    }
   }
 
   _hideConfirmationModal() {
-    const modal = bootstrap.Modal.getInstance(this.modal);
-    if (modal) {
-      modal.hide();
+    if (this.useShadowDOM) {
+      if (this.modalShadow) {
+        const modalOverlay = this.modalShadow.querySelector("#confirmation-modal");
+        if (modalOverlay) {
+          modalOverlay.classList.remove("show");
+        }
+      }
+    } else {
+      const modal = bootstrap.Modal.getInstance(this.modal);
+      if (modal) {
+        modal.hide();
+      }
     }
   }
 
   _showChatInfo() {
+    if (this.useShadowDOM) {
+      this._showChatInfoShadowDOM();
+    } else {
+      this._showChatInfoBootstrap();
+    }
+  }
+
+  _showChatInfoShadowDOM() {
+    // Crear contenedor del modal de información con Shadow DOM
+    const infoModalContainer = document.createElement("div");
+    infoModalContainer.id = "chatbot-info-modal-container";
+    
+    // Crear Shadow DOM para el modal de información
+    const infoModalShadow = infoModalContainer.attachShadow({ mode: 'open' });
+    
+    // Estilos del modal de información
+    const infoModalStyles = document.createElement('style');
+    infoModalStyles.textContent = `
+      .modal-overlay {
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100vw;
+        height: 100vh;
+        background-color: rgba(0, 0, 0, 0.5);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        z-index: 1060;
+        opacity: 0;
+        visibility: hidden;
+        transition: opacity 0.3s ease, visibility 0.3s ease;
+      }
+      
+      .modal-overlay.show {
+        opacity: 1;
+        visibility: visible;
+      }
+      
+      .modal-dialog {
+        background: white;
+        border-radius: 0.5rem;
+        box-shadow: 0 0.5rem 1rem rgba(0, 0, 0, 0.15);
+        max-width: 400px;
+        width: 90%;
+        margin: 1.75rem auto;
+        transform: scale(0.8);
+        transition: transform 0.3s ease;
+      }
+      
+      .modal-overlay.show .modal-dialog {
+        transform: scale(1);
+      }
+      
+      .modal-header {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        padding: 1rem 1.5rem;
+        border-bottom: 1px solid #dee2e6;
+        border-radius: 0.5rem 0.5rem 0 0;
+      }
+      
+      .modal-title {
+        margin: 0;
+        font-size: 1.25rem;
+        font-weight: 600;
+        color: #212529;
+      }
+      
+      .modal-close {
+        background: transparent;
+        border: 0;
+        font-size: 1.5rem;
+        font-weight: 700;
+        line-height: 1;
+        color: #000;
+        opacity: 0.5;
+        cursor: pointer;
+        padding: 0;
+        width: 30px;
+        height: 30px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        border-radius: 0.25rem;
+        transition: opacity 0.15s ease-in-out;
+      }
+      
+      .modal-close:hover {
+        opacity: 0.75;
+      }
+      
+      .modal-body {
+        padding: 1.5rem;
+        text-align: center;
+      }
+      
+      .bot-info {
+        margin-bottom: 1rem;
+      }
+      
+      .bot-title {
+        font-size: 1rem;
+        font-weight: 600;
+        color: #212529;
+        margin-bottom: 1rem;
+      }
+      
+      .bot-avatar {
+        width: 80px;
+        height: 80px;
+        border-radius: 50%;
+        object-fit: cover;
+        margin: 0 auto 1rem;
+        display: block;
+        border: 3px solid #f8f9fa;
+      }
+      
+      .bot-name {
+        font-size: 1.1rem;
+        font-weight: 600;
+        color: #212529;
+        margin-bottom: 0.5rem;
+      }
+      
+      .bot-mode {
+        font-size: 0.875rem;
+        color: #6c757d;
+        margin-bottom: 1rem;
+      }
+      
+      .license-info {
+        border-top: 1px solid #dee2e6;
+        padding-top: 1rem;
+        margin-top: 1rem;
+      }
+      
+      .license-link {
+        display: inline-flex;
+        align-items: center;
+        text-decoration: none;
+        color: #6c757d;
+        font-size: 0.875rem;
+        transition: color 0.15s ease-in-out;
+      }
+      
+      .license-link:hover {
+        color: #495057;
+      }
+      
+      .license-logo {
+        width: 20px;
+        height: 20px;
+        object-fit: cover;
+        margin-right: 0.5rem;
+      }
+    `;
+    
+    infoModalShadow.appendChild(infoModalStyles);
+    
+    // HTML del modal de información
+    const infoModalHTML = `
+      <div class="modal-overlay" id="info-modal">
+        <div class="modal-dialog">
+          <div class="modal-header">
+            <h5 class="modal-title">Información del Chat</h5>
+            <button type="button" class="modal-close" id="info-modal-close" aria-label="Cerrar">×</button>
+          </div>
+          <div class="modal-body">
+            <div class="bot-info">
+              <div class="bot-title">Bot</div>
+              <img src="${this.bot.img}" alt="${this.botName}" class="bot-avatar">
+              <div class="bot-name">${this.botName}</div>
+              <div class="bot-mode">${this.testMode ? '🧪 Test' : '🌐 Producción'}</div>
+            </div>
+            
+            ${this.license.showFooter ? `
+            <div class="license-info">
+              <a href="${this.license.url}" target="_blank" class="license-link">
+                <img src="${this.license.logo}" alt="${this.license.name}" class="license-logo">
+                <span>Powered by ${this.license.name ?? ""}</span>
+              </a>
+            </div>
+            ` : ''}
+          </div>
+        </div>
+      </div>
+    `;
+    
+    infoModalShadow.innerHTML += infoModalHTML;
+    document.body.appendChild(infoModalContainer);
+    
+    // Mostrar el modal
+    const modalOverlay = infoModalShadow.querySelector("#info-modal");
+    modalOverlay.classList.add("show");
+    
+    // Event listeners
+    const modalClose = infoModalShadow.querySelector("#info-modal-close");
+    
+    const closeModal = () => {
+      modalOverlay.classList.remove("show");
+      setTimeout(() => {
+        document.body.removeChild(infoModalContainer);
+      }, 300);
+    };
+    
+    modalClose.addEventListener("click", closeModal);
+    
+    // Cerrar modal al hacer clic fuera
+    modalOverlay.addEventListener("click", (e) => {
+      if (e.target === modalOverlay) {
+        closeModal();
+      }
+    });
+    
+    // Cerrar modal con Escape
+    const handleEscape = (e) => {
+      if (e.key === "Escape" && modalOverlay.classList.contains("show")) {
+        closeModal();
+        document.removeEventListener("keydown", handleEscape);
+      }
+    };
+    document.addEventListener("keydown", handleEscape);
+  }
+
+  _showChatInfoBootstrap() {
     const cacheStatus = this.getCacheStatus();
     const regStatus = this.getRegistrationStatus();
     
@@ -879,22 +2067,42 @@ class ChatBot {
     
     // Actualizar ícono y texto del botón en el menú dropdown
     if (this.fullscreenToggle) {
-      const iconSvg = this.isFullscreen ? `
-        <svg class="me-2" aria-hidden="true" xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" viewBox="0 0 24 24">
-          <path stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 9h4m0 0V5m0 4L4 4m15 5h-4m0 0V5m0 4 5-5M5 15h4m0 0v4m0-4-5 5m7 5h4m0 0v-4m0 4-5-5"/>
-        </svg>
-      ` : `
-        <svg class="me-2" aria-hidden="true" xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" viewBox="0 0 24 24">
-          <path stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 4H4m0 0v4m0-4 5 5m7-5h4m0 0v4m0-4-5 5M8 20H4m0 0v-4m0 4 5-5m7 5h4m0 0v-4m0 4-5-5"/>
-        </svg>
-      `;
-      
-      this.fullscreenToggle.innerHTML = iconSvg + (this.isFullscreen ? 'Minimizar' : 'Pantalla completa');
+      if (this.useShadowDOM) {
+        const iconSvg = this.isFullscreen ? `
+          <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" viewBox="0 0 24 24">
+            <path stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 9h4m0 0V5m0 4L4 4m15 5h-4m0 0V5m0 4 5-5M5 15h4m0 0v4m0-4-5 5m7 5h4m0 0v-4m0 4-5-5"/>
+          </svg>
+        ` : `
+          <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" viewBox="0 0 24 24">
+            <path stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 4H4m0 0v4m0-4 5 5m7-5h4m0 0v4m0-4-5 5M8 20H4m0 0v-4m0 4 5-5m7 5h4m0 0v-4m0 4-5-5"/>
+          </svg>
+        `;
+        
+        this.fullscreenToggle.innerHTML = iconSvg + (this.isFullscreen ? 'Minimizar' : 'Pantalla completa');
+      } else {
+        const iconSvg = this.isFullscreen ? `
+          <svg class="me-2" aria-hidden="true" xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" viewBox="0 0 24 24">
+            <path stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 9h4m0 0V5m0 4L4 4m15 5h-4m0 0V5m0 4 5-5M5 15h4m0 0v4m0-4-5 5m7 5h4m0 0v-4m0 4-5-5"/>
+          </svg>
+        ` : `
+          <svg class="me-2" aria-hidden="true" xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" viewBox="0 0 24 24">
+            <path stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 4H4m0 0v4m0-4 5 5m7-5h4m0 0v4m0-4-5 5M8 20H4m0 0v-4m0 4 5-5m7 5h4m0 0v-4m0 4-5-5"/>
+          </svg>
+        `;
+        
+        this.fullscreenToggle.innerHTML = iconSvg + (this.isFullscreen ? 'Minimizar' : 'Pantalla completa');
+      }
     }
   }
 
   _toggleChatPanel() {
     this.chatVisible = !this.chatVisible;
+    
+    // Verificar que el panel de chat existe
+    if (!this.chatPanel) {
+      this._log('_toggleChatPanel - Panel de chat no renderizado, renderizando...');
+      this._renderChatPanel();
+    }
     
     // En móviles, abrir automáticamente en pantalla completa
     if (this.chatVisible && this.isMobile) {
@@ -904,7 +2112,11 @@ class ChatBot {
       this.isFullscreen = false;
     }
     
-    this.chatPanel.style.display = this.chatVisible ? "flex" : "none";
+    if (this.useShadowDOM) {
+      this.chatPanel.style.display = this.chatVisible ? "flex" : "none";
+    } else {
+      this.chatPanel.style.display = this.chatVisible ? "flex" : "none";
+    }
     
     // Actualizar el tamaño del panel
     this._updateChatPanelSize();
@@ -916,7 +2128,11 @@ class ChatBot {
 
   _hideChatPanel() {
     this.chatVisible = false;
-    this.chatPanel.style.display = "none";
+    if (this.useShadowDOM) {
+      this.chatPanel.style.display = "none";
+    } else {
+      this.chatPanel.style.display = "none";
+    }
     if (this.isFullscreen) {
       this.isFullscreen = false;
       this._updateChatPanelSize();
@@ -965,6 +2181,133 @@ class ChatBot {
   }
 
   _createMessageElement(msg) {
+    if (this.useShadowDOM) {
+      return this._createMessageElementShadowDOM(msg);
+    } else {
+      return this._createMessageElementBootstrap(msg);
+    }
+  }
+
+  _createMessageElementShadowDOM(msg) {
+    // Si es mensaje de bienvenida, renderizar de forma especial
+    if (msg.isWelcome) {
+      const welcomeWrapper = document.createElement("div");
+      welcomeWrapper.style.textAlign = "center";
+      welcomeWrapper.style.marginBottom = "1rem";
+      welcomeWrapper.style.marginTop = "20px";
+      
+      const botImage = document.createElement("img");
+      botImage.src = this.bot.img;
+      botImage.alt = this.bot.name;
+      botImage.style.width = "80px";
+      botImage.style.height = "80px";
+      botImage.style.objectFit = "cover";
+      botImage.style.margin = "0 auto 1rem";
+      botImage.style.display = "block";
+      botImage.style.borderRadius = "50%";
+      
+      const welcomeText = document.createElement("div");
+      welcomeText.style.backgroundColor = "#f8f9fa";
+      welcomeText.style.borderRadius = "0.5rem";
+      welcomeText.style.padding = "1rem";
+      welcomeText.style.maxWidth = "80%";
+      welcomeText.style.margin = "0 auto";
+      welcomeText.innerHTML = `
+        <p style="margin: 0; font-weight: 600;">${this.botName}</p>
+        <p style="margin: 0; color: #6c757d; font-size: 0.875rem;">${msg.time}</p>
+        <p style="margin: 0.5rem 0 0;">${this._parseMarkdown(msg.text)}</p>
+      `;
+      
+      welcomeWrapper.appendChild(botImage);
+      welcomeWrapper.appendChild(welcomeText);
+      return welcomeWrapper;
+    }
+
+    // Si es mensaje de error con reintento, renderizar de forma especial
+    if (msg.isError && msg.showRetry) {
+      const errorWrapper = document.createElement("div");
+      errorWrapper.style.textAlign = "center";
+      errorWrapper.style.marginBottom = "1rem";
+      errorWrapper.style.marginTop = "20px";
+      
+      const botImage = document.createElement("img");
+      botImage.src = this.bot.img;
+      botImage.alt = this.bot.name;
+      botImage.style.width = "60px";
+      botImage.style.height = "60px";
+      botImage.style.objectFit = "cover";
+      botImage.style.margin = "0 auto 1rem";
+      botImage.style.display = "block";
+      botImage.style.borderRadius = "50%";
+      
+      const errorText = document.createElement("div");
+      errorText.style.backgroundColor = "#f8f9fa";
+      errorText.style.borderRadius = "0.5rem";
+      errorText.style.padding = "1rem";
+      errorText.style.maxWidth = "90%";
+      errorText.style.margin = "0 auto";
+      errorText.innerHTML = `
+        <p style="margin: 0; font-weight: 600; color: #dc3545;">${this.botName}</p>
+        <p style="margin: 0.5rem 0 0; font-size: 0.875rem;">${msg.text}</p>
+      `;
+      
+      const retryButton = document.createElement("button");
+      retryButton.style.backgroundColor = this.primaryColor;
+      retryButton.style.color = "white";
+      retryButton.style.border = "none";
+      retryButton.style.borderRadius = "1.5rem";
+      retryButton.style.padding = "0.5rem 1rem";
+      retryButton.style.marginTop = "1rem";
+      retryButton.style.cursor = "pointer";
+      retryButton.style.fontSize = "0.875rem";
+      retryButton.textContent = "Intentar nuevamente";
+      retryButton.addEventListener("click", () => {
+        this._retryConnection();
+      });
+      
+      errorWrapper.appendChild(botImage);
+      errorWrapper.appendChild(errorText);
+      errorWrapper.appendChild(retryButton);
+      return errorWrapper;
+    }
+    
+    const msgWrapper = document.createElement("div");
+    msgWrapper.className = `message ${msg.from}`;
+
+    const avatar = document.createElement("img");
+    avatar.src = msg.from === "user" ? this.user.photo : this.bot.img;
+    avatar.alt = msg.from === "user" ? this.user.name : this.bot.name;
+    avatar.className = "message-avatar";
+
+    const bubble = document.createElement("div");
+    bubble.className = "message-bubble";
+
+    const info = document.createElement("div");
+    info.className = "message-info";
+    info.innerHTML = `${msg.from === "user" ? this.user.name : this.botName}${this.showTime ? `<span class="message-time">${msg.time}</span>` : ""}`;
+
+    const textP = document.createElement("div");
+    textP.className = "message-text";
+    
+    // Si es un mensaje con streaming, agregar clases especiales
+    if (msg.isStreaming) {
+      textP.classList.add('streaming-cursor');
+      textP.style.borderLeft = `3px solid ${this.primaryColor}`;
+      textP.style.paddingLeft = '10px';
+      textP.style.background = `linear-gradient(90deg, rgba(59, 130, 246, 0.05) 0%, rgba(59, 130, 246, 0) 100%)`;
+    }
+    
+    textP.innerHTML = this._parseMarkdown(msg.text);
+
+    bubble.appendChild(info);
+    bubble.appendChild(textP);
+
+    msgWrapper.appendChild(avatar);
+    msgWrapper.appendChild(bubble);
+    return msgWrapper;
+  }
+
+  _createMessageElementBootstrap(msg) {
     // Si es mensaje de bienvenida, renderizar de forma especial
     if (msg.isWelcome) {
       const welcomeWrapper = document.createElement("div");
@@ -1069,19 +2412,19 @@ class ChatBot {
     info.className = "fw-bold d-block mb-1";
     info.innerHTML = `${msg.from === "user" ? this.user.name : this.botName} <span class="text-muted fs-7 ms-2" style="font-size:0.75rem;">${this.showTime ? msg.time : ""}</span>`;
 
-         const textP = document.createElement("p");
-     textP.className = "mb-0";
-     textP.style.whiteSpace = "pre-wrap";
-     
-     // Si es un mensaje con streaming, agregar clases especiales
-     if (msg.isStreaming) {
-       textP.classList.add('streaming-cursor');
-       textP.style.borderLeft = `3px solid ${this.primaryColor}`;
-       textP.style.paddingLeft = '10px';
-       textP.style.background = `linear-gradient(90deg, rgba(59, 130, 246, 0.05) 0%, rgba(59, 130, 246, 0) 100%)`;
-     }
-     
-     textP.innerHTML = this._parseMarkdown(msg.text);
+    const textP = document.createElement("p");
+    textP.className = "mb-0";
+    textP.style.whiteSpace = "pre-wrap";
+    
+    // Si es un mensaje con streaming, agregar clases especiales
+    if (msg.isStreaming) {
+      textP.classList.add('streaming-cursor');
+      textP.style.borderLeft = `3px solid ${this.primaryColor}`;
+      textP.style.paddingLeft = '10px';
+      textP.style.background = `linear-gradient(90deg, rgba(59, 130, 246, 0.05) 0%, rgba(59, 130, 246, 0) 100%)`;
+    }
+    
+    textP.innerHTML = this._parseMarkdown(msg.text);
 
     bubble.appendChild(info);
     bubble.appendChild(textP);
@@ -1129,7 +2472,68 @@ class ChatBot {
   }
 
   _updateFooter() {
+    if (this.useShadowDOM) {
+      this._updateFooterShadowDOM();
+    } else {
+      this._updateFooterBootstrap();
+    }
+  }
+
+  _updateFooterShadowDOM() {
     if (!this.chatPanel) return;
+    
+    // Verificar que license existe
+    if (!this.license) {
+      this.license = {
+        name: "",
+        logo: "",
+        active: true,
+        showFooter: false,
+      };
+    }
+    
+    // Buscar el footer existente
+    let footer = this.chatPanel.querySelector('.license-footer');
+    
+    // Si showFooter es true y no existe el footer, crearlo
+    if (this.license.showFooter && !footer) {
+      footer = document.createElement('div');
+      footer.className = 'license-footer';
+      footer.innerHTML = `
+        <a href="${this.license.url}" target="_blank">
+          <img src="${this.license.logo}" alt="${this.license.name}" class="license-logo">
+          <span>Powered by ${this.license.name ?? ""}</span>
+        </a>
+      `;
+      this.chatPanel.appendChild(footer);
+    }
+    // Si showFooter es false y existe el footer, eliminarlo
+    else if (!this.license.showFooter && footer) {
+      footer.remove();
+    }
+    // Si showFooter es true y existe el footer, actualizar su contenido
+    else if (this.license.showFooter && footer) {
+      footer.innerHTML = `
+        <a href="${this.license.url}" target="_blank">
+          <img src="${this.license.logo}" alt="${this.license.name}" class="license-logo">
+          <span>Powered by ${this.license.name ?? ""}</span>
+        </a>
+      `;
+    }
+  }
+
+  _updateFooterBootstrap() {
+    if (!this.chatPanel) return;
+    
+    // Verificar que license existe
+    if (!this.license) {
+      this.license = {
+        name: "",
+        logo: "",
+        active: true,
+        showFooter: false,
+      };
+    }
     
     // Buscar el footer existente
     let footer = this.chatPanel.querySelector('.license-footer');
@@ -1169,6 +2573,43 @@ class ChatBot {
 
 
   _updateBotUI() {
+    if (this.useShadowDOM) {
+      this._updateBotUIShadowDOM();
+    } else {
+      this._updateBotUIBootstrap();
+    }
+  }
+
+  _updateBotUIShadowDOM() {
+    if (!this.chatPanel) return;
+    
+    // Actualizar imagen del bot en el header
+    const botImage = this.chatPanel.querySelector('.bot-avatar');
+    if (botImage) {
+      botImage.src = this.bot.img;
+      botImage.alt = this.bot.name;
+    }
+    
+    // Actualizar nombre del bot en el header
+    const botNameElement = this.chatPanel.querySelector('.bot-name');
+    if (botNameElement) {
+      botNameElement.textContent = this.botName;
+    }
+    
+    // Actualizar imagen del bot en el botón flotante si no es personalizada
+    if (this.floatingBtn && this.iconButton === this.bot.img) {
+      if (this.iconButton && this.iconButton !== this.bot.img) {
+        this.floatingBtn.innerHTML = `<img src="${this.iconButton}" alt="Chat">`;
+      } else {
+        this.floatingBtn.innerHTML = `<svg xmlns="http://www.w3.org/2000/svg" fill="white" viewBox="0 0 24 24"><path d="M20 2H4a2 2 0 0 0-2 2v18l4-4h14a2 2 0 0 0 2-2V4a2 2 0 0 0-2-2z"/></svg>`;
+      }
+    }
+    
+    // Re-renderizar mensajes para actualizar las imágenes del bot
+    this._renderMessages();
+  }
+
+  _updateBotUIBootstrap() {
     if (!this.chatPanel) return;
     
     // Actualizar imagen del bot en el header
@@ -1284,17 +2725,23 @@ class ChatBot {
     
     // Obtener el elemento del mensaje para actualizarlo
     const messageElement = this.messagesContainer.lastElementChild;
-    let textElement = messageElement.querySelector('p');
+    let textElement;
     
-    // Si no encuentra el elemento p, buscar en la estructura del mensaje
-    if (!textElement) {
-      this._log('_displayMessageWithStreaming - No se encontró elemento p, buscando alternativa');
-      // Buscar el elemento que contiene el texto del mensaje
-      const bubble = messageElement.querySelector('.bg-light, .bg-primary');
-      if (bubble) {
-        const textElementAlt = bubble.querySelector('p');
-        if (textElementAlt) {
-          textElement = textElementAlt;
+    if (this.useShadowDOM) {
+      textElement = messageElement.querySelector('.message-text');
+    } else {
+      textElement = messageElement.querySelector('p');
+      
+      // Si no encuentra el elemento p, buscar en la estructura del mensaje
+      if (!textElement) {
+        this._log('_displayMessageWithStreaming - No se encontró elemento p, buscando alternativa');
+        // Buscar el elemento que contiene el texto del mensaje
+        const bubble = messageElement.querySelector('.bg-light, .bg-primary');
+        if (bubble) {
+          const textElementAlt = bubble.querySelector('p');
+          if (textElementAlt) {
+            textElement = textElementAlt;
+          }
         }
       }
     }
@@ -1329,6 +2776,87 @@ class ChatBot {
 
   // Nuevo método para mostrar indicador de "está escribiendo..."
   _showTypingIndicator() {
+    if (this.useShadowDOM) {
+      this._showTypingIndicatorShadowDOM();
+    } else {
+      this._showTypingIndicatorBootstrap();
+    }
+  }
+
+  _showTypingIndicatorShadowDOM() {
+    // Crear el elemento de "está escribiendo..."
+    this.typingIndicator = document.createElement("div");
+    this.typingIndicator.className = "typing-indicator";
+    this.typingIndicator.style.display = "flex";
+    this.typingIndicator.style.alignItems = "center";
+    this.typingIndicator.style.marginBottom = "1rem";
+    this.typingIndicator.style.justifyContent = "flex-start";
+    
+    // Avatar del bot
+    const avatar = document.createElement("img");
+    avatar.src = this.bot.img;
+    avatar.alt = this.bot.name;
+    avatar.className = "message-avatar";
+    
+    // Contenedor del mensaje
+    const messageContainer = document.createElement("div");
+    messageContainer.className = "message-bubble";
+    messageContainer.style.maxWidth = "70%";
+    
+    // Texto "está escribiendo..."
+    const typingText = document.createElement("div");
+    typingText.className = "typing-dots";
+    typingText.style.display = "inline-flex";
+    typingText.style.alignItems = "center";
+    typingText.style.gap = "2px";
+    
+    // Crear los puntos animados
+    for (let i = 0; i < 3; i++) {
+      const dot = document.createElement("span");
+      dot.className = "dot";
+      dot.style.cssText = `
+        width: 6px;
+        height: 6px;
+        border-radius: 50%;
+        background-color: #6c757d;
+        animation: typing 1.4s infinite ease-in-out;
+        animation-delay: ${-0.32 + i * 0.16}s;
+      `;
+      typingText.appendChild(dot);
+    }
+    
+    // Agregar estilos de animación al Shadow DOM
+    const typingStyles = document.createElement("style");
+    typingStyles.textContent = `
+      @keyframes typing {
+        0%, 80%, 100% {
+          transform: scale(0.8);
+          opacity: 0.5;
+        }
+        40% {
+          transform: scale(1);
+          opacity: 1;
+        }
+      }
+    `;
+    
+    // Agregar estilos al Shadow DOM del panel de chat
+    if (this.chatPanelShadow) {
+      this.chatPanelShadow.appendChild(typingStyles);
+    }
+    
+    messageContainer.appendChild(typingText);
+    this.typingIndicator.appendChild(avatar);
+    this.typingIndicator.appendChild(messageContainer);
+    
+    // Agregar al contenedor de mensajes
+    this.messagesContainer.appendChild(this.typingIndicator);
+    
+    // Hacer scroll hacia abajo
+    this.messagesContainer.scrollTop = this.messagesContainer.scrollHeight;
+  }
+
+  _showTypingIndicatorBootstrap() {
     // Crear el elemento de "está escribiendo..."
     this.typingIndicator = document.createElement("div");
     this.typingIndicator.className = "typing-indicator d-flex align-items-center mb-3";
@@ -1352,14 +2880,6 @@ class ChatBot {
     const typingText = document.createElement("div");
     typingText.className = "d-flex align-items-center";
     
-    // typingText.innerHTML = `
-    //   <span class="text-muted small">${this.botName} está escribiendo</span>
-    //   <div class="typing-dots ms-2">
-    //     <span class="dot"></span>
-    //     <span class="dot"></span>
-    //     <span class="dot"></span>
-    //   </div>
-    // `;
     typingText.innerHTML = `
     <div class="typing-dots ms-2">
       <span class="dot"></span>
@@ -1572,7 +3092,7 @@ class ChatBot {
   clearHistory() {
     this.messages = [];
     this.messagesContainer.innerHTML = '';
-    this._saveToCache();
+    this._clearCache();
     this._log('Historial de chat limpiado');
   }
 
@@ -1688,11 +3208,28 @@ class ChatBot {
     return html;
   }
 
+  _darkenColor(color, percent) {
+    const num = parseInt(color.replace("#", ""), 16);
+    const amt = Math.round(2.55 * percent);
+    const R = (num >> 16) - amt;
+    const G = (num >> 8 & 0x00FF) - amt;
+    const B = (num & 0x0000FF) - amt;
+    return "#" + (0x1000000 + (R < 255 ? R < 1 ? 0 : R : 255) * 0x10000 +
+      (G < 255 ? G < 1 ? 0 : G : 255) * 0x100 +
+      (B < 255 ? B < 1 ? 0 : B : 255)).toString(16).slice(1);
+  }
+
   destroy() {
     // Remove DOM elements
-    if (this.floatingBtn) this.floatingBtn.remove();
-    if (this.chatPanel) this.chatPanel.remove();
-    if (this.modal) this.modal.remove();
+    if (this.useShadowDOM) {
+      if (this.floatingBtnContainer) this.floatingBtnContainer.remove();
+      if (this.chatPanelContainer) this.chatPanelContainer.remove();
+      if (this.modalContainer) this.modalContainer.remove();
+    } else {
+      if (this.floatingBtn) this.floatingBtn.remove();
+      if (this.chatPanel) this.chatPanel.remove();
+      if (this.modal) this.modal.remove();
+    }
 
     // Remove event listeners
     window.removeEventListener('resize', this._boundHandleResize);

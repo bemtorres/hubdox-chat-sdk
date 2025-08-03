@@ -1,7 +1,24 @@
-const { ChatBot } = require('../src/index.js');
+const ChatBot = require('../src/index.js');
 
 describe('Menú de Acciones', () => {
   let chatBot;
+  
+  // Función helper para buscar elementos en Shadow DOM
+  const findElement = (selector) => {
+    // Primero buscar en el DOM principal
+    let element = document.querySelector(selector);
+    if (element) return element;
+    
+    // Si no se encuentra, buscar en Shadow DOM
+    const shadowRoots = document.querySelectorAll('*');
+    for (const el of shadowRoots) {
+      if (el.shadowRoot) {
+        element = el.shadowRoot.querySelector(selector);
+        if (element) return element;
+      }
+    }
+    return null;
+  };
   
   const defaultOptions = {
     baseUrl: 'https://api.example.com',
@@ -34,23 +51,22 @@ describe('Menú de Acciones', () => {
     });
     
     chatBot = new ChatBot(defaultOptions);
-    chatBot._showChatPanel();
+    chatBot.toggleChatPanel();
   });
 
   describe('Renderizado del Menú', () => {
     test('debe renderizar el botón de menú de acciones', () => {
-      const actionsMenuBtn = document.querySelector('#actions-menu');
+      const actionsMenuBtn = findElement('#actions-menu');
       
       expect(actionsMenuBtn).toBeInTheDocument();
       expect(actionsMenuBtn).toHaveClass('dropdown-toggle');
-      expect(actionsMenuBtn).toHaveAttribute('data-bs-toggle', 'dropdown');
     });
 
     test('debe renderizar el dropdown con todas las opciones', () => {
-      const dropdownMenu = document.querySelector('.dropdown-menu');
-      const clearHistoryBtn = document.querySelector('#clear-history-btn');
-      const fullscreenToggle = document.querySelector('#fullscreen-toggle');
-      const chatInfoBtn = document.querySelector('#chat-info-btn');
+      const dropdownMenu = findElement('.dropdown-menu');
+      const clearHistoryBtn = findElement('#clear-history-btn');
+      const fullscreenToggle = findElement('#fullscreen-toggle');
+      const chatInfoBtn = findElement('#chat-info-btn');
       
       expect(dropdownMenu).toBeInTheDocument();
       expect(clearHistoryBtn).toBeInTheDocument();
@@ -59,9 +75,9 @@ describe('Menú de Acciones', () => {
     });
 
     test('debe mostrar el texto correcto en los botones del menú', () => {
-      const clearHistoryBtn = document.querySelector('#clear-history-btn');
-      const fullscreenToggle = document.querySelector('#fullscreen-toggle');
-      const chatInfoBtn = document.querySelector('#chat-info-btn');
+      const clearHistoryBtn = findElement('#clear-history-btn');
+      const fullscreenToggle = findElement('#fullscreen-toggle');
+      const chatInfoBtn = findElement('#chat-info-btn');
       
       expect(clearHistoryBtn.textContent).toContain('Limpiar historial');
       expect(fullscreenToggle.textContent).toContain('Pantalla completa');
@@ -69,47 +85,46 @@ describe('Menú de Acciones', () => {
     });
 
     test('debe incluir los íconos SVG correctos', () => {
-      const clearHistoryBtn = document.querySelector('#actions-menu');
-      const threeDotsIcon = clearHistoryBtn.querySelector('svg');
+      const actionsMenuBtn = findElement('#actions-menu');
+      const threeDotsIcon = actionsMenuBtn.querySelector('svg');
       
       expect(threeDotsIcon).toBeInTheDocument();
-      expect(threeDotsIcon).toHaveClass('bi-three-dots-vertical');
     });
   });
 
   describe('Funcionalidad de Limpiar Historial', () => {
     test('debe mostrar modal de confirmación al hacer clic en limpiar historial', () => {
-      const clearHistoryBtn = document.querySelector('#clear-history-btn');
+      const clearHistoryBtn = findElement('#clear-history-btn');
       
       clearHistoryBtn.click();
       
-      const confirmationModal = document.querySelector('.modal');
+      const confirmationModal = findElement('.modal-overlay');
       expect(confirmationModal).toBeInTheDocument();
-      expect(confirmationModal.textContent).toContain('¿Estás seguro de que quieres limpiar el historial?');
+      expect(confirmationModal.textContent).toContain('¿Estás seguro de que quieres eliminar todo el historial del chat?');
     });
 
     test('debe limpiar historial cuando se confirma en el modal', () => {
       chatBot.messages = [{ id: 1, text: 'test message' }];
       
-      const clearHistoryBtn = document.querySelector('#clear-history-btn');
+      const clearHistoryBtn = findElement('#clear-history-btn');
       clearHistoryBtn.click();
       
-      const confirmBtn = document.querySelector('.modal .btn-danger');
+      const confirmBtn = findElement('#confirm-clear-history');
       confirmBtn.click();
       
       expect(chatBot.messages).toEqual([]);
-      expect(localStorage.removeItem).toHaveBeenCalledWith('hubdox_chat_cache');
+      expect(localStorage.removeItem).toHaveBeenCalledWith('chatbot_test-tenant_test-api-key');
     });
 
     test('debe cancelar limpieza cuando se cancela en el modal', () => {
       const originalMessages = [{ id: 1, text: 'test message' }];
       chatBot.messages = [...originalMessages];
       
-      const clearHistoryBtn = document.querySelector('#clear-history-btn');
+      const clearHistoryBtn = findElement('#clear-history-btn');
       clearHistoryBtn.click();
       
-      const cancelBtn = document.querySelector('.modal .btn-secondary');
-      cancelBtn.click();
+      const modalClose = findElement('#modal-close');
+      modalClose.click();
       
       expect(chatBot.messages).toEqual(originalMessages);
     });

@@ -1,4 +1,4 @@
-const { ChatBot } = require('../src/index.js');
+const ChatBot = require('../src/index.js');
 
 describe('ChatBot', () => {
   let chatBot;
@@ -289,7 +289,7 @@ describe('ChatBot', () => {
     });
 
     test('debe mostrar el panel de chat', () => {
-      chatBot._showChatPanel();
+      chatBot.toggleChatPanel();
 
       const chatPanel = document.querySelector('.chat-panel');
       expect(chatPanel).toBeInTheDocument();
@@ -297,7 +297,7 @@ describe('ChatBot', () => {
     });
 
     test('debe ocultar el panel de chat', () => {
-      chatBot._showChatPanel();
+      chatBot.toggleChatPanel();
       chatBot._hideChatPanel();
 
       const chatPanel = document.querySelector('.chat-panel');
@@ -324,7 +324,7 @@ describe('ChatBot', () => {
   describe('Manejo de Eventos', () => {
     beforeEach(() => {
       chatBot = new ChatBot(defaultOptions);
-      chatBot._showChatPanel();
+      chatBot.toggleChatPanel();
     });
 
     test('debe manejar envío de mensaje desde input', async () => {
@@ -353,10 +353,10 @@ describe('ChatBot', () => {
 
     test('debe limpiar historial correctamente', () => {
       chatBot.messages = [{ id: 1, text: 'test' }];
-      chatBot._clearHistory();
+      chatBot.clearHistory();
 
       expect(chatBot.messages).toEqual([]);
-      expect(localStorage.removeItem).toHaveBeenCalledWith('hubdox_chat_cache');
+      expect(localStorage.removeItem).toHaveBeenCalledWith('chatbot_test-tenant_test-api-key');
     });
   });
 

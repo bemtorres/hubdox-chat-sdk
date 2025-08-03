@@ -1,4 +1,4 @@
-const { ChatBot } = require('../src/index.js');
+const ChatBot = require('../src/index.js');
 
 describe('Tests Específicos - Problema de Registro Repetitivo', () => {
   let chatBot;

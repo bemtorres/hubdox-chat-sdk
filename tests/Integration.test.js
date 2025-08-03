@@ -1,4 +1,4 @@
-const { ChatBot } = require('../src/index.js');
+const ChatBot = require('../src/index.js');
 
 describe('Tests de Integración - Flujo Completo', () => {
   let chatBot;
