@@ -1,9 +1,16 @@
 
-Desarrollar una propuesta onbording 
+Rediseña y desarrolla una propuesta onbording 
 
 de que se trata
 
 1.- debe preguntar sin chat el nombre de la persona 
+
+debe tener un card en donde pregunte por el nombre de la persona sin el chat de abajo ya que esto no lo requiere.
+
+SI O SI DEBES HACER LA instruccion anterior
+
+Desarrolla un test con faq disponible y formulario , estos tambien puede ser parte de custom: para habilitar y deshabilitar
+
 si  tiene el register true y sin informacion de user.name 
 en el caso de tener user.name y tiene register true debe mostrar el nombre ya inscrito para verificar 
 si tiene el register false y user.name no mostrar el registro.

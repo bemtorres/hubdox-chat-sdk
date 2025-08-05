@@ -31,6 +31,21 @@ class ChatBot {
     this.faqList = [];
     this.selectedFaq = null;
     
+    // Propiedades para el nuevo sistema de onboarding
+    this.modules = {
+      faqs: false,
+      chat: false,
+      form: false
+    };
+    this.faqs = [];
+    this.currentScreen = 'registration'; // registration, main-menu, faq-list, faq-detail, chat, form
+    this.faqSearchTerm = '';
+    this.formData = {
+      name: '',
+      email: '',
+      message: ''
+    };
+    
     this.user = options.user || {
       email: 'test@mail.com',
       name: "Usuario",
@@ -52,11 +67,11 @@ class ChatBot {
     this.showTime = custom.showTime || true;
     
     // Configuración de tamaño del chat
-    this.chatWidth = custom.chatWidth || "400px";
-    this.chatHeight = custom.chatHeight || "60vh";
-    this.chatMaxWidth = custom.chatMaxWidth || "90vw";
-    this.chatMaxHeight = custom.chatMaxHeight || "60vh";
-    this.messagesHeight = custom.messagesHeight || "350px";
+    this.chatWidth = custom.chatWidth || "600px";
+    this.chatHeight = custom.chatHeight || "70vh";
+    this.chatMaxWidth = custom.chatMaxWidth || "95vw";
+    this.chatMaxHeight = custom.chatMaxHeight || "75vh";
+    this.messagesHeight = custom.messagesHeight || "450px";
     this.buttonSize = custom.buttonSize || "56px";
     this.fullscreenEnabled = custom.fullscreenEnabled !== undefined ? custom.fullscreenEnabled : true;
     this.sound = custom.sound !== undefined ? custom.sound : false;
@@ -83,6 +98,7 @@ class ChatBot {
     
     // Nuevas propiedades para manejar la pantalla de registro
     this.registrationScreen = false;
+    this.isRegistrationMode = false;
     this.registrationCompleted = false;
     
     this.license = {
@@ -206,13 +222,13 @@ class ChatBot {
       // Renderizar el chat panel después del registro
       this._renderChatPanel();
       
+      // Paso 2: Verificar estado de registro y mostrar pantalla correspondiente
+      this._checkRegistrationStatus();
+      
       // Si show es false, ocultar el chat panel inicialmente
       if (!this.show) {
         this.chatPanel.style.display = "none";
       }
-      
-      // Paso 2: Verificar estado de registro y mostrar pantalla correspondiente
-      this._checkRegistrationStatus();
       
     } catch (error) {
       console.error('Error inicializando chat:', error);
@@ -284,6 +300,50 @@ class ChatBot {
         this.bot.img = data.chatbot.photo || this.bot.img;
         this.botName = data.chatbot.name || this.botName;
         this.saludoInicial = data.chatbot.initial_message;
+      }
+      
+      // Actualizar módulos y FAQ desde la respuesta del registro
+      if (data.modules) {
+        this.modules = {
+          faqs: data.modules.faqs || false,
+          chat: data.modules.chat || false,
+          form: data.modules.form || false
+        };
+        this._log('Módulos actualizados:', this.modules);
+      }
+      
+      if (data.faqs && Array.isArray(data.faqs)) {
+        this.faqs = data.faqs;
+        this._log('FAQ actualizados:', this.faqs.length, 'preguntas');
+      }
+      
+      // Si no hay módulos en la respuesta, establecer valores por defecto
+      if (!data.modules) {
+        this.modules = {
+          faqs: true,
+          chat: true,
+          form: true
+        };
+        this._log('Módulos por defecto establecidos:', this.modules);
+      }
+      
+      // Si no hay FAQ en la respuesta, establecer algunos por defecto
+      if (!data.faqs || data.faqs.length === 0) {
+        this.faqs = [
+          {
+            title: "¿Cómo funciona este chat?",
+            content: "Este es un chat inteligente que puede ayudarte con preguntas frecuentes, conversar contigo o recibir mensajes internos."
+          },
+          {
+            title: "¿Puedo hacer preguntas personalizadas?",
+            content: "¡Por supuesto! Puedes iniciar una conversación y hacer cualquier pregunta que tengas."
+          },
+          {
+            title: "¿Cómo puedo contactar al soporte?",
+            content: "Puedes usar la opción 'Enviar mensaje interno' para contactar directamente con nuestro equipo de soporte."
+          }
+        ];
+        this._log('FAQ por defecto establecidos:', this.faqs.length, 'preguntas');
       }
       
       this._saveToCache();
@@ -948,28 +1008,14 @@ class ChatBot {
     // Validar que el nombre no esté vacío
     if (!userMessage.trim()) {
       this._log('_handleRegistrationResponse - Nombre vacío, solicitando nombre');
-      this._addMessage("bot", this._getTranslation('registration_name_prompt'));
+      this._addMessage("bot", "Por favor, escribe tu nombre.");
       return;
     }
     
     this._log('_handleRegistrationResponse - Procesando nombre:', userMessage.trim());
-    this.user.name = userMessage.trim();
     
-    // Marcar como registrado y actualizar el estado
-    this._log('_handleRegistrationResponse - Estableciendo registered = true');
-    this.registered = true;
-    this.registrationCompleted = true;
-    this._saveToCache();
-    
-    // Mostrar mensaje de confirmación
-    this._addMessage("bot", this._getTranslation('registration_complete'));
-    
-    // Transicionar al chat normal después de un breve delay
-    setTimeout(() => {
-      this._showChatScreen();
-    }, 1500);
-    
-    this._log('_handleRegistrationResponse - Registro completado');
+    // Usar el nuevo método para manejar el registro
+    await this._handleRegistrationSubmit(userMessage.trim());
   }
 
   // Métodos para manejar errores y reintentos
@@ -2259,7 +2305,7 @@ class ChatBot {
       
       .btn-danger {
         color: #fff;
-        background-color: #dc3545;
+        background-color:rgb(221, 62, 78);
         border-color: #dc3545;
       }
       
@@ -2301,7 +2347,9 @@ class ChatBot {
           </div>
           <div class="modal-body">
             <p>¿Estás seguro de que quieres eliminar todo el historial del chat? Esta acción no se puede deshacer.</p>
-            <button type="button" class="btn btn-sm btn-danger text-end rounded-pill" id="confirm-clear-history">Eliminar</button>
+            <div class="text-end">
+              <button type="button" class="btn btn-sm btn-danger text-end rounded-pill" id="confirm-clear-history">Eliminar</button>
+            </div>
           </div>
         </div>
       </div>
@@ -2828,6 +2876,29 @@ class ChatBot {
     // Renderizar todos los mensajes para evitar duplicados
     this._renderMessages();
 
+    // Asegurar que el chat permanezca visible después de agregar mensajes
+    this._ensureChatVisibility();
+
+    this._saveToCache();
+  }
+
+  // Nuevo método para agregar mensajes de presentación especiales
+  _addPresentationMessage(htmlContent) {
+    this._log('_addPresentationMessage - Agregando mensaje de presentación');
+    
+    const time = this._getCurrentTime();
+    const presentationMessage = { 
+      from: 'presentation', 
+      text: htmlContent, 
+      time, 
+      isPresentation: true 
+    };
+    
+    this.messages.push(presentationMessage);
+
+    // Renderizar todos los mensajes para evitar duplicados
+    this._renderMessages();
+
     this._saveToCache();
   }
 
@@ -2846,6 +2917,13 @@ class ChatBot {
   }
 
   _createMessageElementShadowDOM(msg) {
+    // Si es mensaje de presentación, renderizar de forma especial
+    if (msg.isPresentation) {
+      const presentationWrapper = document.createElement("div");
+      presentationWrapper.innerHTML = msg.text;
+      return presentationWrapper;
+    }
+
     // Si es mensaje de bienvenida, renderizar de forma especial
     if (msg.isWelcome) {
       const welcomeWrapper = document.createElement("div");
@@ -2994,6 +3072,13 @@ class ChatBot {
   }
 
   _createMessageElementBootstrap(msg) {
+    // Si es mensaje de presentación, renderizar de forma especial
+    if (msg.isPresentation) {
+      const presentationWrapper = document.createElement("div");
+      presentationWrapper.innerHTML = msg.text;
+      return presentationWrapper;
+    }
+
     // Si es mensaje de bienvenida, renderizar de forma especial
     if (msg.isWelcome) {
       const welcomeWrapper = document.createElement("div");
@@ -3167,9 +3252,8 @@ class ChatBot {
     this.messagesContainer.appendChild(frag);
     this.messagesContainer.scrollTop = this.messagesContainer.scrollHeight;
 
-
-    
-
+    // Asegurar que el chat permanezca visible después de renderizar mensajes
+    this._ensureChatVisibility();
   }
 
   _hexToRgba(hex, alpha = 1) {
@@ -3353,7 +3437,8 @@ class ChatBot {
     const msg = this.input.value.trim();
     if (!msg || this.loading) return;
 
-
+    // Asegurar que el chat esté visible antes de procesar el mensaje
+    this._ensureChatVisibility();
 
     // Debug: Log del estado actual
     this._log('_sendMessage - Estado actual:', {
@@ -3363,6 +3448,8 @@ class ChatBot {
       registrationCompleted: this.registrationCompleted,
       advancedOnboarding: this.advancedOnboarding,
       onboardingStep: this.onboardingStep,
+      currentScreen: this.currentScreen,
+      isRegistrationMode: this.isRegistrationMode,
       testMode: this.testMode,
       stream: this.stream,
       message: msg
@@ -3383,38 +3470,103 @@ class ChatBot {
         this._log('_sendMessage - Usando modo test');
         await this._handleTestResponse(msg);
       } else {
-        // Verificar si estamos en onboarding avanzado
-        if (this.advancedOnboarding) {
-          this._log('_sendMessage - Procesando onboarding avanzado');
-          await this._handleAdvancedOnboardingResponse(msg);
-        } else if (this.registrationScreen && !this.registrationCompleted) {
-          this._log('_sendMessage - Procesando registro en pantalla de registro');
-          await this._handleRegistrationResponse(msg);
-        } else if (this.registered && this.registrationCompleted) {
-          // Envío normal de mensaje solo si está registrado y completado
-          this._log('_sendMessage - Enviando mensaje al API');
-          const answer = await this._sendMessageToAPI(msg);
-          
-          // Si la respuesta es null, significa que el servidor indicó límite alcanzado
-          if (answer === null) {
-            this._log('_sendMessage - Respuesta null, límite alcanzado');
-            return; // No mostrar respuesta normal
-          }
-          
-          // Si streaming está habilitado, mostrar el texto carácter por carácter
-          if (this.stream) {
-            // Ocultar el indicador de typing antes de mostrar el streaming
-            this._hideTypingIndicator();
-            await this._displayMessageWithStreaming(answer);
-          } else {
-            // Ocultar el indicador de typing y mostrar el mensaje completo
-            this._hideTypingIndicator();
-            this._addMessage("bot", answer);
-          }
-        } else {
-          // Si no está registrado y no está en modo registro, mostrar mensaje de error
-          this._log('_sendMessage - Usuario no registrado');
-          this._addMessage("bot", this._getTranslation('registration_required'));
+        // Verificar si estamos en modo registro
+        if (this.isRegistrationMode) {
+          this._log('_sendMessage - Procesando registro en modo registro');
+          await this._handleRegistrationSubmit(msg);
+          return;
+        }
+        
+        // Manejar diferentes pantallas según currentScreen
+        switch (this.currentScreen) {
+          case 'registration':
+            this._log('_sendMessage - Procesando registro');
+            await this._handleRegistrationResponse(msg);
+            break;
+            
+          case 'name-verification':
+            this._log('_sendMessage - Procesando verificación de nombre');
+            await this._handleNameVerificationResponse(msg);
+            break;
+            
+          case 'main-menu':
+            this._log('_sendMessage - Procesando menú principal');
+            await this._handleMainMenuResponse(msg);
+            break;
+            
+          case 'faq-list':
+            this._log('_sendMessage - Procesando lista de FAQ');
+            await this._handleFAQListResponse(msg);
+            break;
+            
+          case 'faq-detail':
+            this._log('_sendMessage - Procesando detalle de FAQ');
+            await this._handleFAQDetailResponse(msg);
+            break;
+            
+          case 'form':
+            this._log('_sendMessage - Procesando formulario');
+            await this._handleFormResponse(msg);
+            break;
+            
+          case 'chat':
+            // Envío normal de mensaje al API
+            this._log('_sendMessage - Enviando mensaje al API');
+            const answer = await this._sendMessageToAPI(msg);
+            
+            // Si la respuesta es null, significa que el servidor indicó límite alcanzado
+            if (answer === null) {
+              this._log('_sendMessage - Respuesta null, límite alcanzado');
+              return; // No mostrar respuesta normal
+            }
+            
+            // Si streaming está habilitado, mostrar el texto carácter por carácter
+            if (this.stream) {
+              // Ocultar el indicador de typing antes de mostrar el streaming
+              this._hideTypingIndicator();
+              await this._displayMessageWithStreaming(answer);
+            } else {
+              // Ocultar el indicador de typing y mostrar el mensaje completo
+              this._hideTypingIndicator();
+              this._addMessage("bot", answer);
+            }
+            break;
+            
+          default:
+            // Verificar si estamos en onboarding avanzado (compatibilidad)
+            if (this.advancedOnboarding) {
+              this._log('_sendMessage - Procesando onboarding avanzado');
+              await this._handleAdvancedOnboardingResponse(msg);
+            } else if (this.registrationScreen && !this.registrationCompleted) {
+              this._log('_sendMessage - Procesando registro en pantalla de registro');
+              await this._handleRegistrationResponse(msg);
+            } else if (this.registered && this.registrationCompleted) {
+              // Envío normal de mensaje solo si está registrado y completado
+              this._log('_sendMessage - Enviando mensaje al API');
+              const answer = await this._sendMessageToAPI(msg);
+              
+              // Si la respuesta es null, significa que el servidor indicó límite alcanzado
+              if (answer === null) {
+                this._log('_sendMessage - Respuesta null, límite alcanzado');
+                return; // No mostrar respuesta normal
+              }
+              
+              // Si streaming está habilitado, mostrar el texto carácter por carácter
+              if (this.stream) {
+                // Ocultar el indicador de typing antes de mostrar el streaming
+                this._hideTypingIndicator();
+                await this._displayMessageWithStreaming(answer);
+              } else {
+                // Ocultar el indicador de typing y mostrar el mensaje completo
+                this._hideTypingIndicator();
+                this._addMessage("bot", answer);
+              }
+            } else {
+              // Si no está registrado y no está en modo registro, mostrar mensaje de error
+              this._log('_sendMessage - Usuario no registrado');
+              this._addMessage("bot", this._getTranslation('registration_required'));
+            }
+            break;
         }
       }
     } catch (error) {
@@ -3431,6 +3583,9 @@ class ChatBot {
       if (this.testMode || this.registrationCompleted) {
         this.input.focus();
       }
+      
+      // Asegurar que el chat permanezca visible después de procesar el mensaje
+      this._ensureChatVisibility();
     }
   }
 
@@ -3681,6 +3836,9 @@ class ChatBot {
   async _handleTestResponse(userMessage) {
     this._log('_handleTestResponse - Procesando mensaje de test:', userMessage);
     
+    // Asegurar que el chat esté visible antes de procesar
+    this._ensureChatVisibility();
+    
     // Simular delay de procesamiento
     await new Promise(resolve => setTimeout(resolve, 500 + Math.random() * 1000));
     
@@ -3713,6 +3871,9 @@ class ChatBot {
       this._addMessage("bot", response);
     }
     
+    // Asegurar que el chat permanezca visible después de la respuesta
+    this._ensureChatVisibility();
+    
     this._log('_handleTestResponse - Respuesta generada:', response);
   }
 
@@ -3727,18 +3888,24 @@ class ChatBot {
       return;
     }
     
-    // Condiciones para mostrar pantalla de registro (onboarding básico):
-    // 1. Cuando register es true
-    // 2. Cuando register es true o el nombre del usuario no existe
-    // 3. Cuando register es true o el usuario no existe
-    const shouldShowRegistration = this.register || 
-                                 !this.user.name || 
-                                 this.user.name === "Usuario" ||
-                                 !this.registered;
-
-    if (shouldShowRegistration && this.session) {
-      this._log('_checkRegistrationStatus - Mostrando pantalla de registro');
+    // Nueva lógica según las instrucciones actualizadas:
+    // 1. Si register es true y no hay user.name -> mostrar registro (card sin chat)
+    // 2. Si register es true y hay user.name -> mostrar nombre para verificar
+    // 3. Si register es false y no hay user.name -> no mostrar registro, ir al menú
+    // 4. Si register es false y hay user.name -> ir al menú principal
+    
+    if (this.register && !this.user.name) {
+      this._log('_checkRegistrationStatus - Register true, sin nombre -> mostrar registro');
       this._showRegistrationScreen();
+    } else if (this.register && this.user.name) {
+      this._log('_checkRegistrationStatus - Register true, con nombre -> verificar nombre');
+      this._showNameVerificationScreen();
+    } else if (!this.register && !this.user.name) {
+      this._log('_checkRegistrationStatus - Register false, sin nombre -> ir al menú principal');
+      this._showMainMenu();
+    } else if (!this.register && this.user.name) {
+      this._log('_checkRegistrationStatus - Register false, con nombre -> menú principal');
+      this._showMainMenu();
     } else if (this.session) {
       this._log('_checkRegistrationStatus - Mostrando chat normal');
       this._showChatScreen();
@@ -3753,41 +3920,220 @@ class ChatBot {
     this._log('_showRegistrationScreen - Mostrando pantalla de registro');
     this.registrationScreen = true;
     this.registrationCompleted = false;
+    this.currentScreen = 'registration';
     
     // Limpiar mensajes anteriores
     this.messages = [];
     
-    // Verificar si los elementos del DOM están inicializados
-    if (this.input && this.sendButton) {
-      // Deshabilitar el chat inicialmente
-      this.input.disabled = true;
-      this.sendButton.disabled = true;
+    // Asegurar que el chat panel esté visible
+    this._showChatPanel();
+    
+    // Mostrar el mensaje de registro dentro del chat
+    this._showRegistrationMessage();
+  }
+
+  // Nuevo método para mostrar el mensaje de registro dentro del chat
+  _showRegistrationMessage() {
+    this._log('_showRegistrationMessage - Mostrando mensaje de registro en el chat');
+    
+    // Obtener el mensaje del diccionario de traducciones
+    const namePrompt = this._getTranslation('registration_name_prompt');
+    
+    // Crear el mensaje de onboarding con imagen del bot en el medio
+    const registrationMessage = `
+      <div style="text-align: center; margin-bottom: 1rem; margin-top: 20px;">
+        <img src="${this.bot.img}" alt="${this.bot.name}" style="width: 80px; height: 80px; object-fit: cover; margin: 0px auto 1rem; display: block; border-radius: 50%;">
+        <div style="background-color: rgb(248, 249, 250); border-radius: 0.5rem; padding: 1rem; max-width: 80%; margin: 0px auto;">
+          <p style="margin: 0; font-weight: 600; color: #000000;">${this.bot.name}</p>
+          <p style="margin: 0.5rem 0 0; color: #000000;">${namePrompt}</p>
+        </div>
+      </div>
+    `;
+    
+    // Agregar el mensaje como presentación especial (no como mensaje de chat normal)
+    this._addPresentationMessage(registrationMessage);
+    
+    // Configurar el input del chat para capturar el nombre
+    this._setupRegistrationInput();
+  }
+
+  // Nuevo método para configurar el input del chat durante el registro
+  _setupRegistrationInput() {
+    this._log('_setupRegistrationInput - Configurando input para registro');
+    
+    // Cambiar el placeholder del input
+    if (this.input) {
+      this.input.placeholder = 'Escribe tu nombre aquí...';
+      this.input.focus();
     }
     
-    // Mostrar pantalla de bienvenida con imagen del bot
-    const welcomeMessage = {
-      from: "bot",
-      text: this._getTranslation('registration_name_prompt'),
-      time: this._getCurrentTime(),
-      isWelcome: true,
-      isRegistration: true
-    };
+    // Configurar el evento de envío para capturar el nombre
+    this.isRegistrationMode = true;
+  }
+
+  // Nuevo método para manejar el submit del registro desde el chat
+  async _handleRegistrationSubmit(name) {
+    this._log('_handleRegistrationSubmit - Procesando nombre:', name);
     
-    this.messages.push(welcomeMessage);
+    // Procesar el registro
+    this.user.name = name;
+    this.registered = true;
+    this.registrationCompleted = true;
+    this._saveToCache();
+
+    // Restaurar el input normal del chat
+    this._restoreChatInput();
     
-    // Solo renderizar si el contenedor existe
+    // Mostrar confirmación y continuar al menú principal
+    this._addMessage('user', name);
+    this._addMessage('bot', `¡Perfecto ${name}! 👋 Ahora puedes elegir una opción:`, true);
+    
+    // Mostrar el menú principal
+    this._showMainMenu();
+  }
+
+  // Método para restaurar el input normal del chat
+  _restoreChatInput() {
+    this._log('_restoreChatInput - Restaurando input normal del chat');
+    
+    this.isRegistrationMode = false;
+    
+    if (this.input) {
+      this.input.placeholder = this.translations[this.language]?.placeholder || 'Escribe tu mensaje...';
+    }
+  }
+
+  // Método para mostrar el chat panel
+  _showChatPanel() {
+    this._log('_showChatPanel - Mostrando chat panel');
+    this.chatVisible = true;
+    
+    // Mostrar el botón flotante y el panel de chat
+    if (this.floatingButton) {
+      this.floatingButton.style.display = 'block';
+    }
+    
+    if (this.chatPanel) {
+      this.chatPanel.style.display = 'block';
+    }
+    
+    // Asegurar que el input y botón de envío estén habilitados
+    if (this.input) {
+      this.input.disabled = false;
+      this.input.style.display = 'block';
+    }
+    
+    if (this.sendButton) {
+      this.sendButton.disabled = false;
+      this.sendButton.style.display = 'block';
+    }
+    
+    // Asegurar que el contenedor de mensajes esté visible
     if (this.messagesContainer) {
-      this._renderMessages();
+      this.messagesContainer.style.display = 'block';
     }
+  }
+
+  // Método para ocultar el botón flotante
+  _hideFloatingButton() {
+    this._log('_hideFloatingButton - Ocultando botón flotante');
+    if (this.floatingButton) {
+      this.floatingButton.style.display = 'none';
+    }
+  }
+
+  // Método para mostrar la pantalla de verificación de nombre
+  _showNameVerificationScreen() {
+    this._log('_showNameVerificationScreen - Mostrando verificación de nombre');
+    this.currentScreen = 'name-verification';
     
-    // Habilitar el input para que el usuario pueda escribir su nombre
+    // Limpiar mensajes anteriores
+    this.messages = [];
+    
+    // Asegurar que el chat panel esté visible
+    this._showChatPanel();
+    
+    // Mostrar mensaje de verificación con diseño mejorado
+    const verificationMessage = `
+      <div style="text-align: center; margin-bottom: 1rem; margin-top: 20px;">
+        <img src="${this.bot.img}" alt="${this.bot.name}" style="width: 80px; height: 80px; object-fit: cover; margin: 0px auto 1rem; display: block; border-radius: 50%;">
+        <div style="background-color: rgb(248, 249, 250); border-radius: 0.5rem; padding: 1rem; max-width: 80%; margin: 0px auto;">
+          <p style="margin: 0; font-weight: 600; color: #000000;">${this.bot.name}</p>
+          <p style="margin: 0.5rem 0 0; color: #000000;">Hola ${this.user.name}, ¿es correcto tu nombre?</p>
+        </div>
+      </div>
+    `;
+    
+    // Agregar el mensaje como presentación especial
+    this._addPresentationMessage(verificationMessage);
+    
+    // Habilitar el input
     if (this.input && this.sendButton) {
       this.input.disabled = false;
       this.sendButton.disabled = false;
       this.input.focus();
-      
-      // Cambiar el placeholder del input para indicar que debe escribir su nombre
-      this.input.placeholder = this._getTranslation('write_message_placeholder');
+      this.input.placeholder = "Escribe 'sí' para confirmar o 'no' para cambiar...";
+    }
+  }
+
+  // Método para mostrar el menú principal
+  _showMainMenu() {
+    this._log('_showMainMenu - Mostrando menú principal');
+    this.currentScreen = 'main-menu';
+    
+    // Limpiar mensajes anteriores
+    this.messages = [];
+    
+    // Asegurar que el chat panel esté visible
+    this._showChatPanel();
+    
+    // Construir menú con diseño mejorado y botón + para FAQ
+    const menuMessage = `
+      <div style="text-align: center; margin-bottom: 1rem; margin-top: 20px;">
+        <img src="${this.bot.img}" alt="${this.bot.name}" style="width: 80px; height: 80px; object-fit: cover; margin: 0px auto 1rem; display: block; border-radius: 50%;">
+        <div style="background-color: rgb(248, 249, 250); border-radius: 0.5rem; padding: 1rem; max-width: 80%; margin: 0px auto;">
+          <p style="margin: 0; font-weight: 600; color: #000000;">${this.bot.name}</p>
+          <p style="margin: 0.5rem 0 0; color: #000000;">¿En qué puedo ayudarte?</p>
+        </div>
+      </div>
+      <div style="background-color: white; border-radius: 0.5rem; padding: 1rem; margin: 1rem 0; box-shadow: 0 2px 4px rgba(0,0,0,0.1);">
+        <div style="margin-bottom: 0.5rem; display: flex; align-items: center; justify-content: space-between;">
+          <div>
+            <span style="background-color: #007bff; color: white; padding: 0.25rem 0.5rem; border-radius: 50%; font-size: 0.8rem; margin-right: 0.5rem;">1</span>
+            <span style="font-weight: 600;">📚 Preguntas frecuentes</span>
+          </div>
+          <button id="faq-modal-btn" style="background-color: #28a745; color: white; border: none; border-radius: 50%; width: 30px; height: 30px; font-size: 16px; cursor: pointer; display: flex; align-items: center; justify-content: center;">+</button>
+        </div>
+        <div style="margin-bottom: 0.5rem;">
+          <span style="background-color: #007bff; color: white; padding: 0.25rem 0.5rem; border-radius: 50%; font-size: 0.8rem; margin-right: 0.5rem;">2</span>
+          <span style="font-weight: 600;">💬 Iniciar conversación</span>
+        </div>
+        <div>
+          <span style="background-color: #007bff; color: white; padding: 0.25rem 0.5rem; border-radius: 50%; font-size: 0.8rem; margin-right: 0.5rem;">3</span>
+          <span style="font-weight: 600;">📝 Enviar mensaje interno</span>
+        </div>
+      </div>
+    `;
+    
+    // Agregar el mensaje como presentación especial
+    this._addPresentationMessage(menuMessage);
+    
+    // Configurar el evento del botón FAQ modal
+    setTimeout(() => {
+      const faqModalBtn = document.getElementById('faq-modal-btn');
+      if (faqModalBtn) {
+        faqModalBtn.addEventListener('click', () => {
+          this._showFAQModal();
+        });
+      }
+    }, 100);
+    
+    // Habilitar el input
+    if (this.input && this.sendButton) {
+      this.input.disabled = false;
+      this.sendButton.disabled = false;
+      this.input.focus();
+      this.input.placeholder = "Escribe el número de la opción que deseas...";
     }
   }
 
@@ -3796,6 +4142,7 @@ class ChatBot {
     this._log('_showChatScreen - Mostrando pantalla de chat');
     this.registrationScreen = false;
     this.registrationCompleted = true;
+    this.currentScreen = 'chat';
     
     // Verificar si los elementos del DOM están inicializados
     if (this.input && this.sendButton) {
@@ -3810,6 +4157,404 @@ class ChatBot {
     
     // Mostrar mensaje inicial del bot
     this._addInitialMessage();
+  }
+
+  // Método para mostrar la lista de FAQ
+  _showFAQList() {
+    this._log('_showFAQList - Mostrando lista de FAQ');
+    this.currentScreen = 'faq-list';
+    
+    // Limpiar mensajes anteriores
+    this.messages = [];
+    
+    if (this.faqs.length === 0) {
+      const noFaqMessage = {
+        from: "bot",
+        text: "No hay preguntas frecuentes disponibles en este momento.",
+        time: this._getCurrentTime(),
+        isFAQList: true
+      };
+      this.messages.push(noFaqMessage);
+    } else {
+      let faqText = "📚 **Preguntas Frecuentes**\n\n";
+      faqText += "Escribe el número de la pregunta que quieres ver:\n\n";
+      
+      this.faqs.forEach((faq, index) => {
+        faqText += `${index + 1}. ${faq.title}\n`;
+      });
+      
+      faqText += `\n🔍 **Buscador:** Escribe parte del título para buscar\n`;
+      faqText += `⬅️ **Volver:** Escribe 'volver' para regresar al menú`;
+      
+      const faqMessage = {
+        from: "bot",
+        text: faqText,
+        time: this._getCurrentTime(),
+        isFAQList: true
+      };
+      
+      this.messages.push(faqMessage);
+    }
+    
+    // Renderizar mensajes
+    if (this.messagesContainer) {
+      this._renderMessages();
+    }
+    
+    // Habilitar el input
+    if (this.input && this.sendButton) {
+      this.input.disabled = false;
+      this.sendButton.disabled = false;
+      this.input.focus();
+      this.input.placeholder = "Escribe el número de la pregunta o busca...";
+    }
+  }
+
+  // Método para mostrar el detalle de una FAQ
+  _showFAQDetail(faqIndex) {
+    this._log('_showFAQDetail - Mostrando FAQ:', faqIndex);
+    this.currentScreen = 'faq-detail';
+    this.selectedFaq = faqIndex;
+    
+    if (faqIndex >= 0 && faqIndex < this.faqs.length) {
+      const faq = this.faqs[faqIndex];
+      
+      // Limpiar mensajes anteriores
+      this.messages = [];
+      
+      let detailText = `📖 **${faq.title}**\n\n`;
+      detailText += `${faq.content}\n\n`;
+      detailText += `⬅️ **Volver:** Escribe 'volver' para regresar a la lista`;
+      
+      const detailMessage = {
+        from: "bot",
+        text: detailText,
+        time: this._getCurrentTime(),
+        isFAQDetail: true,
+        faqIndex: faqIndex
+      };
+      
+      this.messages.push(detailMessage);
+      
+      // Renderizar mensajes
+      if (this.messagesContainer) {
+        this._renderMessages();
+      }
+      
+      // Habilitar el input
+      if (this.input && this.sendButton) {
+        this.input.disabled = false;
+        this.sendButton.disabled = false;
+        this.input.focus();
+        this.input.placeholder = "Escribe 'volver' para regresar...";
+      }
+    }
+  }
+
+  // Nuevo método para mostrar FAQ en modal
+  _showFAQModal() {
+    this._log('_showFAQModal - Mostrando modal de FAQ');
+    
+    // Crear el modal de FAQ
+    const faqModal = document.createElement('div');
+    faqModal.id = 'faq-modal';
+    faqModal.style.cssText = `
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background-color: rgba(0, 0, 0, 0.5);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      z-index: 10000;
+    `;
+
+    // Contenido del modal
+    let modalContent = `
+      <div style="background: white; border-radius: 12px; max-width: 600px; width: 90%; max-height: 80vh; overflow-y: auto; box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);">
+        <div style="padding: 20px; border-bottom: 1px solid #e0e0e0; display: flex; justify-content: space-between; align-items: center;">
+          <h3 style="margin: 0; color: #333;">📚 Preguntas Frecuentes</h3>
+          <button id="close-faq-modal" style="background: none; border: none; font-size: 24px; cursor: pointer; color: #666;">&times;</button>
+        </div>
+        <div style="padding: 20px;">
+    `;
+
+    if (this.faqs.length === 0) {
+      modalContent += `
+        <div style="text-align: center; color: #666; padding: 20px;">
+          <p>No hay preguntas frecuentes disponibles en este momento.</p>
+        </div>
+      `;
+    } else {
+      this.faqs.forEach((faq, index) => {
+        modalContent += `
+          <div style="margin-bottom: 15px; padding: 15px; border: 1px solid #e0e0e0; border-radius: 8px; cursor: pointer;" 
+               onclick="document.getElementById('faq-detail-${index}').style.display = document.getElementById('faq-detail-${index}').style.display === 'none' ? 'block' : 'none';">
+            <div style="font-weight: 600; color: #333; margin-bottom: 5px;">${faq.title}</div>
+            <div id="faq-detail-${index}" style="display: none; margin-top: 10px; padding-top: 10px; border-top: 1px solid #f0f0f0; color: #666; line-height: 1.5;">
+              ${faq.content}
+            </div>
+          </div>
+        `;
+      });
+    }
+
+    modalContent += `
+        </div>
+      </div>
+    `;
+
+    faqModal.innerHTML = modalContent;
+
+    // Agregar el modal al body
+    document.body.appendChild(faqModal);
+
+    // Configurar eventos
+    const closeBtn = faqModal.querySelector('#close-faq-modal');
+    closeBtn.addEventListener('click', () => {
+      document.body.removeChild(faqModal);
+    });
+
+    // Cerrar modal al hacer click fuera
+    faqModal.addEventListener('click', (e) => {
+      if (e.target === faqModal) {
+        document.body.removeChild(faqModal);
+      }
+    });
+
+    // Cerrar modal con ESC
+    const handleEscape = (e) => {
+      if (e.key === 'Escape') {
+        document.body.removeChild(faqModal);
+        document.removeEventListener('keydown', handleEscape);
+      }
+    };
+    document.addEventListener('keydown', handleEscape);
+
+    // Guardar referencia para poder removerlo después
+    this.faqModal = faqModal;
+  }
+
+  // Método para mostrar el formulario de contacto
+  _showContactForm() {
+    this._log('_showContactForm - Mostrando formulario de contacto');
+    this.currentScreen = 'form';
+    
+    // Limpiar mensajes anteriores
+    this.messages = [];
+    
+    const formMessage = {
+      from: "bot",
+      text: "📝 **Formulario de Contacto**\n\nPor favor, proporciona la siguiente información:\n\n1. **Nombre completo**\n2. **Correo electrónico**\n3. **Mensaje**\n\nEscribe 'cancelar' en cualquier momento para volver al menú.",
+      time: this._getCurrentTime(),
+      isContactForm: true
+    };
+    
+    this.messages.push(formMessage);
+    
+    // Renderizar mensajes
+    if (this.messagesContainer) {
+      this._renderMessages();
+    }
+    
+    // Habilitar el input
+    if (this.input && this.sendButton) {
+      this.input.disabled = false;
+      this.sendButton.disabled = false;
+      this.input.focus();
+      this.input.placeholder = "Escribe tu nombre completo...";
+    }
+  }
+
+  // Método para manejar la verificación de nombre
+  async _handleNameVerificationResponse(userMessage) {
+    this._log('_handleNameVerificationResponse - Procesando:', userMessage);
+    
+    // Ocultar indicador de typing
+    this._hideTypingIndicator();
+    
+    const response = userMessage.trim().toLowerCase();
+    
+    if (response === 'sí' || response === 'si' || response === 'yes' || response === 'correcto') {
+      // Nombre confirmado, ir al menú principal
+      this._addMessage("bot", "¡Perfecto! Ahora puedo ayudarte mejor.");
+      setTimeout(() => {
+        this._showMainMenu();
+      }, 1500);
+    } else if (response === 'no' || response === 'incorrecto') {
+      // Nombre incorrecto, volver a solicitar
+      this._addMessage("bot", "Entiendo, ¿cuál es tu nombre correcto?");
+      this.currentScreen = 'registration';
+      if (this.input) {
+        this.input.placeholder = "Escribe tu nombre...";
+      }
+    } else {
+      // Respuesta no reconocida
+      this._addMessage("bot", "Por favor, escribe 'sí' para confirmar tu nombre o 'no' para cambiarlo.");
+    }
+  }
+
+  // Método para manejar las respuestas del menú principal
+  async _handleMainMenuResponse(userMessage) {
+    this._log('_handleMainMenuResponse - Procesando:', userMessage);
+    
+    // Ocultar indicador de typing
+    this._hideTypingIndicator();
+    
+    const selection = userMessage.trim().toLowerCase();
+    
+    // Determinar qué opción seleccionó (3 opciones fijas)
+    if (selection === '1' || selection.includes('faq') || selection.includes('preguntas') || selection.includes('frecuentes')) {
+      this._showFAQList();
+    } else if (selection === '2' || selection.includes('chat') || selection.includes('conversación') || selection.includes('conversacion')) {
+      this._showChatScreen();
+    } else if (selection === '3' || selection.includes('formulario') || selection.includes('mensaje') || selection.includes('interno')) {
+      this._showContactForm();
+    } else {
+      // Opción inválida
+      const validOptions = "Por favor, escribe el número de la opción que deseas:\n\n" +
+        "1. 📚 Preguntas frecuentes\n" +
+        "2. 💬 Iniciar conversación\n" +
+        "3. 📝 Enviar mensaje interno";
+      this._addMessage("bot", validOptions);
+    }
+  }
+
+  // Método para manejar las respuestas de la lista de FAQ
+  async _handleFAQListResponse(userMessage) {
+    this._log('_handleFAQListResponse - Procesando:', userMessage);
+    
+    // Ocultar indicador de typing
+    this._hideTypingIndicator();
+    
+    const response = userMessage.trim().toLowerCase();
+    
+    if (response === 'volver' || response === 'back' || response === 'atrás') {
+      this._showMainMenu();
+    } else if (!isNaN(response) && parseInt(response) > 0 && parseInt(response) <= this.faqs.length) {
+      // Seleccionar FAQ por número
+      const faqIndex = parseInt(response) - 1;
+      this._showFAQDetail(faqIndex);
+    } else {
+      // Buscar FAQ por texto
+      const searchResults = this.faqs.filter(faq => 
+        faq.title.toLowerCase().includes(response) || 
+        faq.content.toLowerCase().includes(response)
+      );
+      
+      if (searchResults.length > 0) {
+        let searchText = `🔍 **Resultados de búsqueda para "${response}":**\n\n`;
+        searchResults.forEach((faq, index) => {
+          const originalIndex = this.faqs.indexOf(faq);
+          searchText += `${originalIndex + 1}. ${faq.title}\n`;
+        });
+        searchText += `\nEscribe el número de la pregunta que quieres ver.`;
+        this._addMessage("bot", searchText);
+      } else {
+        this._addMessage("bot", `No se encontraron preguntas que coincidan con "${response}". Escribe el número de una pregunta o 'volver' para regresar al menú.`);
+      }
+    }
+  }
+
+  // Método para manejar las respuestas del detalle de FAQ
+  async _handleFAQDetailResponse(userMessage) {
+    this._log('_handleFAQDetailResponse - Procesando:', userMessage);
+    
+    // Ocultar indicador de typing
+    this._hideTypingIndicator();
+    
+    const response = userMessage.trim().toLowerCase();
+    
+    if (response === 'volver' || response === 'back' || response === 'atrás') {
+      this._showFAQList();
+    } else {
+      this._addMessage("bot", "Escribe 'volver' para regresar a la lista de preguntas frecuentes.");
+    }
+  }
+
+  // Método para manejar las respuestas del formulario
+  async _handleFormResponse(userMessage) {
+    this._log('_handleFormResponse - Procesando:', userMessage);
+    
+    // Ocultar indicador de typing
+    this._hideTypingIndicator();
+    
+    const response = userMessage.trim();
+    
+    if (response.toLowerCase() === 'cancelar') {
+      this._showMainMenu();
+      return;
+    }
+    
+    // Determinar qué campo estamos llenando
+    if (!this.formData.name) {
+      // Llenando nombre
+      this.formData.name = response;
+      this._addMessage("bot", "Gracias. Ahora escribe tu correo electrónico:");
+      if (this.input) {
+        this.input.placeholder = "Escribe tu correo electrónico...";
+      }
+    } else if (!this.formData.email) {
+      // Llenando email
+      this.formData.email = response;
+      this._addMessage("bot", "Perfecto. Ahora escribe tu mensaje:");
+      if (this.input) {
+        this.input.placeholder = "Escribe tu mensaje...";
+      }
+    } else if (!this.formData.message) {
+      // Llenando mensaje
+      this.formData.message = response;
+      
+      // Enviar formulario
+      try {
+        await this._sendContactForm();
+        this._addMessage("bot", "✅ ¡Mensaje enviado correctamente! Te responderemos pronto.");
+        setTimeout(() => {
+          this._showMainMenu();
+        }, 2000);
+      } catch (error) {
+        this._logError('Error enviando formulario:', error);
+        this._addMessage("bot", "❌ Error al enviar el mensaje. Por favor, intenta nuevamente.");
+      }
+    }
+  }
+
+  // Método para enviar el formulario de contacto
+  async _sendContactForm() {
+    this._log('_sendContactForm - Enviando formulario:', this.formData);
+    
+    const response = await fetch(`${this.baseUrl}/api/sdk/v1/notification`, {
+      method: 'POST',
+      headers: {
+        'Authorization': `Bearer ${this.apiKey}`,
+        'Content-Type': 'application/json'
+      },
+      body: JSON.stringify({
+        apiKey: this.apiKey,
+        tenant: this.tenant,
+        name: this.formData.name,
+        email: this.formData.email,
+        message: this.formData.message
+      })
+    });
+
+    if (!response.ok) {
+      const errorText = await response.text();
+      this._logError('Error en envío de formulario:', response.status, errorText);
+      throw new Error(`Error en envío: ${response.status} - ${errorText}`);
+    }
+
+    const data = await response.json();
+    this._log('Formulario enviado exitosamente:', data);
+    
+    // Limpiar datos del formulario
+    this.formData = {
+      name: '',
+      email: '',
+      message: ''
+    };
   }
 
   // Método para mostrar el onboarding avanzado
@@ -4408,7 +5153,55 @@ class ChatBot {
     }
   }
 
-
+  // Método para asegurar que el chat permanezca visible
+  _ensureChatVisibility() {
+    this._log('_ensureChatVisibility - Verificando visibilidad del chat');
+    
+    try {
+      // Verificar y forzar visibilidad del chat panel
+      if (this.chatPanel) {
+        const style = window.getComputedStyle(this.chatPanel);
+        if (style.display === 'none' || style.visibility === 'hidden') {
+          this._log('_ensureChatVisibility - Chat panel oculto, forzando visibilidad');
+          this.chatPanel.style.display = 'flex';
+          this.chatPanel.style.visibility = 'visible';
+          this.chatPanel.style.opacity = '1';
+        }
+      }
+      
+      // Verificar y forzar visibilidad del input
+      if (this.input) {
+        if (this.input.style.display === 'none' || this.input.disabled) {
+          this._log('_ensureChatVisibility - Input oculto o deshabilitado, forzando visibilidad');
+          this.input.style.display = 'block';
+          this.input.disabled = false;
+        }
+      }
+      
+      // Verificar y forzar visibilidad del botón de envío
+      if (this.sendButton) {
+        if (this.sendButton.style.display === 'none') {
+          this._log('_ensureChatVisibility - Botón de envío oculto, forzando visibilidad');
+          this.sendButton.style.display = 'block';
+        }
+      }
+      
+      // Verificar y forzar visibilidad del contenedor de mensajes
+      if (this.messagesContainer) {
+        if (this.messagesContainer.style.display === 'none') {
+          this._log('_ensureChatVisibility - Contenedor de mensajes oculto, forzando visibilidad');
+          this.messagesContainer.style.display = 'block';
+        }
+      }
+      
+      // Asegurar que el chat esté marcado como visible
+      this.chatVisible = true;
+      
+      this._log('_ensureChatVisibility - Visibilidad del chat verificada y corregida');
+    } catch (error) {
+      this._logError('_ensureChatVisibility - Error al verificar visibilidad:', error);
+    }
+  }
 }
 
 // Exportar para uso global
