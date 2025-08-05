@@ -22,6 +22,15 @@ class ChatBot {
     // Nueva opción para usar Shadow DOM
     this.useShadowDOM = optionsConfig.useShadowDOM !== undefined ? optionsConfig.useShadowDOM : true;
     
+    // Configuración del onboarding template
+    this.onboardingTemplate = optionsConfig.onboardingTemplate || 'basic';
+    
+    // Propiedades para el onboarding avanzado
+    this.advancedOnboarding = false;
+    this.onboardingStep = 0;
+    this.faqList = [];
+    this.selectedFaq = null;
+    
     this.user = options.user || {
       email: 'test@mail.com',
       name: "Usuario",
@@ -391,7 +400,29 @@ class ChatBot {
         test_unknown_1: "Interesante pregunta 🤔 Déjame pensar en eso...",
         test_unknown_2: "Hmm, esa es una buena pregunta. ¿Podrías reformularla? 🤷‍♂️",
         test_unknown_3: "No estoy seguro de entender. ¿Podrías ser más específico? 🤔",
-        test_unknown_4: "Esa pregunta me hace pensar... ¿Qué más te gustaría saber? 💭"
+        test_unknown_4: "Esa pregunta me hace pensar... ¿Qué más te gustaría saber? 💭",
+        // Onboarding avanzado
+        advanced_welcome_message: "¡Hola! 👋 Soy tu asistente virtual. Para personalizar tu experiencia, ¿podrías decirme tu nombre?",
+        advanced_name_prompt: "Escribe tu nombre...",
+        advanced_name_received: "¡Perfecto! Ahora tienes dos opciones:",
+        advanced_faq_option: "📚 Preguntas frecuentes",
+        advanced_chat_option: "💬 Comenzar conversación",
+        advanced_faq_title: "Preguntas Frecuentes",
+        advanced_faq_back: "← Volver",
+        advanced_faq_list: [
+          {
+            title: "¿Cómo funciona el chat?",
+            content: "El chat funciona de manera interactiva. Puedes escribir mensajes y recibir respuestas en tiempo real."
+          },
+          {
+            title: "¿Qué puedo preguntar?",
+            content: "Puedes hacer preguntas sobre cualquier tema, solicitar información, o simplemente charlar."
+          },
+          {
+            title: "¿Es seguro?",
+            content: "Sí, todas las conversaciones son privadas y seguras. No compartimos tu información."
+          }
+        ]
       },
       en: {
         // English
@@ -442,7 +473,29 @@ class ChatBot {
         test_unknown_1: "Interesting question 🤔 Let me think about that...",
         test_unknown_2: "Hmm, that's a good question. Could you rephrase it? 🤷‍♂️",
         test_unknown_3: "I'm not sure I understand. Could you be more specific? 🤔",
-        test_unknown_4: "That question makes me think... What else would you like to know? 💭"
+        test_unknown_4: "That question makes me think... What else would you like to know? 💭",
+        // Advanced onboarding
+        advanced_welcome_message: "Hello! 👋 I'm your virtual assistant. To personalize your experience, could you tell me your name?",
+        advanced_name_prompt: "Write your name...",
+        advanced_name_received: "Perfect! Now you have two options:",
+        advanced_faq_option: "📚 Frequently Asked Questions",
+        advanced_chat_option: "💬 Start conversation",
+        advanced_faq_title: "Frequently Asked Questions",
+        advanced_faq_back: "← Back",
+        advanced_faq_list: [
+          {
+            title: "How does the chat work?",
+            content: "The chat works interactively. You can write messages and receive responses in real time."
+          },
+          {
+            title: "What can I ask?",
+            content: "You can ask questions about any topic, request information, or simply chat."
+          },
+          {
+            title: "Is it safe?",
+            content: "Yes, all conversations are private and secure. We don't share your information."
+          }
+        ]
       },
       pt: {
         // Português
@@ -3308,6 +3361,8 @@ class ChatBot {
       registered: this.registered,
       registrationScreen: this.registrationScreen,
       registrationCompleted: this.registrationCompleted,
+      advancedOnboarding: this.advancedOnboarding,
+      onboardingStep: this.onboardingStep,
       testMode: this.testMode,
       stream: this.stream,
       message: msg
@@ -3328,8 +3383,11 @@ class ChatBot {
         this._log('_sendMessage - Usando modo test');
         await this._handleTestResponse(msg);
       } else {
-        // Verificar si estamos en pantalla de registro
-        if (this.registrationScreen && !this.registrationCompleted) {
+        // Verificar si estamos en onboarding avanzado
+        if (this.advancedOnboarding) {
+          this._log('_sendMessage - Procesando onboarding avanzado');
+          await this._handleAdvancedOnboardingResponse(msg);
+        } else if (this.registrationScreen && !this.registrationCompleted) {
           this._log('_sendMessage - Procesando registro en pantalla de registro');
           await this._handleRegistrationResponse(msg);
         } else if (this.registered && this.registrationCompleted) {
@@ -3661,7 +3719,15 @@ class ChatBot {
   // Nuevo método para verificar el estado de registro
   _checkRegistrationStatus() {
     this._log('_checkRegistrationStatus - Verificando estado de registro');
-    // Condiciones para mostrar pantalla de registro:
+    
+    // Verificar si debe usar onboarding avanzado
+    if (this.onboardingTemplate === 'advanced') {
+      this._log('_checkRegistrationStatus - Usando onboarding avanzado');
+      this._showAdvancedOnboarding();
+      return;
+    }
+    
+    // Condiciones para mostrar pantalla de registro (onboarding básico):
     // 1. Cuando register es true
     // 2. Cuando register es true o el nombre del usuario no existe
     // 3. Cuando register es true o el usuario no existe
@@ -3744,6 +3810,171 @@ class ChatBot {
     
     // Mostrar mensaje inicial del bot
     this._addInitialMessage();
+  }
+
+  // Método para mostrar el onboarding avanzado
+  _showAdvancedOnboarding() {
+    this._log('_showAdvancedOnboarding - Iniciando onboarding avanzado');
+    this.advancedOnboarding = true;
+    this.onboardingStep = 0;
+    
+    // Limpiar mensajes anteriores
+    this.messages = [];
+    
+    // Deshabilitar el input inicialmente
+    if (this.input && this.sendButton) {
+      this.input.disabled = true;
+      this.sendButton.disabled = true;
+    }
+    
+    // Mostrar mensaje de bienvenida
+    const welcomeMessage = {
+      from: "bot",
+      text: this._getTranslation('advanced_welcome_message'),
+      time: this._getCurrentTime(),
+      isWelcome: true,
+      isAdvancedOnboarding: true
+    };
+    
+    this.messages.push(welcomeMessage);
+    
+    // Renderizar mensajes
+    if (this.messagesContainer) {
+      this._renderMessages();
+    }
+    
+    // Habilitar el input para que el usuario pueda escribir su nombre
+    if (this.input && this.sendButton) {
+      this.input.disabled = false;
+      this.sendButton.disabled = false;
+      this.input.focus();
+      this.input.placeholder = this._getTranslation('advanced_name_prompt');
+    }
+  }
+
+  // Método para manejar las respuestas del onboarding avanzado
+  async _handleAdvancedOnboardingResponse(userMessage) {
+    this._log('_handleAdvancedOnboardingResponse - Procesando respuesta:', userMessage);
+    
+    // Ocultar indicador de typing
+    this._hideTypingIndicator();
+    
+    switch (this.onboardingStep) {
+      case 0: // Paso 1: Solicitar nombre
+        this._log('_handleAdvancedOnboardingResponse - Paso 1: Procesando nombre');
+        
+        // Guardar el nombre del usuario
+        this.user.name = userMessage.trim();
+        
+        // Mostrar mensaje de confirmación y opciones
+        const optionsMessage = {
+          from: "bot",
+          text: `${this._getTranslation('advanced_name_received')}\n\n1. ${this._getTranslation('advanced_faq_option')}\n2. ${this._getTranslation('advanced_chat_option')}`,
+          time: this._getCurrentTime(),
+          isAdvancedOnboarding: true,
+          showOptions: true
+        };
+        
+        this.messages.push(optionsMessage);
+        this.onboardingStep = 1;
+        
+        // Actualizar placeholder
+        if (this.input) {
+          this.input.placeholder = "Escribe 1 o 2 para seleccionar una opción...";
+        }
+        break;
+        
+      case 1: // Paso 2: Procesar selección de opción
+        this._log('_handleAdvancedOnboardingResponse - Paso 2: Procesando selección');
+        
+        const selection = userMessage.trim().toLowerCase();
+        
+        if (selection === '1' || selection.includes('faq') || selection.includes('preguntas')) {
+          // Mostrar lista de FAQ
+          this._showFAQList();
+        } else if (selection === '2' || selection.includes('chat') || selection.includes('conversación')) {
+          // Comenzar chat normal
+          this._startNormalChat();
+        } else {
+          // Opción inválida
+          const invalidMessage = {
+            from: "bot",
+            text: "Por favor, escribe 1 para ver las preguntas frecuentes o 2 para comenzar una conversación.",
+            time: this._getCurrentTime(),
+            isAdvancedOnboarding: true
+          };
+          this.messages.push(invalidMessage);
+        }
+        break;
+        
+      default:
+        this._log('_handleAdvancedOnboardingResponse - Paso desconocido:', this.onboardingStep);
+        break;
+    }
+    
+    // Renderizar mensajes
+    if (this.messagesContainer) {
+      this._renderMessages();
+    }
+  }
+
+  // Método para mostrar la lista de FAQ
+  _showFAQList() {
+    this._log('_showFAQList - Mostrando lista de FAQ');
+    
+    const faqList = this._getTranslation('advanced_faq_list');
+    let faqText = `${this._getTranslation('advanced_faq_title')}:\n\n`;
+    
+    faqList.forEach((faq, index) => {
+      faqText += `${index + 1}. ${faq.title}\n`;
+    });
+    
+    faqText += `\n${this._getTranslation('advanced_faq_back')}`;
+    
+    const faqMessage = {
+      from: "bot",
+      text: faqText,
+      time: this._getCurrentTime(),
+      isAdvancedOnboarding: true,
+      showFAQList: true
+    };
+    
+    this.messages.push(faqMessage);
+    this.onboardingStep = 2;
+    
+    // Actualizar placeholder
+    if (this.input) {
+      this.input.placeholder = "Escribe el número de la pregunta que quieres ver...";
+    }
+  }
+
+  // Método para comenzar chat normal
+  _startNormalChat() {
+    this._log('_startNormalChat - Comenzando chat normal');
+    
+    this.advancedOnboarding = false;
+    this.registered = true;
+    this.registrationCompleted = true;
+    
+    // Mostrar mensaje de bienvenida al chat
+    const welcomeMessage = {
+      from: "bot",
+      text: `¡Hola ${this.user.name}! 👋 ¿En qué puedo ayudarte hoy?`,
+      time: this._getCurrentTime(),
+      isWelcome: true
+    };
+    
+    this.messages.push(welcomeMessage);
+    
+    // Actualizar placeholder
+    if (this.input) {
+      this.input.placeholder = "Escribe un mensaje...";
+    }
+    
+    // Renderizar mensajes
+    if (this.messagesContainer) {
+      this._renderMessages();
+    }
   }
 
   // Métodos públicos

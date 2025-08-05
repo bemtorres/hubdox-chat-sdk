@@ -1,0 +1,50 @@
+
+Desarrollar una propuesta onbording 
+
+de que se trata
+
+1.- debe preguntar sin chat el nombre de la persona 
+si  tiene el register true y sin informacion de user.name 
+en el caso de tener user.name y tiene register true debe mostrar el nombre ya inscrito para verificar 
+si tiene el register false y user.name no mostrar el registro.
+
+una vez pasado el registro debe haber un menu principal donde se muestre 2 opciones
+
+opcion 1: preguntas frecuentas ¿encuentra tu pregunta aquí?
+opcion 2: iniciar conversacion
+opcion 3: enviar un mensajde de forma interno
+
+
+si es la opcion 1: debe haber un listado de preguntas frecuentas con un buscador
+al selecionar un pregunta frecuente este mostrara informacion del contenido que puede estar en html o markdown
+tener un boton para volver atras 
+
+opcion 2: iniciar conversacion 
+Entrar al chat prinicipal donde puedes conversar con la IA
+
+
+para que esto funcione /api/sdk/v1/register` devolver adicional
+
+module:
+  faqs:true, // para ver preguntas frecuentas
+  chat:true, // para poder chatear
+  form:true, // para poder enviar formulario
+faqs:
+  [
+    {
+      title:
+      content:
+    },
+    {
+      title:
+      content:
+    }
+  ]
+
+opcion 3:
+formulario con nombre, correo y mensaje 
+que sera enviado a post /api/sdk/v1/notification
+
+el diseño debe ser minimalista y fluido que estas opciones puedes ser administradas desde el mismo sistema
+
+
