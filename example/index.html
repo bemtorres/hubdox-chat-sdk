@@ -204,10 +204,6 @@ const chat = new ChatBot({
             </div>
 
             <div class="code-block">
-// Verificar estado de caché
-const status = chat.getCacheStatus();
-console.log('Estado de caché:', status);
-
 // Verificar estado de registro
 const regStatus = chat.getRegistrationStatus();
 console.log('Estado de registro:', regStatus);
@@ -234,14 +230,9 @@ chat.clearCache();
                 baseUrl: 'https://hubdocs.test',
                 apiKey: 'Ae812043-87ed-4bde-ba4a-0daaff8aadad',
                 tenant: 'nomed',
-                bot: { 
-                    name: 'Boti', 
-                    img: "../src/img/bot_icon.png"  
-                },
                 options: {
                     show: true,
                     register: true,    // Solicita registro
-                    cache: true,       // Guarda en caché
                     testMode: false,   // Usa API real
                     stream: true,
                 },
@@ -251,8 +242,8 @@ chat.clearCache();
                     headerBgColor: "#007bff",
                     headerTextColor: "#fff",
                     sendButtonText: "",
-                    chatWidth: "400px",
-                    chatHeight: "60vh",
+                    chatWidth: "500px",
+                    chatHeight: "70vh",
                     chatMaxWidth: "90vw",
                     chatMaxHeight: "80vh",
                     fullscreenEnabled: true,
@@ -270,11 +261,9 @@ chat.clearCache();
 
             // Verificar estado después de 2 segundos
             setTimeout(() => {
-                const cacheStatus = chat.getCacheStatus();
                 const regStatus = chat.getRegistrationStatus();
                 
                 console.log('=== ESTADO DEL CHAT ===');
-                console.log('Caché:', cacheStatus);
                 console.log('Registro:', regStatus);
                 console.log('======================');
             }, 2000);

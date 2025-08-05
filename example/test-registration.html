@@ -1,0 +1,117 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Test Registro con Botones</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 20px;
+            background-color: #f5f5f5;
+        }
+        .container {
+            max-width: 800px;
+            margin: 0 auto;
+            background: white;
+            padding: 20px;
+            border-radius: 10px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+        h1 {
+            color: #333;
+            text-align: center;
+        }
+        .test-info {
+            background: #e3f2fd;
+            padding: 15px;
+            border-radius: 5px;
+            margin-bottom: 20px;
+        }
+        .test-info h3 {
+            margin-top: 0;
+            color: #1976d2;
+        }
+        .test-info ul {
+            margin: 10px 0;
+            padding-left: 20px;
+        }
+        .test-info li {
+            margin: 5px 0;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🧪 Test: Registro con Botones</h1>
+        
+        <div class="test-info">
+            <h3>📋 Instrucciones de Prueba:</h3>
+            <ul>
+                <li><strong>1.</strong> Abre la consola del navegador (F12)</li>
+                <li><strong>2.</strong> Haz clic en el botón flotante del chat</li>
+                <li><strong>3.</strong> Deberías ver la pantalla de registro con dos botones:</li>
+                <ul>
+                    <li>📚 Preguntas Frecuentes</li>
+                    <li>💬 Iniciar Chat</li>
+                </ul>
+                <li><strong>4.</strong> El input de texto debe estar deshabilitado</li>
+                <li><strong>5.</strong> Prueba hacer clic en cada botón:</li>
+                <ul>
+                    <li><strong>Preguntas Frecuentes:</strong> Debe abrir el modal de FAQ</li>
+                    <li><strong>Iniciar Chat:</strong> Debe comenzar el chat normal</li>
+                </ul>
+                <li><strong>6.</strong> Verifica que no puedas escribir en el input hasta seleccionar una opción</li>
+            </ul>
+        </div>
+
+        <div class="test-info">
+            <h3>✅ Comportamiento Esperado:</h3>
+            <ul>
+                <li>✅ Pantalla de registro muestra imagen del bot y mensaje de bienvenida</li>
+                <li>✅ Dos botones claramente visibles y funcionales</li>
+                <li>✅ Input de texto deshabilitado con placeholder informativo</li>
+                <li>✅ Botón "Preguntas Frecuentes" abre modal de FAQ</li>
+                <li>✅ Botón "Iniciar Chat" habilita el chat normal</li>
+                <li>✅ No se pueden enviar mensajes de texto hasta seleccionar una opción</li>
+            </ul>
+        </div>
+    </div>
+
+    <script src="../src/index.js"></script>
+    <script>
+        // Configuración de prueba
+        const chatBot = new ChatBot({
+            baseUrl: 'https://api.example.com',
+            apiKey: 'test-api-key',
+            tenant: 'test-tenant',
+            bot: {
+                name: 'Test Bot',
+                img: 'https://via.placeholder.com/80x80/007bff/ffffff?text=🤖'
+            },
+            user: {
+                name: 'Test User',
+                email: 'test@example.com',
+                photo: 'https://via.placeholder.com/40x40/28a745/ffffff?text=👤'
+            },
+            register: true,
+            cache: false,
+            testMode: true,
+            primaryColor: '#007bff',
+            language: 'es'
+        });
+
+        // Inicializar el chat
+        chatBot._initializeChat();
+
+        // Log para debugging
+        console.log('🚀 ChatBot inicializado en modo test');
+        console.log('📱 Configuración:', {
+            register: chatBot.register,
+            registrationScreen: chatBot.registrationScreen,
+            registered: chatBot.registered,
+            registrationCompleted: chatBot.registrationCompleted
+        });
+    </script>
+</body>
+</html> 

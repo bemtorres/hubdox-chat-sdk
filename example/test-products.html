@@ -1,0 +1,117 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Test - Funcionalidad de Productos</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 20px;
+            background-color: #f5f5f5;
+        }
+        .container {
+            max-width: 800px;
+            margin: 0 auto;
+            background: white;
+            padding: 20px;
+            border-radius: 10px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+        h1 {
+            color: #333;
+            text-align: center;
+        }
+        .test-info {
+            background: #e3f2fd;
+            padding: 15px;
+            border-radius: 5px;
+            margin-bottom: 20px;
+        }
+        .test-steps {
+            background: #f3e5f5;
+            padding: 15px;
+            border-radius: 5px;
+            margin-bottom: 20px;
+        }
+        .test-steps ol {
+            margin: 0;
+            padding-left: 20px;
+        }
+        .test-steps li {
+            margin-bottom: 8px;
+        }
+        .note {
+            background: #fff3e0;
+            padding: 10px;
+            border-radius: 5px;
+            border-left: 4px solid #ff9800;
+            margin-top: 15px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🧪 Test - Funcionalidad de Productos</h1>
+        
+        <div class="test-info">
+            <h3>📋 Información del Test</h3>
+            <p><strong>Objetivo:</strong> Verificar que la nueva funcionalidad de productos funciona correctamente.</p>
+            <p><strong>Configuración:</strong> Modo test activado con datos de productos simulados.</p>
+            <p><strong>API:</strong> No se realizan llamadas reales a la API (testMode: true).</p>
+        </div>
+
+        <div class="test-steps">
+            <h3>📝 Pasos para Probar</h3>
+            <ol>
+                <li>Haz clic en el botón flotante del chat (esquina inferior derecha)</li>
+                <li>Observa que aparecen <strong>tres botones</strong> en la pantalla de bienvenida:
+                    <ul>
+                        <li>📚 Preguntas Frecuentes</li>
+                        <li>🛍️ Ver Productos (NUEVO)</li>
+                        <li>💬 Iniciar Chat</li>
+                    </ul>
+                </li>
+                <li>Haz clic en el botón <strong>"🛍️ Ver Productos"</strong></li>
+                <li>Verifica que se abre un modal con:
+                    <ul>
+                        <li>Título: "🛍️ Nuestros Productos"</li>
+                        <li>Buscador de productos</li>
+                        <li>Lista de productos con imagen, título, descripción y precio</li>
+                        <li>El producto de prueba "Tejido Luffy" con descripción en Markdown</li>
+                    </ul>
+                </li>
+                <li>Prueba la funcionalidad de búsqueda escribiendo en el campo de búsqueda</li>
+                <li>Cierra el modal y prueba los otros botones</li>
+            </ol>
+        </div>
+
+        <div class="note">
+            <strong>💡 Nota:</strong> En modo test, se muestra un producto de ejemplo. En producción, los productos vendrán desde la API <code>/api/sdk/v1/register</code> en el campo <code>products</code>.
+        </div>
+    </div>
+
+    <script src="../src/index.js"></script>
+    <script>
+        // Inicializar el chatbot con configuración de prueba
+        const chatBot = new ChatBot({
+            baseUrl: 'https://hubdocs.test',
+            apiKey: 'Ae812043-87ed-4bde-ba4a-0daaff8aadad',
+            tenant: 'nomed',
+            options: {
+                register: true,
+                testMode: true,
+                language: 'es'
+            },
+            custom: {
+                primaryColor: '#0d6efd',
+                language: 'es'
+            }
+        });
+
+        // Log para verificar que se inicializó correctamente
+        console.log('ChatBot inicializado con funcionalidad de productos');
+        console.log('Modo test activado - no se realizan llamadas a la API');
+    </script>
+</body>
+</html> 

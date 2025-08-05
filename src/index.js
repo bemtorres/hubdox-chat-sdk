@@ -14,13 +14,12 @@ class ChatBot {
     const optionsConfig = options.options || {};
     this.register = optionsConfig.register || false;
     this.show = optionsConfig.show !== undefined ? optionsConfig.show : true;
-    this.cache = optionsConfig.cache !== undefined ? optionsConfig.cache : true;
+
     this.testMode = optionsConfig.testMode || false;
     this.devMode = optionsConfig.devMode || false;
     this.stream = optionsConfig.stream || false;
     
-    // Nueva opción para usar Shadow DOM
-    this.useShadowDOM = optionsConfig.useShadowDOM !== undefined ? optionsConfig.useShadowDOM : true;
+
     
     // Configuración del onboarding template
     this.onboardingTemplate = optionsConfig.onboardingTemplate || 'basic';
@@ -30,6 +29,13 @@ class ChatBot {
     this.onboardingStep = 0;
     this.faqList = [];
     this.selectedFaq = null;
+    
+    // Propiedades para FAQs de la API
+    this.apiFaqs = [];
+    this.moduleConfig = null;
+    
+    // Propiedades para productos de la API
+    this.products = [];
     
     this.user = options.user || {
       email: 'test@mail.com',
@@ -52,10 +58,10 @@ class ChatBot {
     this.showTime = custom.showTime || true;
     
     // Configuración de tamaño del chat
-    this.chatWidth = custom.chatWidth || "400px";
-    this.chatHeight = custom.chatHeight || "60vh";
+    this.chatWidth = custom.chatWidth || "700px";
+    this.chatHeight = custom.chatHeight || "70vh";
     this.chatMaxWidth = custom.chatMaxWidth || "90vw";
-    this.chatMaxHeight = custom.chatMaxHeight || "60vh";
+    this.chatMaxHeight = custom.chatMaxHeight || "70vh";
     this.messagesHeight = custom.messagesHeight || "350px";
     this.buttonSize = custom.buttonSize || "56px";
     this.fullscreenEnabled = custom.fullscreenEnabled !== undefined ? custom.fullscreenEnabled : true;
@@ -138,35 +144,10 @@ class ChatBot {
     // Inicialización
     this._boundHandleResize = this._handleResize.bind(this);
     
-    if (this.useShadowDOM) {
-      // Inicializar con Shadow DOM
-      this._renderFloatingButton();
-      this._handleResize();
-      this._initializeChat();
-    } else {
-      // Inicializar con Bootstrap (comportamiento original)
-      this._loadBootstrapCSS().then(() => {
-        this._loadBootstrapJS().then(() => {
-          this._renderFloatingButton();
-          this._handleResize();
-          this._initializeChat();
-        });
-      });
-    }
-  }
-
-  _loadBootstrapJS() {
-    return new Promise((resolve, reject) => {
-      if (document.querySelector('script[src*="bootstrap.bundle.min.js"]')) {
-        resolve();
-        return;
-      }
-      const script = document.createElement('script');
-      script.src = 'https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js';
-      script.onload = () => resolve();
-      script.onerror = () => reject(new Error('Error loading Bootstrap JS'));
-      document.body.appendChild(script);
-    });
+    // Inicializar con Shadow DOM
+    this._renderFloatingButton();
+    this._handleResize();
+    this._initializeChat();
   }
 
   // Métodos de inicialización
@@ -177,15 +158,6 @@ class ChatBot {
 
   async _initializeSession() {
     try {
-      // Verificar caché si está habilitado
-      if (this.cache) {
-        const loadedFromCache = this._loadFromCache();
-        if (loadedFromCache) {
-          // Si se cargaron datos desde caché, actualizar la UI
-          this._updateBotUI();
-        }
-      }
-      
       // En modo test, simular sesión y registro exitoso
       if (this.testMode) {
         this.session = "test-session-" + Date.now();
@@ -286,7 +258,23 @@ class ChatBot {
         this.saludoInicial = data.chatbot.initial_message;
       }
       
-      this._saveToCache();
+      // Guardar las FAQs de la API si están disponibles
+      if (data.faqs && Array.isArray(data.faqs)) {
+        this.apiFaqs = data.faqs;
+        this._log('FAQs de la API guardadas:', this.apiFaqs);
+      }
+      
+      // Guardar configuración de módulos si está disponible
+      if (data.module) {
+        this.moduleConfig = data.module;
+        this._log('Configuración de módulos guardada:', this.moduleConfig);
+      }
+      
+      // Guardar productos de la API si están disponibles
+      if (data.products && Array.isArray(data.products)) {
+        this.products = data.products;
+        this._log('Productos de la API guardados:', this.products);
+      }
       
       // Actualizar la UI con la nueva configuración del bot
       this._updateBotUI();
@@ -298,8 +286,6 @@ class ChatBot {
       throw error;
     }
   }
-
-
 
   async _sendMessageToAPI(message) {
     this._log('_sendMessageToAPI - Enviando mensaje:', message);
@@ -412,15 +398,35 @@ class ChatBot {
         advanced_faq_list: [
           {
             title: "¿Cómo funciona el chat?",
-            content: "El chat funciona de manera interactiva. Puedes escribir mensajes y recibir respuestas en tiempo real."
+            content: "El chat funciona de manera interactiva. Puedes escribir mensajes y recibir respuestas en tiempo real. El asistente virtual está diseñado para ayudarte con información, responder preguntas y mantener conversaciones amigables."
           },
           {
             title: "¿Qué puedo preguntar?",
-            content: "Puedes hacer preguntas sobre cualquier tema, solicitar información, o simplemente charlar."
+            content: "Puedes hacer preguntas sobre cualquier tema: información general, datos curiosos, ayuda con tareas, explicaciones sobre conceptos, o simplemente charlar. El asistente está aquí para ayudarte con lo que necesites."
           },
           {
-            title: "¿Es seguro?",
-            content: "Sí, todas las conversaciones son privadas y seguras. No compartimos tu información."
+            title: "¿Es seguro usar este chat?",
+            content: "Sí, todas las conversaciones son privadas y seguras. No compartimos tu información personal con terceros. Tu privacidad es importante para nosotros."
+          },
+          {
+            title: "¿Puedo usar el chat en cualquier momento?",
+            content: "Sí, el chat está disponible 24/7. Puedes usarlo cuando quieras y el asistente estará listo para ayudarte en cualquier momento del día."
+          },
+          {
+            title: "¿Cómo puedo obtener la mejor experiencia?",
+            content: "Para obtener la mejor experiencia, sé específico en tus preguntas, proporciona contexto cuando sea necesario, y no dudes en hacer preguntas de seguimiento si necesitas más detalles."
+          },
+          {
+            title: "¿El asistente puede recordar nuestras conversaciones?",
+            content: "El asistente puede recordar el contexto de la conversación actual, pero las conversaciones anteriores no se guardan entre sesiones para proteger tu privacidad."
+          },
+          {
+            title: "¿Puedo cambiar de tema durante la conversación?",
+            content: "¡Por supuesto! Puedes cambiar de tema en cualquier momento. El asistente se adaptará a tus necesidades y estará listo para ayudarte con cualquier nuevo tema que quieras discutir."
+          },
+          {
+            title: "¿Qué hago si no entiendo una respuesta?",
+            content: "Si no entiendes una respuesta, simplemente pide que te lo explique de otra manera o solicita más detalles. El asistente está aquí para ayudarte y se adaptará a tu nivel de comprensión."
           }
         ]
       },
@@ -485,15 +491,35 @@ class ChatBot {
         advanced_faq_list: [
           {
             title: "How does the chat work?",
-            content: "The chat works interactively. You can write messages and receive responses in real time."
+            content: "The chat works interactively. You can write messages and receive responses in real time. The virtual assistant is designed to help you with information, answer questions, and maintain friendly conversations."
           },
           {
             title: "What can I ask?",
-            content: "You can ask questions about any topic, request information, or simply chat."
+            content: "You can ask questions about any topic: general information, fun facts, help with tasks, explanations of concepts, or simply chat. The assistant is here to help you with whatever you need."
           },
           {
-            title: "Is it safe?",
-            content: "Yes, all conversations are private and secure. We don't share your information."
+            title: "Is it safe to use this chat?",
+            content: "Yes, all conversations are private and secure. We don't share your personal information with third parties. Your privacy is important to us."
+          },
+          {
+            title: "Can I use the chat at any time?",
+            content: "Yes, the chat is available 24/7. You can use it whenever you want and the assistant will be ready to help you at any time of day."
+          },
+          {
+            title: "How can I get the best experience?",
+            content: "To get the best experience, be specific in your questions, provide context when necessary, and don't hesitate to ask follow-up questions if you need more details."
+          },
+          {
+            title: "Can the assistant remember our conversations?",
+            content: "The assistant can remember the context of the current conversation, but previous conversations are not saved between sessions to protect your privacy."
+          },
+          {
+            title: "Can I change topics during the conversation?",
+            content: "Of course! You can change topics at any time. The assistant will adapt to your needs and be ready to help you with any new topic you want to discuss."
+          },
+          {
+            title: "What should I do if I don't understand a response?",
+            content: "If you don't understand a response, simply ask for it to be explained in another way or request more details. The assistant is here to help and will adapt to your level of understanding."
           }
         ]
       },
@@ -903,7 +929,6 @@ class ChatBot {
     // Reproducir sonido de notificación para el recordatorio
     this._playReminderSound();
     
-    this._saveToCache();
     this._log('_showReminderMessage - Mensaje de recordatorio mostrado con sonido');
   }
 
@@ -935,15 +960,18 @@ class ChatBot {
       this.sendButton.disabled = true;
     }
     
-    this._saveToCache();
     this._log('_showLimitCompletedMessage - Chat bloqueado por límite del servidor');
   }
-
-
 
   // Manejar respuesta del usuario durante registro
   async _handleRegistrationResponse(userMessage) {
     this._log('_handleRegistrationResponse - Iniciando con mensaje:', userMessage);
+    
+    // Si estamos en la pantalla de registro con botones, no procesar mensajes de texto
+    if (this.registrationScreen && this.messages.some(msg => msg.showWelcomeButtons)) {
+      this._log('_handleRegistrationResponse - En pantalla de registro con botones, ignorando mensaje de texto');
+      return;
+    }
     
     // Validar que el nombre no esté vacío
     if (!userMessage.trim()) {
@@ -959,7 +987,6 @@ class ChatBot {
     this._log('_handleRegistrationResponse - Estableciendo registered = true');
     this.registered = true;
     this.registrationCompleted = true;
-    this._saveToCache();
     
     // Mostrar mensaje de confirmación
     this._addMessage("bot", this._getTranslation('registration_complete'));
@@ -1035,125 +1062,6 @@ class ChatBot {
     }
   }
 
-  // Métodos de caché
-  _getCacheKey() {
-    return `chatbot_${this.tenant}_${this.apiKey}`;
-  }
-
-  _saveToCache() {
-    if (!this.cache) return;
-    
-    try {
-      const cacheData = {
-        session: this.session,
-        messages: this.messages,
-        registered: this.registered,
-        registrationScreen: this.registrationScreen,
-        registrationCompleted: this.registrationCompleted,
-        user: this.user,
-        bot: {
-          name: this.bot.name,
-          img: this.bot.img
-        },
-        botName: this.botName,
-        saludoInicial: this.saludoInicial,
-        license: this.license,
-        soundPlayed: this.soundPlayed,
-        lastUserMessageTime: this.lastUserMessageTime,
-        language: this.language,
-        timestamp: Date.now()
-      };
-      
-      localStorage.setItem(this._getCacheKey(), JSON.stringify(cacheData));
-    } catch (error) {
-      console.warn('Error guardando en caché:', error);
-    }
-  }
-
-  _loadFromCache() {
-    if (!this.cache) return;
-    
-    try {
-      const cached = localStorage.getItem(this._getCacheKey());
-      if (cached) {
-        const cacheData = JSON.parse(cached);
-        
-        // Verificar si el caché no es muy antiguo (24 horas)
-        const cacheAge = Date.now() - cacheData.timestamp;
-        const maxAge = 24 * 60 * 60 * 1000; // 24 horas
-        
-        if (cacheAge < maxAge) {
-          this.session = cacheData.session;
-          this.messages = cacheData.messages || [];
-          this.registered = cacheData.registered || false;
-          this.registrationScreen = cacheData.registrationScreen || false;
-          this.registrationCompleted = cacheData.registrationCompleted || false;
-          this.user = { ...this.user, ...cacheData.user };
-          
-          // Cargar configuración del bot desde caché
-          if (cacheData.bot) {
-            this.bot.name = cacheData.bot.name || this.bot.name;
-            this.bot.img = cacheData.bot.img || this.bot.img;
-          }
-          if (cacheData.botName) {
-            this.botName = cacheData.botName;
-          }
-          if (cacheData.saludoInicial) {
-            this.saludoInicial = cacheData.saludoInicial;
-          }
-          if (cacheData.license) {
-            this.license = { ...this.license, ...cacheData.license };
-          }
-          if (cacheData.soundPlayed !== undefined) {
-            this.soundPlayed = cacheData.soundPlayed;
-          }
-          if (cacheData.lastUserMessageTime !== undefined) {
-            this.lastUserMessageTime = cacheData.lastUserMessageTime;
-          }
-          if (cacheData.language !== undefined) {
-            this.language = cacheData.language;
-          }
-          
-          this._log('Datos cargados desde caché');
-          return true;
-        } else {
-          // Caché expirado, eliminarlo
-          this._clearCache();
-        }
-      }
-    } catch (error) {
-      console.warn('Error cargando desde caché:', error);
-      this._clearCache();
-    }
-    
-    return false;
-  }
-
-  _clearCache() {
-    try {
-      localStorage.removeItem(this._getCacheKey());
-    } catch (error) {
-      console.warn('Error limpiando caché:', error);
-    }
-  }
-
-  // Métodos de UI
-  _loadBootstrapCSS() {
-    return new Promise((resolve, reject) => {
-      if (document.querySelector('link[data-bootstrap="injected"]')) {
-        resolve();
-        return;
-      }
-      const link = document.createElement('link');
-      link.rel = 'stylesheet';
-      link.href = 'https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css';
-      link.dataset.bootstrap = 'injected';
-      link.onload = () => resolve();
-      link.onerror = () => reject(new Error('Error cargando Bootstrap CSS'));
-      document.head.appendChild(link);
-    });
-  }
-
   _getCurrentTime() {
     const d = new Date();
     return d.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
@@ -1171,14 +1079,6 @@ class ChatBot {
   }
 
   _updateChatPanelSize() {
-    if (this.useShadowDOM) {
-      this._updateChatPanelSizeShadowDOM();
-    } else {
-      this._updateChatPanelSizeBootstrap();
-    }
-  }
-
-  _updateChatPanelSizeShadowDOM() {
     if (this.chatPanel) {
       if (this.isFullscreen) {
         this.chatPanel.classList.add('fullscreen');
@@ -1192,62 +1092,7 @@ class ChatBot {
     }
   }
 
-  _updateChatPanelSizeBootstrap() {
-    if (this.chatPanel) {
-      if (this.isFullscreen) {
-        this.chatPanel.style.cssText = `
-          position: fixed;
-          top: 0;
-          left: 0;
-          width: 100vw;
-          height: 100vh;
-          max-width: none;
-          max-height: none;
-          display: flex;
-          flex-direction: column;
-          z-index: 1050;
-          background-color: white;
-          border-radius: 0;
-        `;
-      } else if (this.isMobile) {
-        this.chatPanel.style.cssText = `
-          position: fixed;
-          bottom: 90px;
-          right: 24px;
-          width: calc(100vw - 48px);
-          max-width: ${this.chatMaxWidth};
-          max-height: ${this.chatMaxHeight};
-          display: flex;
-          flex-direction: column;
-          z-index: 1050;
-          background-color: white;
-        `;
-      } else {
-        this.chatPanel.style.cssText = `
-          position: fixed;
-          bottom: 90px;
-          right: 24px;
-          width: ${this.chatWidth};
-          max-width: ${this.chatMaxWidth};
-          max-height: ${this.chatMaxHeight};
-          display: flex;
-          flex-direction: column;
-          z-index: 1050;
-          background-color: white;
-        `;
-      }
-    }
-  }
-
   _renderFloatingButton() {
-    if (this.useShadowDOM) {
-      this._renderFloatingButtonShadowDOM();
-    } else {
-      this._renderFloatingButtonBootstrap();
-    }
-  }
-
-  _renderFloatingButtonShadowDOM() {
     // Crear contenedor con Shadow DOM
     this.floatingBtnContainer = document.createElement("div");
     this.floatingBtnContainer.id = "chatbot-floating-btn-container";
@@ -1323,67 +1168,7 @@ class ChatBot {
     });
   }
 
-  _renderFloatingButtonBootstrap() {
-    this.floatingBtn = document.createElement("button");
-    this.floatingBtn.type = "button";
-    this.floatingBtn.title = "Abrir chat";
-    
-    // Tamaño del botón según dispositivo y configuración personalizada
-    const buttonSize = this.isMobile ? "60px" : this.buttonSize;
-    const iconSize = this.isMobile ? "48" : "24";
-    
-    // Usar ícono personalizado si está disponible, sino usar el SVG por defecto
-    if (this.iconButton && this.iconButton !== this.bot.img) {
-      this.floatingBtn.innerHTML = `<img src="${this.iconButton}" alt="Chat" style="width: 100%; height: 100%; object-fit: cover; border-radius: 50%;" onerror="this.style.display='none'; this.parentElement.innerHTML='<svg xmlns=\\"http://www.w3.org/2000/svg\\" fill=\\"white\\" width=\\"${this.isMobile ? '48' : '24'}\\" height=\\"${this.isMobile ? '48' : '24'}\\" viewBox=\\"0 0 24 24\\"><path d=\\"M20 2H4a2 2 0 0 0-2 2v18l4-4h14a2 2 0 0 0 2-2V4a2 2 0 0 0-2-2z\\"/></svg>'; this.parentElement.style.backgroundColor='${this.primaryColor}'; this.parentElement.style.display='flex'; this.parentElement.style.alignItems='center'; this.parentElement.style.justifyContent='center';">`;
-    } else {
-      this.floatingBtn.innerHTML = `<svg xmlns="http://www.w3.org/2000/svg" fill="white" width="${iconSize}" height="${iconSize}" viewBox="0 0 24 24"><path d="M20 2H4a2 2 0 0 0-2 2v18l4-4h14a2 2 0 0 0 2-2V4a2 2 0 0 0-2-2z"/></svg>`;
-    }
-    
-    // Aplicar estilos directamente para evitar conflictos
-    this.floatingBtn.style.position = "fixed";
-    this.floatingBtn.style.bottom = this.buttonPosition.bottom || "24px";
-    this.floatingBtn.style.right = this.buttonPosition.right || "24px";
-    this.floatingBtn.style.top = this.buttonPosition.top || "auto";
-    this.floatingBtn.style.left = this.buttonPosition.left || "auto";
-    this.floatingBtn.style.transform = this.buttonPosition.transform || "none";
-    this.floatingBtn.style.backgroundColor = this.iconButton && this.iconButton !== this.bot.img ? 'transparent' : this.primaryColor;
-    this.floatingBtn.style.border = "none";
-    this.floatingBtn.style.borderRadius = "50%";
-    this.floatingBtn.style.width = buttonSize;
-    this.floatingBtn.style.height = buttonSize;
-    this.floatingBtn.style.cursor = "pointer";
-    this.floatingBtn.style.boxShadow = `0 4px 10px ${this._hexToRgba(this.primaryColor, 0.5)}`;
-    this.floatingBtn.style.display = this.iconButton && this.iconButton !== this.bot.img ? 'block' : 'flex';
-    this.floatingBtn.style.alignItems = "center";
-    this.floatingBtn.style.justifyContent = "center";
-    this.floatingBtn.style.zIndex = "1050";
-    this.floatingBtn.style.transition = "transform 0.2s ease";
-    this.floatingBtn.style.overflow = "hidden";
-    
-    document.body.appendChild(this.floatingBtn);
-
-    this.floatingBtn.addEventListener("click", () => {
-      this._toggleChatPanel();
-    });
-
-    // Efecto hover
-    this.floatingBtn.addEventListener('mouseenter', () => {
-      this.floatingBtn.style.transform = `${this.buttonPosition.transform || "none"} scale(1.1)`;
-    });
-    this.floatingBtn.addEventListener('mouseleave', () => {
-      this.floatingBtn.style.transform = this.buttonPosition.transform || "none";
-    });
-  }
-
   _renderChatPanel() {
-    if (this.useShadowDOM) {
-      this._renderChatPanelShadowDOM();
-    } else {
-      this._renderChatPanelBootstrap();
-    }
-  }
-
-  _renderChatPanelShadowDOM() {
     // Crear contenedor con Shadow DOM
     this.chatPanelContainer = document.createElement("div");
     this.chatPanelContainer.id = "chatbot-panel-container";
@@ -1914,150 +1699,6 @@ class ChatBot {
     this._updateFooter();
   }
 
-  _renderChatPanelBootstrap() {
-    this.chatPanel = document.createElement("div");
-    this.chatPanel.className = "card shadow";
-    
-    // Aplicar tamaño inicial
-    this._updateChatPanelSize();
-
-    this.chatPanel.innerHTML = `
-      <div class="card-header d-flex justify-content-between align-items-center" style="
-        background-color: ${this.headerBgColor};
-        color: ${this.headerTextColor};
-        border-radius: ${this.isFullscreen ? '0' : '0.375rem 0.375rem 0 0'};
-      ">
-        <div class="d-flex align-items-center">
-          <img src="${this.bot.img}" alt="${this.bot.name}" class="rounded-circle me-2" style="width: 32px; height: 32px; object-fit: cover;">
-          <h5 class="mb-0">${this.botName}</h5>
-        </div>
-        <div class="d-flex align-items-center">
-          <div class="dropdown">
-            <button type="button" class="btn btn-sm text-white dropdown-toggle" id="actions-menu" data-bs-toggle="dropdown" aria-expanded="false" title="Acciones">
-              <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-three-dots-vertical" viewBox="0 0 16 16">
-                <path d="M9.5 13a1.5 1.5 0 1 1-3 0 1.5 1.5 0 0 1 3 0zm0-5a1.5 1.5 0 1 1-3 0 1.5 1.5 0 0 1 3 0zm0-5a1.5 1.5 0 1 1-3 0 1.5 1.5 0 0 1 3 0z"/>
-              </svg>
-            </button>
-            <ul class="dropdown-menu dropdown-menu-end" aria-labelledby="actions-menu">
-              <li>
-                <button class="dropdown-item" type="button" id="clear-history-btn">
-                  <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-trash me-2" viewBox="0 0 16 16">
-                    <path d="M5.5 5.5A.5.5 0 0 1 6 6v6a.5.5 0 0 1-1 0V6a.5.5 0 0 1 .5-.5zm2.5 0a.5.5 0 0 1 .5.5v6a.5.5 0 0 1-1 0V6a.5.5 0 0 1 .5-.5zm3 .5a.5.5 0 0 0-1 0v6a.5.5 0 0 0 1 0V6z"/>
-                    <path fill-rule="evenodd" d="M14.5 3a1 1 0 0 1-1 1H13v9a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V4h-.5a1 1 0 0 1-1-1V2a1 1 0 0 1 1-1H6a1 1 0 0 1 1-1h2a1 1 0 0 1 1 1h3.5a1 1 0 0 1 1 1v1zM4.118 4 4 4.059V13a1 1 0 0 0 1 1h6a1 1 0 0 0 1-1V4.059L11.882 4H4.118zM2.5 3V2h11v1h-11z"/>
-                  </svg>
-                  ${this._getTranslation('clear_history')}
-                </button>
-              </li>
-              ${this.fullscreenEnabled ? `
-              <li>
-                <button class="dropdown-item" type="button" id="fullscreen-toggle">
-                  <svg class="me-2" aria-hidden="true" xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" viewBox="0 0 24 24">
-                    <path stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 4H4m0 0v4m0-4 5 5m7-5h4m0 0v4m0-4-5 5M8 20H4m0 0v-4m0 4 5-5m7 5h4m0 0v-4m0 4-5-5"/>
-                  </svg>
-                  ${this.isFullscreen ? this._getTranslation('minimize') : this._getTranslation('fullscreen')}
-                </button>
-              </li>
-              ` : ''}
-              <li><hr class="dropdown-divider"></li>
-              <li>
-                <button class="dropdown-item" type="button" id="chat-info-btn">
-                  <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-info-circle me-2" viewBox="0 0 16 16">
-                    <path d="M8 15A7 7 0 1 1 8 1a7 7 0 0 1 0 14zm0 1A8 8 0 1 0 8 0a8 8 0 0 0 0 16z"/>
-                    <path d="m8.93 6.588-2.29.287-.082.38.45.083c.294.07.352.176.288.469l-.738 3.468c-.194.897.105 1.319.808 1.319.545 0 1.178-.252 1.465-.598l.088-.416c-.2.176-.492.246-.686.246-.275 0-.375-.193-.304-.533L8.93 6.588zM9 4.5a1 1 0 1 1-2 0 1 1 0 0 1 2 0z"/>
-                  </svg>
-                  ${this._getTranslation('chat_info')}
-                </button>
-              </li>
-            </ul>
-          </div>
-          <button type="button" class="btn-close btn-close-white ms-2" aria-label="Cerrar"></button>
-        </div>
-      </div>
-      <div class="card-body overflow-auto" style="flex-grow: 1; ${this.isFullscreen ? 'height: calc(100vh - 140px);' : `height: ${this.messagesHeight};`}" id="chat-messages"></div>
-      <div class="card-footer bg-white" style="border-radius: ${this.isFullscreen ? '0' : '0 0 0.375rem 0.375rem'};">
-        <form id="chat-form" class="d-flex gap-2 align-items-center" autocomplete="off" novalidate>
-          <input
-            id="chat-input"
-            type="text"
-            class="form-control rounded-pill"
-            placeholder="${this._getTranslation('write_message_placeholder')}"
-            aria-label="Mensaje"
-            required
-          />
-          <button
-            id="chat-send"
-            type="submit"
-            class="btn rounded-pill px-2 align-items-center"
-            style="background-color: ${this.primaryColor}; color: white;"
-            disabled
-          >
-            
-            ${this.sendButtonText && this.sendButtonText !== "" ? this.sendButtonText : '<svg class="w-6 h-6 text-gray-800 dark:text-white" xmlns="http://www.w3.org/2000/svg" width="24" height="24" fill="currentColor" viewBox="0 0 24 24" aria-hidden="true"><g transform="rotate(90 12 12)"><path fill-rule="evenodd" d="M12 2a1 1 0 0 1 .932.638l7 18a1 1 0 0 1-1.326 1.281L13 19.517V13a1 1 0 1 0-2 0v6.517l-5.606 2.402a1 1 0 0 1-1.326-1.281l7-18A1 1 0 0 1 12 2Z" clip-rule="evenodd"/></g></svg>'}
-          </button>
-        </form>
-        
-        </div>
-    `;
-
-    document.body.appendChild(this.chatPanel);
-
-    // Actualizar el footer después de renderizar el panel
-    this._updateFooter();
-
-    this.messagesContainer = this.chatPanel.querySelector("#chat-messages");
-    this.form = this.chatPanel.querySelector("#chat-form");
-    this.input = this.chatPanel.querySelector("#chat-input");
-    this.sendButton = this.chatPanel.querySelector("#chat-send");
-    this.closeBtn = this.chatPanel.querySelector(".btn-close");
-    this.clearHistoryBtn = this.chatPanel.querySelector("#clear-history-btn");
-    
-    this._renderConfirmationModal();
-
-    if (this.fullscreenEnabled) {
-      this.fullscreenToggle = this.chatPanel.querySelector("#fullscreen-toggle");
-      if (this.fullscreenToggle) {
-        this.fullscreenToggle.addEventListener("click", () => {
-          this._toggleFullscreen();
-        });
-      }
-    }
-
-    this.form.addEventListener("submit", (e) => {
-      e.preventDefault();
-      this._sendMessage();
-    });
-
-    this.input.addEventListener("input", () => {
-      this.sendButton.disabled = this.input.value.trim() === "" || this.loading;
-    });
-
-    this.closeBtn.addEventListener("click", () => this._hideChatPanel());
-    this.clearHistoryBtn.addEventListener("click", () => this._showConfirmationModal());
-    
-    // Agregar event listener para el botón de información del chat
-    const chatInfoBtn = this.chatPanel.querySelector("#chat-info-btn");
-    if (chatInfoBtn) {
-      chatInfoBtn.addEventListener("click", () => this._showChatInfo());
-    }
-
-    // Agregar estilos CSS para streaming
-    const streamingStyles = document.createElement("style");
-    streamingStyles.textContent = `
-      .streaming-cursor::after {
-        content: '|';
-        animation: blink 1s infinite;
-        color: ${this.primaryColor};
-        font-weight: bold;
-      }
-      
-      @keyframes blink {
-        0%, 50% { opacity: 1; }
-        51%, 100% { opacity: 0; }
-      }
-    `;
-    document.head.appendChild(streamingStyles);
-  }
-
   _setupChatEventListeners() {
     // Form submit
     this.form.addEventListener("submit", (e) => {
@@ -2120,14 +1761,6 @@ class ChatBot {
   }
 
   _renderConfirmationModal() {
-    if (this.useShadowDOM) {
-      this._renderConfirmationModalShadowDOM();
-    } else {
-      this._renderConfirmationModalBootstrap();
-    }
-  }
-
-  _renderConfirmationModalShadowDOM() {
     // Crear contenedor del modal con Shadow DOM
     this.modalContainer = document.createElement("div");
     this.modalContainer.id = "chatbot-modal-container";
@@ -2370,50 +2003,34 @@ class ChatBot {
   }
 
   _showConfirmationModal() {
-    if (this.useShadowDOM) {
-      if (this.modalShadow) {
+    if (this.modalShadow) {
+      const modalOverlay = this.modalShadow.querySelector("#confirmation-modal");
+      if (modalOverlay) {
+        modalOverlay.classList.add("show");
+      }
+    } else {
+      // Si el modal no está renderizado, renderizarlo primero
+      this._renderConfirmationModal();
+      setTimeout(() => {
         const modalOverlay = this.modalShadow.querySelector("#confirmation-modal");
         if (modalOverlay) {
           modalOverlay.classList.add("show");
         }
-      } else {
-        // Si el modal no está renderizado, renderizarlo primero
-        this._renderConfirmationModal();
-        setTimeout(() => {
-          const modalOverlay = this.modalShadow.querySelector("#confirmation-modal");
-          if (modalOverlay) {
-            modalOverlay.classList.add("show");
-          }
-        }, 100);
-      }
-    } else {
-      const modal = new bootstrap.Modal(this.modal);
-      modal.show();
+      }, 100);
     }
   }
 
   _hideConfirmationModal() {
-    if (this.useShadowDOM) {
-      if (this.modalShadow) {
-        const modalOverlay = this.modalShadow.querySelector("#confirmation-modal");
-        if (modalOverlay) {
-          modalOverlay.classList.remove("show");
-        }
-      }
-    } else {
-      const modal = bootstrap.Modal.getInstance(this.modal);
-      if (modal) {
-        modal.hide();
+    if (this.modalShadow) {
+      const modalOverlay = this.modalShadow.querySelector("#confirmation-modal");
+      if (modalOverlay) {
+        modalOverlay.classList.remove("show");
       }
     }
   }
 
   _showChatInfo() {
-    if (this.useShadowDOM) {
-      this._showChatInfoShadowDOM();
-    } else {
-      this._showChatInfoBootstrap();
-    }
+    this._showChatInfoShadowDOM();
   }
 
   _showChatInfoShadowDOM() {
@@ -2634,55 +2251,6 @@ class ChatBot {
     document.addEventListener("keydown", handleEscape);
   }
 
-  _showChatInfoBootstrap() {
-    const cacheStatus = this.getCacheStatus();
-    const regStatus = this.getRegistrationStatus();
-    
-    const infoModal = document.createElement("div");
-    infoModal.className = "modal fade";
-    infoModal.tabIndex = -1;
-    infoModal.innerHTML = `
-      <div class="modal-dialog modal-dialog-centered">
-        <div class="modal-content">
-          <div class="modal-header border-0">
-            <h5 class="modal-title">${this._getTranslation('chat_info')}</h5>
-            <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-          </div>
-          <div class="modal-body">
-            <div class="row">
-              <div class="justify-content-center text-center">
-                <h6>Bot</h6>
-                <img src="${this.bot.img}" alt="${this.botName}" class="rounded-circle mb-3" style="width: 80px; height: 80px; object-fit: cover;">
-                <p>${this.botName}</p>
-              </div>
-              
-              ${this.license.showFooter ? `
-              <div class="d-flex justify-content-center">
-                <small class="text-muted text-center my-3 px-2" style="font-size: 16px;">
-                  <a href="${this.license.url}" target="_blank">
-                    <img class="me-2" src="${this.license.logo}" alt="${this.license.name}" style="width: 20px; height: 20px; object-fit: cover;">
-                    <span class="text-muted">Powered by ${this.license.name ?? ""}</span>
-                  </a>
-                </small>
-              </div>
-              ` : ''}
-            </div>
-          </div>
-        </div>
-      </div>
-    `;
-    
-    document.body.appendChild(infoModal);
-    
-    const modal = new bootstrap.Modal(infoModal);
-    modal.show();
-    
-    // Limpiar el modal del DOM después de cerrarlo
-    infoModal.addEventListener("hidden.bs.modal", () => {
-      document.body.removeChild(infoModal);
-    });
-  }
-
   _toggleFullscreen() {
     // Solo permitir pantalla completa si está habilitado
     if (!this.fullscreenEnabled) return;
@@ -2692,31 +2260,17 @@ class ChatBot {
     
     // Actualizar ícono y texto del botón en el menú dropdown
     if (this.fullscreenToggle) {
-      if (this.useShadowDOM) {
-        const iconSvg = this.isFullscreen ? `
-          <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" viewBox="0 0 24 24">
-            <path stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 9h4m0 0V5m0 4L4 4m15 5h-4m0 0V5m0 4 5-5M5 15h4m0 0v4m0-4-5 5m7 5h4m0 0v-4m0 4-5-5"/>
-          </svg>
-        ` : `
-          <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" viewBox="0 0 24 24">
-            <path stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 4H4m0 0v4m0-4 5 5m7-5h4m0 0v4m0-4-5 5M8 20H4m0 0v-4m0 4 5-5m7 5h4m0 0v-4m0 4-5-5"/>
-          </svg>
-        `;
-        
-        this.fullscreenToggle.innerHTML = iconSvg + (this.isFullscreen ? this._getTranslation('minimize') : this._getTranslation('fullscreen'));
-      } else {
-        const iconSvg = this.isFullscreen ? `
-          <svg class="me-2" aria-hidden="true" xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" viewBox="0 0 24 24">
-            <path stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 9h4m0 0V5m0 4L4 4m15 5h-4m0 0V5m0 4 5-5M5 15h4m0 0v4m0-4-5 5m7 5h4m0 0v-4m0 4-5-5"/>
-          </svg>
-        ` : `
-          <svg class="me-2" aria-hidden="true" xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" viewBox="0 0 24 24">
-            <path stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 4H4m0 0v4m0-4 5 5m7-5h4m0 0v4m0-4-5 5M8 20H4m0 0v-4m0 4 5-5m7 5h4m0 0v-4m0 4-5-5"/>
-          </svg>
-        `;
-        
-        this.fullscreenToggle.innerHTML = iconSvg + (this.isFullscreen ? this._getTranslation('minimize') : this._getTranslation('fullscreen'));
-      }
+      const iconSvg = this.isFullscreen ? `
+        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" viewBox="0 0 24 24">
+          <path stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 9h4m0 0V5m0 4L4 4m15 5h-4m0 0V5m0 4 5-5M5 15h4m0 0v4m0-4-5 5m7 5h4m0 0v-4m0 4-5-5"/>
+        </svg>
+      ` : `
+        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" viewBox="0 0 24 24">
+          <path stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 4H4m0 0v4m0-4 5 5m7-5h4m0 0v4m0-4-5 5M8 20H4m0 0v-4m0 4 5-5m7 5h4m0 0v-4m0 4-5-5"/>
+        </svg>
+      `;
+      
+      this.fullscreenToggle.innerHTML = iconSvg + (this.isFullscreen ? this._getTranslation('minimize') : this._getTranslation('fullscreen'));
     }
   }
 
@@ -2737,12 +2291,8 @@ class ChatBot {
       this.isFullscreen = false;
     }
     
-    if (this.useShadowDOM) {
-      this.chatPanel.style.display = this.chatVisible ? "flex" : "none";
-    } else {
-      this.chatPanel.style.display = this.chatVisible ? "flex" : "none";
-    }
-    
+    this.chatPanel.style.display = this.chatVisible ? "flex" : "none";
+
     // Actualizar el tamaño del panel
     this._updateChatPanelSize();
     
@@ -2760,11 +2310,8 @@ class ChatBot {
 
   _hideChatPanel() {
     this.chatVisible = false;
-    if (this.useShadowDOM) {
-      this.chatPanel.style.display = "none";
-    } else {
-      this.chatPanel.style.display = "none";
-    }
+    this.chatPanel.style.display = "none";
+ 
     if (this.isFullscreen) {
       this.isFullscreen = false;
       this._updateChatPanelSize();
@@ -2799,6 +2346,10 @@ class ChatBot {
     
     this._log('_addInitialMessage - Agregando mensaje inicial:', message);
     this._addMessage("bot", message);
+
+    //añadir boton de preguntas frecuent
+    // es un boton de preguntas frecuentes
+    
     
     // Reproducir sonido de notificación en el primer mensaje del bot
     this._playNotificationSound();
@@ -2827,22 +2378,10 @@ class ChatBot {
 
     // Renderizar todos los mensajes para evitar duplicados
     this._renderMessages();
-
-    this._saveToCache();
   }
 
-
-
-
-
-
-
   _createMessageElement(msg) {
-    if (this.useShadowDOM) {
-      return this._createMessageElementShadowDOM(msg);
-    } else {
-      return this._createMessageElementBootstrap(msg);
-    }
+    return this._createMessageElementShadowDOM(msg);
   }
 
   _createMessageElementShadowDOM(msg) {
@@ -2869,11 +2408,6 @@ class ChatBot {
       welcomeText.style.padding = "1rem";
       welcomeText.style.maxWidth = "80%";
       welcomeText.style.margin = "0 auto";
-    //   welcomeText.innerHTML = `
-    //   <p style="margin: 0; font-weight: 600; color: #000000;">${this.botName}</p>
-    //   <p style="margin: 0; color: #6c757d; font-size: 0.875rem;">${msg.time}</p>
-    //   <p style="margin: 0.5rem 0 0; color: #000000;">${this._parseMarkdown(msg.text)}</p>
-    // `;
       welcomeText.innerHTML = `
         <p style="margin: 0; font-weight: 600; color: #000000;">${this.botName}</p>
         <p style="margin: 0.5rem 0 0; color: #000000;">${this._parseMarkdown(msg.text)}</p>
@@ -2881,6 +2415,179 @@ class ChatBot {
       
       welcomeWrapper.appendChild(botImage);
       welcomeWrapper.appendChild(welcomeText);
+      
+      // Agregar botones si es mensaje de bienvenida avanzado
+      if (msg.showWelcomeButtons) {
+        const buttonsContainer = document.createElement("div");
+        buttonsContainer.style.marginTop = "1rem";
+        buttonsContainer.style.display = "flex";
+        buttonsContainer.style.flexDirection = "column";
+        buttonsContainer.style.gap = "0.5rem";
+        buttonsContainer.style.alignItems = "center";
+        
+        // Botón de Preguntas Frecuentes
+        const faqButton = document.createElement("button");
+        faqButton.style.backgroundColor = this.primaryColor;
+        faqButton.style.color = "white";
+        faqButton.style.border = "none";
+        faqButton.style.borderRadius = "1.5rem";
+        faqButton.style.padding = "0.75rem 1.5rem";
+        faqButton.style.cursor = "pointer";
+        faqButton.style.fontSize = "0.9rem";
+        faqButton.style.fontWeight = "500";
+        faqButton.style.minWidth = "200px";
+        faqButton.style.transition = "all 0.3s ease";
+        faqButton.innerHTML = "📚 Preguntas Frecuentes";
+        
+        faqButton.addEventListener('mouseenter', () => {
+          faqButton.style.backgroundColor = this._darkenColor(this.primaryColor, 10);
+          faqButton.style.transform = "translateY(-2px)";
+        });
+        
+        faqButton.addEventListener('mouseleave', () => {
+          faqButton.style.backgroundColor = this.primaryColor;
+          faqButton.style.transform = "translateY(0)";
+        });
+        
+        faqButton.addEventListener('click', () => {
+          this._showFAQModal();
+        });
+        
+        // Botón de Productos (solo mostrar si hay productos disponibles)
+        if (this.products && this.products.length > 0) {
+          const productsButton = document.createElement("button");
+          productsButton.style.backgroundColor = "#ff6b35";
+          productsButton.style.color = "white";
+          productsButton.style.border = "none";
+          productsButton.style.borderRadius = "1.5rem";
+          productsButton.style.padding = "0.75rem 1.5rem";
+          productsButton.style.cursor = "pointer";
+          productsButton.style.fontSize = "0.9rem";
+          productsButton.style.fontWeight = "500";
+          productsButton.style.minWidth = "200px";
+          productsButton.style.transition = "all 0.3s ease";
+          productsButton.innerHTML = "🛍️ Ver Productos";
+          
+          productsButton.addEventListener('mouseenter', () => {
+            productsButton.style.backgroundColor = "#e55a2b";
+            productsButton.style.transform = "translateY(-2px)";
+          });
+          
+          productsButton.addEventListener('mouseleave', () => {
+            productsButton.style.backgroundColor = "#ff6b35";
+            productsButton.style.transform = "translateY(0)";
+          });
+          
+          productsButton.addEventListener('click', () => {
+            this._showProductsModal();
+          });
+          
+          buttonsContainer.appendChild(productsButton);
+        }
+        
+        // Botón de Iniciar Chat
+        const chatButton = document.createElement("button");
+        chatButton.style.backgroundColor = "#28a745";
+        chatButton.style.color = "white";
+        chatButton.style.border = "none";
+        chatButton.style.borderRadius = "1.5rem";
+        chatButton.style.padding = "0.75rem 1.5rem";
+        chatButton.style.cursor = "pointer";
+        chatButton.style.fontSize = "0.9rem";
+        chatButton.style.fontWeight = "500";
+        chatButton.style.minWidth = "200px";
+        chatButton.style.transition = "all 0.3s ease";
+        chatButton.innerHTML = "💬 Iniciar Chat";
+        
+        chatButton.addEventListener('mouseenter', () => {
+          chatButton.style.backgroundColor = "#218838";
+          chatButton.style.transform = "translateY(-2px)";
+        });
+        
+        chatButton.addEventListener('mouseleave', () => {
+          chatButton.style.backgroundColor = "#28a745";
+          chatButton.style.transform = "translateY(0)";
+        });
+        
+        chatButton.addEventListener('click', () => {
+          this._startNormalChat();
+        });
+        
+        buttonsContainer.appendChild(faqButton);
+        buttonsContainer.appendChild(chatButton);
+        welcomeWrapper.appendChild(buttonsContainer);
+      }
+      
+      // Agregar botones si es mensaje de opciones después del nombre
+      if (msg.showOptionsButtons) {
+        const buttonsContainer = document.createElement("div");
+        buttonsContainer.style.marginTop = "1rem";
+        buttonsContainer.style.display = "flex";
+        buttonsContainer.style.flexDirection = "column";
+        buttonsContainer.style.gap = "0.5rem";
+        buttonsContainer.style.alignItems = "center";
+        
+        // Botón de Preguntas Frecuentes
+        const faqButton = document.createElement("button");
+        faqButton.style.backgroundColor = this.primaryColor;
+        faqButton.style.color = "white";
+        faqButton.style.border = "none";
+        faqButton.style.borderRadius = "1.5rem";
+        faqButton.style.padding = "0.75rem 1.5rem";
+        faqButton.style.cursor = "pointer";
+        faqButton.style.fontSize = "0.9rem";
+        faqButton.style.fontWeight = "500";
+        faqButton.style.minWidth = "200px";
+        faqButton.style.transition = "all 0.3s ease";
+        faqButton.innerHTML = "📚 Preguntas Frecuentes";
+        
+        faqButton.addEventListener('mouseenter', () => {
+          faqButton.style.backgroundColor = this._darkenColor(this.primaryColor, 10);
+          faqButton.style.transform = "translateY(-2px)";
+        });
+        
+        faqButton.addEventListener('mouseleave', () => {
+          faqButton.style.backgroundColor = this.primaryColor;
+          faqButton.style.transform = "translateY(0)";
+        });
+        
+        faqButton.addEventListener('click', () => {
+          this._showFAQModal();
+        });
+        
+        // Botón de Iniciar Chat
+        const chatButton = document.createElement("button");
+        chatButton.style.backgroundColor = "#28a745";
+        chatButton.style.color = "white";
+        chatButton.style.border = "none";
+        chatButton.style.borderRadius = "1.5rem";
+        chatButton.style.padding = "0.75rem 1.5rem";
+        chatButton.style.cursor = "pointer";
+        chatButton.style.fontSize = "0.9rem";
+        chatButton.style.fontWeight = "500";
+        chatButton.style.minWidth = "200px";
+        chatButton.style.transition = "all 0.3s ease";
+        chatButton.innerHTML = "💬 Iniciar Chat";
+        
+        chatButton.addEventListener('mouseenter', () => {
+          chatButton.style.backgroundColor = "#218838";
+          chatButton.style.transform = "translateY(-2px)";
+        });
+        
+        chatButton.addEventListener('mouseleave', () => {
+          chatButton.style.backgroundColor = "#28a745";
+          chatButton.style.transform = "translateY(0)";
+        });
+        
+        chatButton.addEventListener('click', () => {
+          this._startNormalChat();
+        });
+        
+        buttonsContainer.appendChild(faqButton);
+        buttonsContainer.appendChild(chatButton);
+        welcomeWrapper.appendChild(buttonsContainer);
+      }
+      
       return welcomeWrapper;
     }
 
@@ -2993,168 +2700,6 @@ class ChatBot {
     return msgWrapper;
   }
 
-  _createMessageElementBootstrap(msg) {
-    // Si es mensaje de bienvenida, renderizar de forma especial
-    if (msg.isWelcome) {
-      const welcomeWrapper = document.createElement("div");
-      welcomeWrapper.className = "text-center mb-4";
-      welcomeWrapper.style.marginTop = "20px";
-      
-      const botImage = document.createElement("img");
-      botImage.src = this.bot.img;
-      botImage.alt = this.bot.name;
-      botImage.className = "rounded-circle mb-3";
-      botImage.style.width = "80px";
-      botImage.style.height = "80px";
-      botImage.style.objectFit = "cover";
-      botImage.style.margin = "0 auto";
-      botImage.style.display = "block";
-      
-      const welcomeText = document.createElement("div");
-      welcomeText.className = "bg-light rounded-3 p-3 mx-auto";
-      welcomeText.style.maxWidth = "80%";
-      welcomeText.innerHTML = `
-        <p class="mb-0 fw-bold">${this.botName}</p>
-        <p class="mb-0 text-muted small">${msg.time}</p>
-        <p class="mb-0 mt-2">${this._parseMarkdown(msg.text)}</p>
-      `;
-      
-      welcomeWrapper.appendChild(botImage);
-      welcomeWrapper.appendChild(welcomeText);
-      return welcomeWrapper;
-    }
-
-    // Si es mensaje de límite alcanzado, renderizar de forma especial
-    if (msg.isLimitReached) {
-      const limitWrapper = document.createElement("div");
-      limitWrapper.className = "text-center mb-4";
-      limitWrapper.style.marginTop = "20px";
-      
-      const limitText = document.createElement("div");
-      limitText.className = "bg-warning bg-opacity-10 border border-warning rounded-3 p-3 mx-auto";
-      limitText.style.maxWidth = "90%";
-      limitText.style.color = "#856404";
-      limitText.innerHTML = `
-        <p class="mb-0 fw-bold" style="font-size: 1.1rem;">⚠️ ${this._getTranslation('limit_reached_placeholder')}</p>
-        <p class="mb-0 mt-2" style="font-size: 0.9rem;">${this._parseMarkdown(msg.text)}</p>
-        <p class="mb-0 mt-2 text-muted" style="font-size: 0.8rem;">${this._getTranslation('limit_reached_message')}</p>
-      `;
-      
-      limitWrapper.appendChild(limitText);
-      return limitWrapper;
-    }
-
-    // Si es mensaje de error con reintento, renderizar de forma especial
-    if (msg.isError && msg.showRetry) {
-      const errorWrapper = document.createElement("div");
-      errorWrapper.className = "text-center mb-4";
-      errorWrapper.style.marginTop = "20px";
-      
-      const botImage = document.createElement("img");
-      botImage.src = this.bot.img;
-      botImage.alt = this.bot.name;
-      botImage.className = "rounded-circle mb-3";
-      botImage.style.width = "60px";
-      botImage.style.height = "60px";
-      botImage.style.objectFit = "cover";
-      botImage.style.margin = "0 auto";
-      botImage.style.display = "block";
-      
-      const errorText = document.createElement("div");
-      errorText.className = "bg-light rounded-3 p-3 mx-auto";
-      errorText.style.maxWidth = "90%";
-      errorText.innerHTML = `
-        <p class="mb-0 fw-bold text-danger">${this.botName}</p>
-        <p class="mb-0 mt-2" style="font-size: 12px;">${msg.text}</p>
-      `;
-      
-      const retryButton = document.createElement("button");
-      retryButton.className = "btn btn-primary mt-3 btn-sm rounded-pill";
-      retryButton.textContent = this._getTranslation('error_message');
-      retryButton.addEventListener("click", () => {
-        this._retryConnection();
-      });
-      
-      errorWrapper.appendChild(botImage);
-      errorWrapper.appendChild(errorText);
-      errorWrapper.appendChild(retryButton);
-      return errorWrapper;
-    }
-    
-    const msgWrapper = document.createElement("div");
-    msgWrapper.classList.add("d-flex", "mb-3");
-    msgWrapper.classList.add(
-      msg.from === "user" ? "justify-content-end" : "justify-content-start"
-    );
-
-    const avatar = document.createElement("img");
-    avatar.src = msg.from === "user" ? this.user.photo : this.bot.img;
-    avatar.alt = msg.from === "user" ? this.user.name : this.bot.name;
-    avatar.className = "rounded-circle";
-    avatar.style.width = "40px";
-    avatar.style.height = "40px";
-    avatar.style.objectFit = "cover";
-
-    const bubble = document.createElement("div");
-    bubble.className = [
-      "px-3",
-      "py-2",
-      "mx-2",
-      "rounded-3",
-      "position-relative",
-      "w-auto",
-    ].join(" ");
-
-    bubble.style.maxWidth = "98%";
-
-    if (msg.from === "user") {
-      bubble.style.backgroundColor = this.primaryColor;
-      bubble.style.color = "white";
-    } else {
-      bubble.classList.add("bg-light", "text-dark");
-    }
-
-    const info = document.createElement("small");
-    info.className = "fw-bold d-block mb-1";
-    info.innerHTML = `${msg.from === "user" ? this.user.name : this.botName} <span class="text-muted fs-7 ms-2" style="font-size:0.75rem;">${this.showTime ? msg.time : ""}</span>`;
-
-    const textP = document.createElement("p");
-    textP.className = "mb-0";
-    textP.style.whiteSpace = "pre-wrap";
-    
-    // Si es un mensaje con streaming, agregar clases especiales
-    if (msg.isStreaming) {
-      textP.classList.add('streaming-cursor');
-      //textP.style.borderLeft = `3px solid ${this.primaryColor}`;
-      textP.style.paddingLeft = '10px';
-      textP.style.background = `linear-gradient(90deg, rgba(59, 130, 246, 0.05) 0%, rgba(59, 130, 246, 0) 100%)`;
-    }
-    
-    textP.innerHTML = this._parseMarkdown(msg.text);
-
-    bubble.appendChild(info);
-    bubble.appendChild(textP);
-
-    const tail = document.createElement("span");
-    tail.style.position = "absolute";
-    tail.style.bottom = "0";
-    tail.style.width = "0";
-    tail.style.height = "0";
-    tail.style.borderStyle = "solid";
-
-    if (msg.from === "user") {
-      tail.style.borderColor = `transparent transparent transparent ${this.primaryColor}`;
-    } else {
-      tail.style.borderColor = "transparent #f8f9fa transparent transparent";
-    }
-
-    bubble.appendChild(tail);
-
-    msgWrapper.appendChild(avatar);
-    msgWrapper.appendChild(bubble);
-    return msgWrapper;
-  }
-
   _renderMessages() {
     const frag = document.createDocumentFragment();
     this.messagesContainer.innerHTML = "";
@@ -3180,14 +2725,6 @@ class ChatBot {
   }
 
   _updateFooter() {
-    if (this.useShadowDOM) {
-      this._updateFooterShadowDOM();
-    } else {
-      this._updateFooterBootstrap();
-    }
-  }
-
-  _updateFooterShadowDOM() {
     if (!this.chatPanel) return;
     
     // Verificar que license existe
@@ -3279,16 +2816,7 @@ class ChatBot {
     }
   }
 
-
   _updateBotUI() {
-    if (this.useShadowDOM) {
-      this._updateBotUIShadowDOM();
-    } else {
-      this._updateBotUIBootstrap();
-    }
-  }
-
-  _updateBotUIShadowDOM() {
     if (!this.chatPanel) return;
     
     // Actualizar imagen del bot en el header
@@ -3353,7 +2881,11 @@ class ChatBot {
     const msg = this.input.value.trim();
     if (!msg || this.loading) return;
 
-
+    // Verificar si estamos en la pantalla de registro con botones
+    if (this.registrationScreen && this.messages.some(msg => msg.showWelcomeButtons)) {
+      this._log('_sendMessage - En pantalla de registro con botones, ignorando mensaje de texto');
+      return;
+    }
 
     // Debug: Log del estado actual
     this._log('_sendMessage - Estado actual:', {
@@ -3451,27 +2983,8 @@ class ChatBot {
     
     // Obtener el elemento del mensaje para actualizarlo
     const messageElement = this.messagesContainer.lastElementChild;
-    let textElement;
-    
-    if (this.useShadowDOM) {
-      textElement = messageElement.querySelector('.message-text');
-    } else {
-      textElement = messageElement.querySelector('p');
-      
-      // Si no encuentra el elemento p, buscar en la estructura del mensaje
-      if (!textElement) {
-        this._log('_displayMessageWithStreaming - No se encontró elemento p, buscando alternativa');
-        // Buscar el elemento que contiene el texto del mensaje
-        const bubble = messageElement.querySelector('.bg-light, .bg-primary');
-        if (bubble) {
-          const textElementAlt = bubble.querySelector('p');
-          if (textElementAlt) {
-            textElement = textElementAlt;
-          }
-        }
-      }
-    }
-    
+    let textElement = messageElement.querySelector('.message-text');
+  
     // Simular typing carácter por carácter
     let currentText = "";
     const characters = text.split('');
@@ -3508,16 +3021,7 @@ class ChatBot {
     this._log('_displayMessageWithStreaming - Streaming completado');
   }
 
-  // Nuevo método para mostrar indicador de "está escribiendo..."
   _showTypingIndicator() {
-    if (this.useShadowDOM) {
-      this._showTypingIndicatorShadowDOM();
-    } else {
-      this._showTypingIndicatorBootstrap();
-    }
-  }
-
-  _showTypingIndicatorShadowDOM() {
     // Crear el elemento de "está escribiendo..."
     this.typingIndicator = document.createElement("div");
     this.typingIndicator.className = "typing-indicator";
@@ -3719,6 +3223,9 @@ class ChatBot {
   // Nuevo método para verificar el estado de registro
   _checkRegistrationStatus() {
     this._log('_checkRegistrationStatus - Verificando estado de registro');
+    this._log('_checkRegistrationStatus - onboardingTemplate:', this.onboardingTemplate);
+    this._log('_checkRegistrationStatus - testMode:', this.testMode);
+    this._log('_checkRegistrationStatus - registered:', this.registered);
     
     // Verificar si debe usar onboarding avanzado
     if (this.onboardingTemplate === 'advanced') {
@@ -3759,18 +3266,19 @@ class ChatBot {
     
     // Verificar si los elementos del DOM están inicializados
     if (this.input && this.sendButton) {
-      // Deshabilitar el chat inicialmente
+      // Deshabilitar el chat completamente - el usuario debe elegir una opción
       this.input.disabled = true;
       this.sendButton.disabled = true;
     }
     
-    // Mostrar pantalla de bienvenida con imagen del bot
+    // Mostrar pantalla de bienvenida con imagen del bot y botones de opciones
     const welcomeMessage = {
       from: "bot",
       text: this._getTranslation('registration_name_prompt'),
       time: this._getCurrentTime(),
       isWelcome: true,
-      isRegistration: true
+      isRegistration: true,
+      showWelcomeButtons: true // Mostrar los dos botones
     };
     
     this.messages.push(welcomeMessage);
@@ -3780,14 +3288,9 @@ class ChatBot {
       this._renderMessages();
     }
     
-    // Habilitar el input para que el usuario pueda escribir su nombre
-    if (this.input && this.sendButton) {
-      this.input.disabled = false;
-      this.sendButton.disabled = false;
-      this.input.focus();
-      
-      // Cambiar el placeholder del input para indicar que debe escribir su nombre
-      this.input.placeholder = this._getTranslation('write_message_placeholder');
+    // El input permanece deshabilitado hasta que el usuario seleccione una opción
+    if (this.input) {
+      this.input.placeholder = "Selecciona una opción para continuar...";
     }
   }
 
@@ -3815,6 +3318,11 @@ class ChatBot {
   // Método para mostrar el onboarding avanzado
   _showAdvancedOnboarding() {
     this._log('_showAdvancedOnboarding - Iniciando onboarding avanzado');
+    this._log('_showAdvancedOnboarding - Estado inicial:', {
+      advancedOnboarding: this.advancedOnboarding,
+      onboardingStep: this.onboardingStep,
+      messages: this.messages.length
+    });
     this.advancedOnboarding = true;
     this.onboardingStep = 0;
     
@@ -3827,7 +3335,7 @@ class ChatBot {
       this.sendButton.disabled = true;
     }
     
-    // Mostrar mensaje de bienvenida
+    // Mostrar mensaje de bienvenida SIN botones inicialmente
     const welcomeMessage = {
       from: "bot",
       text: this._getTranslation('advanced_welcome_message'),
@@ -3855,61 +3363,61 @@ class ChatBot {
   // Método para manejar las respuestas del onboarding avanzado
   async _handleAdvancedOnboardingResponse(userMessage) {
     this._log('_handleAdvancedOnboardingResponse - Procesando respuesta:', userMessage);
+    this._log('_handleAdvancedOnboardingResponse - Estado actual:', {
+      onboardingStep: this.onboardingStep,
+      advancedOnboarding: this.advancedOnboarding,
+      user: this.user.name
+    });
     
     // Ocultar indicador de typing
     this._hideTypingIndicator();
     
-    switch (this.onboardingStep) {
-      case 0: // Paso 1: Solicitar nombre
-        this._log('_handleAdvancedOnboardingResponse - Paso 1: Procesando nombre');
-        
-        // Guardar el nombre del usuario
-        this.user.name = userMessage.trim();
-        
-        // Mostrar mensaje de confirmación y opciones
-        const optionsMessage = {
+    // Si el usuario escribe algo, guardar como nombre y mostrar opciones
+    if (this.onboardingStep === 0) {
+      this._log('_handleAdvancedOnboardingResponse - Guardando nombre del usuario');
+      
+      // Guardar el nombre del usuario
+      this.user.name = userMessage.trim();
+      
+      // Mostrar mensaje de confirmación y opciones CON BOTONES
+      const optionsMessage = {
+        from: "bot",
+        text: `${this._getTranslation('advanced_name_received')}`,
+        time: this._getCurrentTime(),
+        isAdvancedOnboarding: true,
+        showOptionsButtons: true
+      };
+      
+      this.messages.push(optionsMessage);
+      this.onboardingStep = 1;
+      
+      // Deshabilitar el input después de mostrar los botones
+      if (this.input && this.sendButton) {
+        this.input.disabled = true;
+        this.sendButton.disabled = true;
+      }
+    } else {
+      // Si ya se guardó el nombre, procesar selección de opción
+      this._log('_handleAdvancedOnboardingResponse - Procesando selección');
+      
+      const selection = userMessage.trim().toLowerCase();
+      
+      if (selection === '1' || selection.includes('faq') || selection.includes('preguntas')) {
+        // Mostrar modal de FAQ
+        this._showFAQModal();
+      } else if (selection === '2' || selection.includes('chat') || selection.includes('conversación')) {
+        // Comenzar chat normal
+        this._startNormalChat();
+      } else {
+        // Opción inválida
+        const invalidMessage = {
           from: "bot",
-          text: `${this._getTranslation('advanced_name_received')}\n\n1. ${this._getTranslation('advanced_faq_option')}\n2. ${this._getTranslation('advanced_chat_option')}`,
+          text: "Por favor, escribe 1 para ver las preguntas frecuentes o 2 para comenzar una conversación.",
           time: this._getCurrentTime(),
-          isAdvancedOnboarding: true,
-          showOptions: true
+          isAdvancedOnboarding: true
         };
-        
-        this.messages.push(optionsMessage);
-        this.onboardingStep = 1;
-        
-        // Actualizar placeholder
-        if (this.input) {
-          this.input.placeholder = "Escribe 1 o 2 para seleccionar una opción...";
-        }
-        break;
-        
-      case 1: // Paso 2: Procesar selección de opción
-        this._log('_handleAdvancedOnboardingResponse - Paso 2: Procesando selección');
-        
-        const selection = userMessage.trim().toLowerCase();
-        
-        if (selection === '1' || selection.includes('faq') || selection.includes('preguntas')) {
-          // Mostrar lista de FAQ
-          this._showFAQList();
-        } else if (selection === '2' || selection.includes('chat') || selection.includes('conversación')) {
-          // Comenzar chat normal
-          this._startNormalChat();
-        } else {
-          // Opción inválida
-          const invalidMessage = {
-            from: "bot",
-            text: "Por favor, escribe 1 para ver las preguntas frecuentes o 2 para comenzar una conversación.",
-            time: this._getCurrentTime(),
-            isAdvancedOnboarding: true
-          };
-          this.messages.push(invalidMessage);
-        }
-        break;
-        
-      default:
-        this._log('_handleAdvancedOnboardingResponse - Paso desconocido:', this.onboardingStep);
-        break;
+        this.messages.push(invalidMessage);
+      }
     }
     
     // Renderizar mensajes
@@ -3922,7 +3430,7 @@ class ChatBot {
   _showFAQList() {
     this._log('_showFAQList - Mostrando lista de FAQ');
     
-    const faqList = this._getTranslation('advanced_faq_list');
+    const faqList = this._getFAQs();
     let faqText = `${this._getTranslation('advanced_faq_title')}:\n\n`;
     
     faqList.forEach((faq, index) => {
@@ -3948,27 +3456,608 @@ class ChatBot {
     }
   }
 
+  _getFAQs() {
+    // Priorizar FAQs de la API sobre las hardcodeadas
+    if (this.apiFaqs && this.apiFaqs.length > 0) {
+      this._log('_getFAQs - Usando FAQs de la API:', this.apiFaqs.length);
+      return this.apiFaqs;
+    }
+    
+    // Fallback a FAQs hardcodeadas
+    this._log('_getFAQs - Usando FAQs hardcodeadas');
+    return this._getTranslation('advanced_faq_list');
+  }
+
+  _getProducts() {
+    // Obtener productos de la API
+    if (this.products && this.products.length > 0) {
+      this._log('_getProducts - Usando productos de la API:', this.products.length);
+      return this.products;
+    }
+    
+    // Fallback a productos de prueba (solo en modo test)
+    if (this.testMode) {
+      this._log('_getProducts - Usando productos de prueba');
+      return [
+        {
+          code: '1313',
+          title: 'Tejido Luffy',
+          description: 'Amigurumi hecho a mano de **Luffy**, ideal para fans de *One Piece*.',
+          price: 9990,
+          photo: 'https://apa.educk.cl/storage/assets/tienda//17506405663805.webp'
+        }
+      ];
+    }
+    
+    this._log('_getProducts - No hay productos disponibles');
+    return [];
+  }
+
+  _showFAQModal() {
+    this._log('_showFAQModal - Mostrando modal de FAQ');
+    
+    // Crear el modal
+    const modal = document.createElement('div');
+    modal.id = 'faq-modal';
+    modal.style.position = 'fixed';
+    modal.style.top = '0';
+    modal.style.left = '0';
+    modal.style.width = '100%';
+    modal.style.height = '100%';
+    modal.style.backgroundColor = 'rgba(0, 0, 0, 0.5)';
+    modal.style.display = 'flex';
+    modal.style.justifyContent = 'center';
+    modal.style.alignItems = 'center';
+    modal.style.zIndex = '10000';
+    
+    const modalContent = document.createElement('div');
+    modalContent.style.backgroundColor = 'white';
+    modalContent.style.borderRadius = '1rem';
+    modalContent.style.padding = '2rem';
+    modalContent.style.maxWidth = '600px';
+    modalContent.style.width = '90%';
+    modalContent.style.maxHeight = '80vh';
+    modalContent.style.overflow = 'hidden';
+    modalContent.style.display = 'flex';
+    modalContent.style.flexDirection = 'column';
+    modalContent.style.boxShadow = '0 10px 30px rgba(0, 0, 0, 0.3)';
+    
+    // Header del modal
+    const header = document.createElement('div');
+    header.style.display = 'flex';
+    header.style.justifyContent = 'space-between';
+    header.style.alignItems = 'center';
+    header.style.marginBottom = '1.5rem';
+    header.style.borderBottom = '1px solid #e9ecef';
+    header.style.paddingBottom = '1rem';
+    
+    const title = document.createElement('h3');
+    title.style.margin = '0';
+    title.style.color = '#333';
+    title.style.fontSize = '1.5rem';
+    title.style.fontWeight = '600';
+    title.textContent = '📚 Preguntas Frecuentes';
+    
+    const closeButton = document.createElement('button');
+    closeButton.innerHTML = '✕';
+    closeButton.style.background = 'none';
+    closeButton.style.border = 'none';
+    closeButton.style.fontSize = '1.5rem';
+    closeButton.style.cursor = 'pointer';
+    closeButton.style.color = '#666';
+    closeButton.style.padding = '0.5rem';
+    closeButton.style.borderRadius = '50%';
+    closeButton.style.width = '40px';
+    closeButton.style.height = '40px';
+    closeButton.style.display = 'flex';
+    closeButton.style.alignItems = 'center';
+    closeButton.style.justifyContent = 'center';
+    closeButton.style.transition = 'background-color 0.3s ease';
+    
+    closeButton.addEventListener('mouseenter', () => {
+      closeButton.style.backgroundColor = '#f8f9fa';
+    });
+    
+    closeButton.addEventListener('mouseleave', () => {
+      closeButton.style.backgroundColor = 'transparent';
+    });
+    
+    closeButton.addEventListener('click', () => {
+      document.body.removeChild(modal);
+    });
+    
+    header.appendChild(title);
+    header.appendChild(closeButton);
+    
+    // Buscador
+    const searchContainer = document.createElement('div');
+    searchContainer.style.marginBottom = '1.5rem';
+    
+    const searchInput = document.createElement('input');
+    searchInput.type = 'text';
+    searchInput.placeholder = '🔍 Buscar preguntas...';
+    searchInput.style.width = '100%';
+    searchInput.style.padding = '0.75rem 1rem';
+    searchInput.style.border = '2px solid #e9ecef';
+    searchInput.style.borderRadius = '0.5rem';
+    searchInput.style.fontSize = '1rem';
+    searchInput.style.outline = 'none';
+    searchInput.style.transition = 'border-color 0.3s ease';
+    
+    searchInput.addEventListener('focus', () => {
+      searchInput.style.borderColor = this.primaryColor;
+    });
+    
+    searchInput.addEventListener('blur', () => {
+      searchInput.style.borderColor = '#e9ecef';
+    });
+    
+    searchContainer.appendChild(searchInput);
+    
+    // Contenedor de preguntas
+    const questionsContainer = document.createElement('div');
+    questionsContainer.style.flex = '1';
+    questionsContainer.style.overflowY = 'auto';
+    questionsContainer.style.paddingRight = '0.5rem';
+    
+    // Obtener lista de FAQ usando la nueva función
+    const faqList = this._getFAQs();
+    
+    // Función para renderizar preguntas
+    const renderQuestions = (questions) => {
+      questionsContainer.innerHTML = '';
+      
+      if (questions.length === 0) {
+        const noResults = document.createElement('div');
+        noResults.style.textAlign = 'center';
+        noResults.style.padding = '2rem';
+        noResults.style.color = '#666';
+        noResults.innerHTML = '🔍 No se encontraron preguntas que coincidan con tu búsqueda';
+        questionsContainer.appendChild(noResults);
+        return;
+      }
+      
+      questions.forEach((faq, index) => {
+        const questionItem = document.createElement('div');
+        questionItem.style.border = '1px solid #e9ecef';
+        questionItem.style.borderRadius = '0.5rem';
+        questionItem.style.marginBottom = '1rem';
+        questionItem.style.overflow = 'hidden';
+        questionItem.style.transition = 'all 0.3s ease';
+        
+        const questionHeader = document.createElement('div');
+        questionHeader.style.padding = '1rem';
+        questionHeader.style.backgroundColor = '#f8f9fa';
+        questionHeader.style.cursor = 'pointer';
+        questionHeader.style.fontWeight = '500';
+        questionHeader.style.color = '#333';
+        questionHeader.style.borderBottom = '1px solid #e9ecef';
+        // Procesar título que puede ser HTML o Markdown
+        questionHeader.innerHTML = `❓ ${faq.title}`;
+        
+        const answerContent = document.createElement('div');
+        answerContent.style.padding = '1rem';
+        answerContent.style.backgroundColor = 'white';
+        answerContent.style.color = '#666';
+        answerContent.style.lineHeight = '1.6';
+        // Procesar contenido que puede ser HTML o Markdown
+        answerContent.innerHTML = this._parseMarkdown(faq.content);
+        answerContent.style.display = 'none';
+        
+        questionHeader.addEventListener('click', () => {
+          const isVisible = answerContent.style.display === 'block';
+          answerContent.style.display = isVisible ? 'none' : 'block';
+          questionItem.style.boxShadow = isVisible ? 'none' : '0 2px 8px rgba(0, 0, 0, 0.1)';
+        });
+        
+        questionItem.appendChild(questionHeader);
+        questionItem.appendChild(answerContent);
+        questionsContainer.appendChild(questionItem);
+      });
+    };
+    
+    // Renderizar todas las preguntas inicialmente
+    renderQuestions(faqList);
+    
+    // Función de búsqueda
+    searchInput.addEventListener('input', (e) => {
+      const searchTerm = e.target.value.toLowerCase().trim();
+      
+      if (searchTerm === '') {
+        renderQuestions(faqList);
+      } else {
+        const filteredQuestions = faqList.filter(faq => 
+          faq.title.toLowerCase().includes(searchTerm) || 
+          faq.content.toLowerCase().includes(searchTerm)
+        );
+        renderQuestions(filteredQuestions);
+      }
+    });
+    
+    // Botón de cerrar en la parte inferior
+    const footer = document.createElement('div');
+    footer.style.marginTop = '1.5rem';
+    footer.style.textAlign = 'center';
+    footer.style.borderTop = '1px solid #e9ecef';
+    footer.style.paddingTop = '1rem';
+    
+    const closeFooterButton = document.createElement('button');
+    closeFooterButton.innerHTML = 'Cerrar';
+    closeFooterButton.style.backgroundColor = this.primaryColor;
+    closeFooterButton.style.color = 'white';
+    closeFooterButton.style.border = 'none';
+    closeFooterButton.style.borderRadius = '0.5rem';
+    closeFooterButton.style.padding = '0.75rem 2rem';
+    closeFooterButton.style.cursor = 'pointer';
+    closeFooterButton.style.fontSize = '1rem';
+    closeFooterButton.style.fontWeight = '500';
+    closeFooterButton.style.transition = 'background-color 0.3s ease';
+    
+    closeFooterButton.addEventListener('mouseenter', () => {
+      closeFooterButton.style.backgroundColor = this._darkenColor(this.primaryColor, 10);
+    });
+    
+    closeFooterButton.addEventListener('mouseleave', () => {
+      closeFooterButton.style.backgroundColor = this.primaryColor;
+    });
+    
+    closeFooterButton.addEventListener('click', () => {
+      document.body.removeChild(modal);
+    });
+    
+    footer.appendChild(closeFooterButton);
+    
+    // Cerrar modal con Escape
+    const handleEscape = (e) => {
+      if (e.key === 'Escape') {
+        document.body.removeChild(modal);
+        document.removeEventListener('keydown', handleEscape);
+      }
+    };
+    
+    document.addEventListener('keydown', handleEscape);
+    
+    // Cerrar modal al hacer clic fuera
+    modal.addEventListener('click', (e) => {
+      if (e.target === modal) {
+        document.body.removeChild(modal);
+      }
+    });
+    
+    // Ensamblar modal
+    modalContent.appendChild(header);
+    modalContent.appendChild(searchContainer);
+    modalContent.appendChild(questionsContainer);
+    modalContent.appendChild(footer);
+    modal.appendChild(modalContent);
+    
+    // Agregar al DOM
+    document.body.appendChild(modal);
+    
+    // Enfocar el buscador
+    searchInput.focus();
+  }
+
+  _showProductsModal() {
+    this._log('_showProductsModal - Mostrando modal de productos');
+    
+    // Crear el modal
+    const modal = document.createElement('div');
+    modal.id = 'products-modal';
+    modal.style.position = 'fixed';
+    modal.style.top = '0';
+    modal.style.left = '0';
+    modal.style.width = '100%';
+    modal.style.height = '100%';
+    modal.style.backgroundColor = 'rgba(0, 0, 0, 0.5)';
+    modal.style.display = 'flex';
+    modal.style.justifyContent = 'center';
+    modal.style.alignItems = 'center';
+    modal.style.zIndex = '10000';
+    
+    const modalContent = document.createElement('div');
+    modalContent.style.backgroundColor = 'white';
+    modalContent.style.borderRadius = '1rem';
+    modalContent.style.padding = '2rem';
+    modalContent.style.maxWidth = '800px';
+    modalContent.style.width = '90%';
+    modalContent.style.maxHeight = '80vh';
+    modalContent.style.overflow = 'hidden';
+    modalContent.style.display = 'flex';
+    modalContent.style.flexDirection = 'column';
+    modalContent.style.boxShadow = '0 10px 30px rgba(0, 0, 0, 0.3)';
+    
+    // Header del modal
+    const header = document.createElement('div');
+    header.style.display = 'flex';
+    header.style.justifyContent = 'space-between';
+    header.style.alignItems = 'center';
+    header.style.marginBottom = '1.5rem';
+    header.style.borderBottom = '1px solid #e9ecef';
+    header.style.paddingBottom = '1rem';
+    
+    const title = document.createElement('h3');
+    title.style.margin = '0';
+    title.style.color = '#333';
+    title.style.fontSize = '1.5rem';
+    title.style.fontWeight = '600';
+    title.textContent = '🛍️ Nuestros Productos';
+    
+    const closeButton = document.createElement('button');
+    closeButton.innerHTML = '✕';
+    closeButton.style.background = 'none';
+    closeButton.style.border = 'none';
+    closeButton.style.fontSize = '1.5rem';
+    closeButton.style.cursor = 'pointer';
+    closeButton.style.color = '#666';
+    closeButton.style.padding = '0.5rem';
+    closeButton.style.borderRadius = '50%';
+    closeButton.style.width = '40px';
+    closeButton.style.height = '40px';
+    closeButton.style.display = 'flex';
+    closeButton.style.alignItems = 'center';
+    closeButton.style.justifyContent = 'center';
+    closeButton.style.transition = 'background-color 0.3s ease';
+    
+    closeButton.addEventListener('mouseenter', () => {
+      closeButton.style.backgroundColor = '#f8f9fa';
+    });
+    
+    closeButton.addEventListener('mouseleave', () => {
+      closeButton.style.backgroundColor = 'transparent';
+    });
+    
+    closeButton.addEventListener('click', () => {
+      document.body.removeChild(modal);
+    });
+    
+    header.appendChild(title);
+    header.appendChild(closeButton);
+    
+    // Buscador
+    const searchContainer = document.createElement('div');
+    searchContainer.style.marginBottom = '1.5rem';
+    
+    const searchInput = document.createElement('input');
+    searchInput.type = 'text';
+    searchInput.placeholder = '🔍 Buscar productos...';
+    searchInput.style.width = '100%';
+    searchInput.style.padding = '0.75rem 1rem';
+    searchInput.style.border = '2px solid #e9ecef';
+    searchInput.style.borderRadius = '0.5rem';
+    searchInput.style.fontSize = '1rem';
+    searchInput.style.outline = 'none';
+    searchInput.style.transition = 'border-color 0.3s ease';
+    
+    searchInput.addEventListener('focus', () => {
+      searchInput.style.borderColor = this.primaryColor;
+    });
+    
+    searchInput.addEventListener('blur', () => {
+      searchInput.style.borderColor = '#e9ecef';
+    });
+    
+    searchContainer.appendChild(searchInput);
+    
+    // Contenedor de productos
+    const productsContainer = document.createElement('div');
+    productsContainer.style.flex = '1';
+    productsContainer.style.overflowY = 'auto';
+    productsContainer.style.paddingRight = '0.5rem';
+    
+    // Obtener lista de productos
+    const productsList = this._getProducts();
+    
+    // Función para renderizar productos
+    const renderProducts = (products) => {
+      productsContainer.innerHTML = '';
+      
+      if (products.length === 0) {
+        const noResults = document.createElement('div');
+        noResults.style.textAlign = 'center';
+        noResults.style.padding = '2rem';
+        noResults.style.color = '#666';
+        noResults.innerHTML = '🔍 No se encontraron productos que coincidan con tu búsqueda';
+        productsContainer.appendChild(noResults);
+        return;
+      }
+      
+      products.forEach((product, index) => {
+        const productItem = document.createElement('div');
+        productItem.style.border = '1px solid #e9ecef';
+        productItem.style.borderRadius = '0.75rem';
+        productItem.style.marginBottom = '1.5rem';
+        productItem.style.overflow = 'hidden';
+        productItem.style.transition = 'all 0.3s ease';
+        productItem.style.backgroundColor = '#fff';
+        productItem.style.boxShadow = '0 2px 8px rgba(0, 0, 0, 0.1)';
+        
+        productItem.addEventListener('mouseenter', () => {
+          productItem.style.transform = 'translateY(-2px)';
+          productItem.style.boxShadow = '0 4px 16px rgba(0, 0, 0, 0.15)';
+        });
+        
+        productItem.addEventListener('mouseleave', () => {
+          productItem.style.transform = 'translateY(0)';
+          productItem.style.boxShadow = '0 2px 8px rgba(0, 0, 0, 0.1)';
+        });
+        
+        // Contenido del producto
+        const productContent = document.createElement('div');
+        productContent.style.padding = '1.5rem';
+        productContent.style.display = 'flex';
+        productContent.style.gap = '1rem';
+        productContent.style.alignItems = 'flex-start';
+        
+        // Imagen del producto
+        const productImage = document.createElement('img');
+        productImage.src = product.photo;
+        productImage.alt = product.title;
+        productImage.style.width = '120px';
+        productImage.style.height = '120px';
+        productImage.style.objectFit = 'cover';
+        productImage.style.borderRadius = '0.5rem';
+        productImage.style.flexShrink = '0';
+        
+        // Información del producto
+        const productInfo = document.createElement('div');
+        productInfo.style.flex = '1';
+        
+        // Código del producto
+        const productCode = document.createElement('div');
+        productCode.style.fontSize = '0.8rem';
+        productCode.style.color = '#666';
+        productCode.style.marginBottom = '0.5rem';
+        productCode.innerHTML = `Código: <strong>${product.code}</strong>`;
+        
+        // Título del producto
+        const productTitle = document.createElement('h4');
+        productTitle.style.margin = '0 0 0.5rem 0';
+        productTitle.style.color = '#333';
+        productTitle.style.fontSize = '1.2rem';
+        productTitle.style.fontWeight = '600';
+        productTitle.innerHTML = this._parseMarkdown(product.title);
+        
+        // Descripción del producto
+        const productDescription = document.createElement('div');
+        productDescription.style.color = '#666';
+        productDescription.style.lineHeight = '1.6';
+        productDescription.style.marginBottom = '1rem';
+        productDescription.innerHTML = this._parseMarkdown(product.description);
+        
+        // Precio del producto
+        const productPrice = document.createElement('div');
+        productPrice.style.fontSize = '1.3rem';
+        productPrice.style.fontWeight = '700';
+        productPrice.style.color = this.primaryColor;
+        productPrice.innerHTML = `$${product.price.toLocaleString('es-CL')}`;
+        
+        productInfo.appendChild(productCode);
+        productInfo.appendChild(productTitle);
+        productInfo.appendChild(productDescription);
+        productInfo.appendChild(productPrice);
+        
+        productContent.appendChild(productImage);
+        productContent.appendChild(productInfo);
+        productItem.appendChild(productContent);
+        productsContainer.appendChild(productItem);
+      });
+    };
+    
+    // Renderizar todos los productos inicialmente
+    renderProducts(productsList);
+    
+    // Función de búsqueda
+    searchInput.addEventListener('input', (e) => {
+      const searchTerm = e.target.value.toLowerCase().trim();
+      
+      if (searchTerm === '') {
+        renderProducts(productsList);
+      } else {
+        const filteredProducts = productsList.filter(product => 
+          product.title.toLowerCase().includes(searchTerm) || 
+          product.description.toLowerCase().includes(searchTerm) ||
+          product.code.toLowerCase().includes(searchTerm)
+        );
+        renderProducts(filteredProducts);
+      }
+    });
+    
+    // Botón de cerrar en la parte inferior
+    const footer = document.createElement('div');
+    footer.style.marginTop = '1.5rem';
+    footer.style.textAlign = 'center';
+    footer.style.borderTop = '1px solid #e9ecef';
+    footer.style.paddingTop = '1rem';
+    
+    const closeFooterButton = document.createElement('button');
+    closeFooterButton.innerHTML = 'Cerrar';
+    closeFooterButton.style.backgroundColor = this.primaryColor;
+    closeFooterButton.style.color = 'white';
+    closeFooterButton.style.border = 'none';
+    closeFooterButton.style.borderRadius = '0.5rem';
+    closeFooterButton.style.padding = '0.75rem 2rem';
+    closeFooterButton.style.cursor = 'pointer';
+    closeFooterButton.style.fontSize = '1rem';
+    closeFooterButton.style.fontWeight = '500';
+    closeFooterButton.style.transition = 'background-color 0.3s ease';
+    
+    closeFooterButton.addEventListener('mouseenter', () => {
+      closeFooterButton.style.backgroundColor = this._darkenColor(this.primaryColor, 10);
+    });
+    
+    closeFooterButton.addEventListener('mouseleave', () => {
+      closeFooterButton.style.backgroundColor = this.primaryColor;
+    });
+    
+    closeFooterButton.addEventListener('click', () => {
+      document.body.removeChild(modal);
+    });
+    
+    footer.appendChild(closeFooterButton);
+    
+    // Cerrar modal con Escape
+    const handleEscape = (e) => {
+      if (e.key === 'Escape') {
+        document.body.removeChild(modal);
+        document.removeEventListener('keydown', handleEscape);
+      }
+    };
+    
+    document.addEventListener('keydown', handleEscape);
+    
+    // Cerrar modal al hacer clic fuera
+    modal.addEventListener('click', (e) => {
+      if (e.target === modal) {
+        document.body.removeChild(modal);
+      }
+    });
+    
+    // Ensamblar modal
+    modalContent.appendChild(header);
+    modalContent.appendChild(searchContainer);
+    modalContent.appendChild(productsContainer);
+    modalContent.appendChild(footer);
+    modal.appendChild(modalContent);
+    
+    // Agregar al DOM
+    document.body.appendChild(modal);
+    
+    // Enfocar el buscador
+    searchInput.focus();
+  }
+
   // Método para comenzar chat normal
   _startNormalChat() {
     this._log('_startNormalChat - Comenzando chat normal');
     
     this.advancedOnboarding = false;
+    this.registrationScreen = false;
     this.registered = true;
     this.registrationCompleted = true;
+    
+    // Limpiar mensajes anteriores
+    this.messages = [];
     
     // Mostrar mensaje de bienvenida al chat
     const welcomeMessage = {
       from: "bot",
-      text: `¡Hola ${this.user.name}! 👋 ¿En qué puedo ayudarte hoy?`,
+      text: `¡Hola ${this.user.name || 'usuario'}! 👋 ¿En qué puedo ayudarte hoy?`,
       time: this._getCurrentTime(),
       isWelcome: true
     };
     
     this.messages.push(welcomeMessage);
     
-    // Actualizar placeholder
+    // Habilitar el input y actualizar placeholder
     if (this.input) {
-      this.input.placeholder = "Escribe un mensaje...";
+      this.input.placeholder = this._getTranslation('write_message_placeholder');
+      this.input.disabled = false;
+      this.input.focus();
+    }
+    
+    if (this.sendButton) {
+      this.sendButton.disabled = false;
     }
     
     // Renderizar mensajes
@@ -3993,62 +4082,49 @@ class ChatBot {
     }
   }
 
-  // Métodos públicos para manejar caché
-  clearCache() {
-    this._clearCache();
-    this._log('Caché limpiado');
-  }
-
   clearHistory() {
+    this._log('clearHistory - Iniciando limpieza y reinicio de conversación');
+    
+    // Limpiar mensajes
     this.messages = [];
     this.messagesContainer.innerHTML = '';
-    this._clearCache();
     
-
-    
-    this._log('Historial de chat limpiado');
-  }
-
-  reloadFromCache() {
+    // Limpiar cache si está habilitado
     if (this.cache) {
-      const loaded = this._loadFromCache();
-      if (loaded) {
-        this._renderMessages();
-        this._log('Datos recargados desde caché');
-      } else {
-        this._log('No hay datos en caché para recargar');
+      try {
+        localStorage.removeItem('hubdox_chat_cache');
+        this._log('clearHistory - Cache limpiado');
+      } catch (error) {
+        this._logError('clearHistory - Error limpiando cache:', error);
       }
-    } else {
-      this._log('Caché está deshabilitado');
-    }
-  }
-
-  getCacheStatus() {
-    if (!this.cache) {
-      return { enabled: false, message: 'Caché deshabilitado' };
     }
     
-    try {
-      const cached = localStorage.getItem(this._getCacheKey());
-      if (cached) {
-        const cacheData = JSON.parse(cached);
-        const cacheAge = Date.now() - cacheData.timestamp;
-        const maxAge = 24 * 60 * 60 * 1000;
-        
-        return {
-          enabled: true,
-          exists: true,
-          expired: cacheAge >= maxAge,
-          age: Math.floor(cacheAge / (1000 * 60)), // minutos
-          messages: cacheData.messages?.length || 0,
-          registered: cacheData.registered || false
-        };
-      } else {
-        return { enabled: true, exists: false, message: 'No hay datos en caché' };
-      }
-    } catch (error) {
-      return { enabled: true, exists: false, error: error.message };
+    // Reiniciar estado de registro
+    this.registered = false;
+    this.registrationCompleted = false;
+    this.registrationScreen = false;
+    this.advancedOnboarding = false;
+    this.onboardingStep = 0;
+    
+    // Reiniciar el estado del input
+    if (this.input && this.sendButton) {
+      this.input.disabled = true;
+      this.sendButton.disabled = true;
     }
+    
+    this._log('clearHistory - Estado reiniciado, reinicializando sesión');
+    
+    // Reinicializar la sesión para poder mostrar la pantalla inicial correcta
+    this._initializeSession().then(() => {
+      this._log('clearHistory - Sesión reinicializada, verificando estado de registro');
+      this._checkRegistrationStatus();
+    }).catch((error) => {
+      this._logError('clearHistory - Error reinicializando sesión:', error);
+      // Si falla la reinicialización, mostrar pantalla de registro
+      this._showRegistrationScreen();
+    });
+    
+    this._log('clearHistory - Conversación reiniciada desde el punto inicial');
   }
 
   // Método público para verificar el estado del registro
@@ -4094,11 +4170,7 @@ class ChatBot {
       // Actualizar la UI con el nuevo idioma
       this._updateUILanguage();
       
-      // Guardar el cambio en el caché
-      if (this.cache) {
-        this._saveToCache();
-        this._log('setLanguage - Idioma guardado en caché');
-      }
+
       
       return true;
     } else {
@@ -4134,11 +4206,7 @@ class ChatBot {
     }
     
     // Actualizar elementos del header si existen
-    if (this.useShadowDOM) {
-      this._updateUILanguageShadowDOM();
-    } else {
-      this._updateUILanguageBootstrap();
-    }
+    this._updateUILanguageShadowDOM();
     
     // Re-renderizar mensajes para actualizar textos
     if (this.messagesContainer) {
@@ -4297,6 +4365,16 @@ class ChatBot {
       return text;
     }
 
+    // Detectar si el contenido ya es HTML (contiene tags HTML)
+    const htmlTagRegex = /<[^>]*>/;
+    if (htmlTagRegex.test(text)) {
+      // Si ya es HTML, solo sanitizar y retornar
+      this._log('_parseMarkdown - Contenido detectado como HTML, sanitizando...');
+      return this._sanitizeHTML(text);
+    }
+
+    // Si no es HTML, procesar como Markdown
+    this._log('_parseMarkdown - Procesando como Markdown...');
     let html = text;
 
     // Escapar HTML existente para evitar XSS
@@ -4340,6 +4418,93 @@ class ChatBot {
     return html;
   }
 
+  /**
+   * Sanitiza HTML para evitar XSS
+   * @param {string} html - HTML a sanitizar
+   * @returns {string} - HTML sanitizado
+   */
+  _sanitizeHTML(html) {
+    if (!html || typeof html !== 'string') {
+      return html;
+    }
+
+    // Lista de tags HTML permitidos
+    const allowedTags = {
+      'p': ['class', 'style'],
+      'div': ['class', 'style'],
+      'span': ['class', 'style'],
+      'strong': ['class'],
+      'b': ['class'],
+      'em': ['class'],
+      'i': ['class'],
+      'u': ['class'],
+      'code': ['class'],
+      'pre': ['class'],
+      'a': ['href', 'target', 'rel', 'class'],
+      'h1': ['class'],
+      'h2': ['class'],
+      'h3': ['class'],
+      'h4': ['class'],
+      'h5': ['class'],
+      'h6': ['class'],
+      'ul': ['class'],
+      'ol': ['class'],
+      'li': ['class'],
+      'br': [],
+      'hr': ['class'],
+      'blockquote': ['class'],
+      'table': ['class'],
+      'thead': ['class'],
+      'tbody': ['class'],
+      'tr': ['class'],
+      'th': ['class'],
+      'td': ['class'],
+      'img': ['src', 'alt', 'class', 'style', 'width', 'height']
+    };
+
+    // Crear un elemento temporal para sanitizar
+    const tempDiv = document.createElement('div');
+    tempDiv.innerHTML = html;
+
+    // Función recursiva para sanitizar elementos
+    const sanitizeElement = (element) => {
+      const children = Array.from(element.children);
+      
+      children.forEach(child => {
+        const tagName = child.tagName.toLowerCase();
+        
+        // Si el tag no está permitido, convertir a texto
+        if (!allowedTags[tagName]) {
+          const textNode = document.createTextNode(child.textContent);
+          element.replaceChild(textNode, child);
+          return;
+        }
+        
+        // Sanitizar atributos
+        const allowedAttrs = allowedTags[tagName];
+        const attrs = Array.from(child.attributes);
+        
+        attrs.forEach(attr => {
+          if (!allowedAttrs.includes(attr.name)) {
+            child.removeAttribute(attr.name);
+          } else if (attr.name === 'href' && !attr.value.startsWith('http')) {
+            // Solo permitir enlaces http/https
+            child.removeAttribute(attr.name);
+          } else if (attr.name === 'src' && !attr.value.startsWith('http')) {
+            // Solo permitir imágenes http/https
+            child.removeAttribute(attr.name);
+          }
+        });
+        
+        // Sanitizar hijos recursivamente
+        sanitizeElement(child);
+      });
+    };
+
+    sanitizeElement(tempDiv);
+    return tempDiv.innerHTML;
+  }
+
   _darkenColor(color, percent) {
     const num = parseInt(color.replace("#", ""), 16);
     const amt = Math.round(2.55 * percent);
@@ -4353,15 +4518,9 @@ class ChatBot {
 
   destroy() {
     // Remove DOM elements
-    if (this.useShadowDOM) {
-      if (this.floatingBtnContainer) this.floatingBtnContainer.remove();
-      if (this.chatPanelContainer) this.chatPanelContainer.remove();
-      if (this.modalContainer) this.modalContainer.remove();
-    } else {
-      if (this.floatingBtn) this.floatingBtn.remove();
-      if (this.chatPanel) this.chatPanel.remove();
-      if (this.modal) this.modal.remove();
-    }
+    if (this.floatingBtnContainer) this.floatingBtnContainer.remove();
+    if (this.chatPanelContainer) this.chatPanelContainer.remove();
+    if (this.modalContainer) this.modalContainer.remove();
 
     // Remove event listeners
     window.removeEventListener('resize', this._boundHandleResize);
@@ -4407,8 +4566,6 @@ class ChatBot {
       console.debug('[ChatBot SDK] DEBUG:', ...args);
     }
   }
-
-
 }
 
 // Exportar para uso global

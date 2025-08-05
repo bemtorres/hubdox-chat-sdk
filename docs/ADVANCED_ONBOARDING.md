@@ -31,22 +31,29 @@ const chatbot = new ChatBot({
 
 ## Flujo Avanzado
 
-### 1. Solicitud de Nombre
-- Se oculta el chat completo
-- Se muestra un mensaje solicitando el nombre del usuario
-- El usuario ingresa su nombre
+### 1. Mensaje de Bienvenida
+- Se muestra el mensaje de bienvenida SIN botones inicialmente
+- El usuario debe escribir su nombre y presionar Enter
 
-### 2. Opciones de Acción
-Después de ingresar el nombre, se muestran dos opciones:
+### 2. Confirmación con Botones
+- Después de escribir el nombre, se muestra un mensaje de confirmación CON botones
+- **Botón "📚 Preguntas Frecuentes"**: Abre un modal con buscador y lista de FAQ
+- **Botón "💬 Iniciar Chat"**: Comienza directamente el chat normal
+- El input se deshabilita después de mostrar los botones
 
-#### Opción 1: Preguntas Frecuentes (📚)
-- Muestra una lista de FAQ con títulos
-- Cada FAQ puede contener contenido en HTML o Markdown
-- Incluye un botón de retroceso
+### 2. Modal de Preguntas Frecuentes
+Al hacer clic en "📚 Preguntas Frecuentes":
+- Se abre un modal elegante con buscador en tiempo real
+- Lista de preguntas expandibles (click para ver respuesta)
+- Búsqueda que filtra tanto títulos como contenido
+- Botón de cerrar y navegación con Escape
+- Diseño responsive y moderno
 
-#### Opción 2: Nueva Conversación (💬)
+### 3. Inicio de Chat Directo
+Al hacer clic en "💬 Iniciar Chat":
 - Inicia directamente el chat normal
-- Comienza la conversación con el bot
+- El usuario puede comenzar a escribir inmediatamente
+- El nombre del usuario ya está guardado del paso anterior
 
 ### 3. Navegación FAQ
 - **Lista de FAQ**: Muestra todos los títulos disponibles
@@ -91,35 +98,80 @@ onboarding_faq_empty: "Não há perguntas frequentes disponíveis.",
 onboarding_chat_start: "Perfeito! Vamos começar a conversa."
 ```
 
-## Datos de Prueba (FAQ)
+## Modal de Preguntas Frecuentes
 
-El sistema incluye datos de prueba con 5 preguntas frecuentes:
+### Características del Modal
+- **Buscador en tiempo real**: Filtra preguntas mientras escribes
+- **Preguntas expandibles**: Click para mostrar/ocultar respuestas
+- **Diseño responsive**: Se adapta a móviles y desktop
+- **Navegación con teclado**: Escape para cerrar
+- **Cierre múltiple**: Botón X, botón Cerrar, click fuera, Escape
+- **Estilos modernos**: Animaciones suaves y efectos hover
+
+### Funcionalidades del Buscador
+- Búsqueda en títulos de preguntas
+- Búsqueda en contenido de respuestas
+- Filtrado instantáneo
+- Mensaje cuando no hay resultados
+- Restauración automática al limpiar búsqueda
+
+## Fuentes de FAQs
+
+### 1. FAQs de la API (Prioridad Alta)
+El sistema prioriza las FAQs que vienen del endpoint `/api/sdk/v1/register` en el campo `faqs`:
+
+```json
+{
+  "faqs": [
+    {
+      "title": "¿Cómo puedo hacer una consulta?",
+      "content": "Puedes hacer una consulta a través de nuestro formulario de contacto o a través de nuestro chat en línea."
+    },
+    {
+      "title": "¿Cuáles son los horarios de atención?",
+      "content": "Nuestro horario de atención es de lunes a viernes de 9:00 AM a 6:00 PM."
+    }
+  ]
+}
+```
+
+### 2. FAQs Hardcodeadas (Fallback)
+Si la API no devuelve FAQs o está en modo test, se usan las FAQs hardcodeadas con 8 preguntas:
 
 1. **¿Cómo funciona el chat?** - Explicación del funcionamiento básico
-2. **¿Cuáles son los límites de uso?** - Información sobre límites y restricciones
-3. **¿Cómo puedo cambiar el idioma?** - Instrucciones para cambiar idioma
-4. **¿Es seguro usar este chat?** - Información sobre seguridad y privacidad
-5. **¿Cómo puedo obtener ayuda técnica?** - Canales de soporte técnico
+2. **¿Qué puedo preguntar?** - Tipos de preguntas y temas disponibles
+3. **¿Es seguro usar este chat?** - Información sobre seguridad y privacidad
+4. **¿Puedo usar el chat en cualquier momento?** - Disponibilidad 24/7
+5. **¿Cómo puedo obtener la mejor experiencia?** - Consejos para uso óptimo
+6. **¿El asistente puede recordar nuestras conversaciones?** - Información sobre memoria
+7. **¿Puedo cambiar de tema durante la conversación?** - Flexibilidad de temas
+8. **¿Qué hago si no entiendo una respuesta?** - Cómo solicitar aclaraciones
 
 ## Funciones Nuevas
 
 ### `_showAdvancedOnboarding()`
-Inicia el flujo de onboarding avanzado.
+Inicia el flujo de onboarding avanzado con botones de bienvenida.
 
-### `_showOnboardingOptions()`
-Muestra las opciones después de ingresar el nombre.
+### `_showFAQModal()`
+Muestra el modal de preguntas frecuentes con buscador y lista expandible.
+
+### `_startNormalChat()`
+Inicia el chat normal directamente sin registro previo.
 
 ### `_showFAQList()`
-Muestra la lista de preguntas frecuentes.
+Muestra la lista de preguntas frecuentes (método legacy).
 
 ### `_showFAQContent(faqId)`
-Muestra el contenido de un FAQ específico.
+Muestra el contenido de un FAQ específico (método legacy).
 
 ### `_goBackOnboarding()`
-Permite navegar hacia atrás en el flujo.
+Permite navegar hacia atrás en el flujo (método legacy).
 
 ### `_handleAdvancedOnboardingResponse(userMessage)`
-Maneja las respuestas del usuario en el onboarding avanzado.
+Maneja las respuestas del usuario en el onboarding avanzado (para entrada de texto).
+
+### `_getFAQs()`
+Retorna las FAQs disponibles, priorizando las de la API sobre las hardcodeadas.
 
 ### `_getTestFAQ()`
 Retorna datos de prueba para las FAQ.
@@ -180,13 +232,38 @@ const chatbot = new ChatBot({
 
 ## Testing
 
-Para probar el nuevo flujo, usar el archivo:
-```
-example/advanced-onboarding-test.html
-```
+### Archivos de Prueba
 
-Este archivo incluye:
-- Botones para alternar entre templates
-- Verificación de estados
-- Pruebas de funcionalidad
-- Auto-inicialización con onboarding avanzado 
+#### 1. `example/test-advanced-onboarding.html`
+Para probar el flujo completo del onboarding avanzado:
+- Inicialización automática con onboarding avanzado
+- Verificación del flujo: bienvenida → nombre → botones → modal/chat
+- Pruebas del modal de FAQ con buscador
+- Pruebas de inicio del chat normal
+- Instrucciones paso a paso para testing
+- FAQs de prueba incluidas
+
+#### 2. `example/test-api-faqs.html`
+Para probar la integración con la API:
+- Registro con la API real
+- Obtención de FAQs desde la API
+- Modal de FAQ con datos de la API
+- Fallback a FAQs hardcodeadas si la API no responde
+
+### Pasos de Testing Básico
+1. Abrir el chat (botón flotante)
+2. Verificar que aparece el mensaje de bienvenida SIN botones
+3. Escribir un nombre (ej: "Juan") y presionar Enter
+4. Verificar que aparece el mensaje de confirmación CON botones
+5. Probar el botón "📚 Preguntas Frecuentes" - debe abrir el modal
+6. Probar la búsqueda en el modal - debe filtrar preguntas
+7. Probar la expansión de preguntas - click para ver respuestas
+8. Cerrar el modal y probar "💬 Iniciar Chat" - debe comenzar chat normal
+9. Verificar que el chat funciona normalmente
+
+### Pasos de Testing con API
+1. Asegurar que la API esté funcionando
+2. Abrir `example/test-api-faqs.html`
+3. Verificar en la consola que se obtienen las FAQs de la API
+4. Probar el modal de FAQ - debe mostrar las FAQs de la API
+5. Verificar que el fallback funciona si la API no responde 
