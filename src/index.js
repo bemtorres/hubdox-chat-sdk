@@ -259,7 +259,7 @@ class ChatBot {
       }
       
       // Guardar las FAQs de la API si están disponibles
-      if (data.faqs && Array.isArray(data.faqs)) {
+      if (data.module.faqs && data.faqs && Array.isArray(data.faqs)) {
         this.apiFaqs = data.faqs;
         this._log('FAQs de la API guardadas:', this.apiFaqs);
       }
@@ -271,7 +271,7 @@ class ChatBot {
       }
       
       // Guardar productos de la API si están disponibles
-      if (data.products && Array.isArray(data.products)) {
+      if (data.module.products && data.products && Array.isArray(data.products)) {
         this.products = data.products;
         this._log('Productos de la API guardados:', this.products);
       }
@@ -391,8 +391,8 @@ class ChatBot {
         advanced_welcome_message: "¡Hola! 👋 Soy tu asistente virtual. Para personalizar tu experiencia, ¿podrías decirme tu nombre?",
         advanced_name_prompt: "Escribe tu nombre...",
         advanced_name_received: "¡Perfecto! Ahora tienes dos opciones:",
-        advanced_faq_option: "📚 Preguntas frecuentes",
-        advanced_chat_option: "💬 Comenzar conversación",
+        advanced_faq_option: "Preguntas frecuentes",
+        advanced_chat_option: "Comenzar conversación",
         advanced_faq_title: "Preguntas Frecuentes",
         advanced_faq_back: "← Volver",
         advanced_faq_list: [
@@ -491,35 +491,35 @@ class ChatBot {
         advanced_faq_list: [
           {
             title: "How does the chat work?",
-            content: "The chat works interactively. You can write messages and receive responses in real time. The virtual assistant is designed to help you with information, answer questions, and maintain friendly conversations."
+            content: "The chat works interactively. You can write messages and receive responses in real time. The virtual assistant is designed to help you with information, answer questions, and maintain friendly conversations. For more information, visit our [documentation](https://www.example.com/docs)."
           },
           {
             title: "What can I ask?",
-            content: "You can ask questions about any topic: general information, fun facts, help with tasks, explanations of concepts, or simply chat. The assistant is here to help you with whatever you need."
+            content: "You can ask questions about any topic: general information, fun facts, help with tasks, explanations of concepts, or simply chat. The assistant is here to help you with whatever you need. Check out our [FAQ page](https://www.example.com/faq) for more examples."
           },
           {
             title: "Is it safe to use this chat?",
-            content: "Yes, all conversations are private and secure. We don't share your personal information with third parties. Your privacy is important to us."
+            content: "Yes, all conversations are private and secure. We don't share your personal information with third parties. Your privacy is important to us. Read our [privacy policy](https://www.example.com/privacy) for more details."
           },
           {
             title: "Can I use the chat at any time?",
-            content: "Yes, the chat is available 24/7. You can use it whenever you want and the assistant will be ready to help you at any time of day."
+            content: "Yes, the chat is available 24/7. You can use it whenever you want and the assistant will be ready to help you at any time of day. Visit our [status page](https://www.example.com/status) to check current availability."
           },
           {
             title: "How can I get the best experience?",
-            content: "To get the best experience, be specific in your questions, provide context when necessary, and don't hesitate to ask follow-up questions if you need more details."
+            content: "To get the best experience, be specific in your questions, provide context when necessary, and don't hesitate to ask follow-up questions if you need more details. Check our [best practices guide](https://www.example.com/best-practices) for tips."
           },
           {
             title: "Can the assistant remember our conversations?",
-            content: "The assistant can remember the context of the current conversation, but previous conversations are not saved between sessions to protect your privacy."
+            content: "The assistant can remember the context of the current conversation, but previous conversations are not saved between sessions to protect your privacy. Learn more about our [data retention policy](https://www.example.com/data-policy)."
           },
           {
             title: "Can I change topics during the conversation?",
-            content: "Of course! You can change topics at any time. The assistant will adapt to your needs and be ready to help you with any new topic you want to discuss."
+            content: "Of course! You can change topics at any time. The assistant will adapt to your needs and be ready to help you with any new topic you want to discuss. Explore our [topic categories](https://www.example.com/topics) for inspiration."
           },
           {
             title: "What should I do if I don't understand a response?",
-            content: "If you don't understand a response, simply ask for it to be explained in another way or request more details. The assistant is here to help and will adapt to your level of understanding."
+            content: "If you don't understand a response, simply ask for it to be explained in another way or request more details. The assistant is here to help and will adapt to your level of understanding. You can also check our [help center](https://www.example.com/help) for additional resources."
           }
         ]
       },
@@ -1602,6 +1602,15 @@ class ChatBot {
     
     this.chatPanelShadow.appendChild(styles);
     
+
+    const svg_question = `<svg class="w-6 h-6 text-gray-800 dark:text-white" aria-hidden="true" xmlns="http://www.w3.org/2000/svg" width="24" height="24" fill="none" viewBox="0 0 24 24">
+                            <path stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9.529 9.988a2.502 2.502 0 1 1 5 .191A2.441 2.441 0 0 1 12 12.582V14m-.01 3.008H12M21 12a9 9 0 1 1-18 0 9 9 0 0 1 18 0Z"/>
+                          </svg>`;
+
+    const svg_products = `<svg class="w-6 h-6 text-gray-800 dark:text-white" aria-hidden="true" xmlns="http://www.w3.org/2000/svg" width="24" height="24" fill="none" viewBox="0 0 24 24">
+  <path stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 19V4a1 1 0 0 1 1-1h12a1 1 0 0 1 1 1v13H7a2 2 0 0 0-2 2Zm0 0a2 2 0 0 0 2 2h12M9 3v14m7 0v4"/>
+</svg>`;
+
     // Crear el HTML del chat
     const chatHTML = `
       <div class="chatbot-panel" id="chatbot-panel">
@@ -1611,6 +1620,16 @@ class ChatBot {
             <h5 class="bot-name">${this.botName}</h5>
           </div>
           <div class="header-actions">
+            ${this.products && this.products.length > 0 ? `
+            <button type="button" class="dropdown-toggle" id="products-menu" title="Productos">
+              ${svg_products}
+            </button>
+            ` : ''}
+            ${this.apiFaqs && this.apiFaqs.length > 0 ? `
+            <button type="button" class="dropdown-toggle" id="questions-menu" title="Preguntas Frecuentes">
+              ${svg_question}
+            </button>
+            ` : ''}
             <div class="dropdown">
               <button type="button" class="dropdown-toggle" id="actions-menu" title="Acciones">
                 <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" viewBox="0 0 16 16">
@@ -1688,7 +1707,7 @@ class ChatBot {
     this.sendButton = this.chatPanelShadow.querySelector("#chat-send");
     this.closeBtn = this.chatPanelShadow.querySelector("#close-btn");
     this.clearHistoryBtn = this.chatPanelShadow.querySelector("#clear-history-btn");
-    
+   
     // Configurar event listeners
     this._setupChatEventListeners();
     
@@ -1720,6 +1739,20 @@ class ChatBot {
     // Dropdown menu
     const actionsMenu = this.chatPanelShadow.querySelector("#actions-menu");
     const dropdownMenu = this.chatPanelShadow.querySelector("#dropdown-menu");
+
+    const productsButton = this.chatPanelShadow.querySelector("#products-menu");
+    if (productsButton) {
+      productsButton.addEventListener('click', () => {
+        this._showProductsModal();
+      });
+    }    
+
+    const questionsButton = this.chatPanelShadow.querySelector("#questions-menu");
+    if (questionsButton) {  
+      questionsButton.addEventListener('click', () => {
+        this._showFAQModal();
+      });
+    }
 
     if (actionsMenu && dropdownMenu) {
       actionsMenu.addEventListener("click", (e) => {
@@ -2347,10 +2380,6 @@ class ChatBot {
     this._log('_addInitialMessage - Agregando mensaje inicial:', message);
     this._addMessage("bot", message);
 
-    //añadir boton de preguntas frecuent
-    // es un boton de preguntas frecuentes
-    
-    
     // Reproducir sonido de notificación en el primer mensaje del bot
     this._playNotificationSound();
   }
@@ -2378,13 +2407,40 @@ class ChatBot {
 
     // Renderizar todos los mensajes para evitar duplicados
     this._renderMessages();
+    
+    // Verificar si el mensaje contiene enlaces y mostrar advertencia
+    this._checkMessageForLinks(text);
+  }
+
+  _checkMessageForLinks(text) {
+    // Detectar enlaces en el texto (URLs y enlaces Markdown)
+    const urlRegex = /(https?:\/\/[^\s]+)/g;
+    const markdownLinkRegex = /\[([^\]]+)\]\(([^)]+)\)/g;
+    
+    let urls = [];
+    
+    // Buscar URLs directas
+    let match;
+    while ((match = urlRegex.exec(text)) !== null) {
+      urls.push(match[1]);
+    }
+    
+    // Buscar enlaces Markdown
+    while ((match = markdownLinkRegex.exec(text)) !== null) {
+      urls.push(match[2]);
+    }
+    
+    // Si se encontraron enlaces, mostrar advertencia para el primero
+    if (urls.length > 0) {
+      this._log('_checkMessageForLinks - Enlaces detectados:', urls);
+      // Pequeño delay para asegurar que el mensaje se haya renderizado
+      setTimeout(() => {
+        this._showLinkWarningModal(urls[0]);
+      }, 500);
+    }
   }
 
   _createMessageElement(msg) {
-    return this._createMessageElementShadowDOM(msg);
-  }
-
-  _createMessageElementShadowDOM(msg) {
     // Si es mensaje de bienvenida, renderizar de forma especial
     if (msg.isWelcome) {
       const welcomeWrapper = document.createElement("div");
@@ -2427,35 +2483,38 @@ class ChatBot {
         
         // Botón de Preguntas Frecuentes
         const faqButton = document.createElement("button");
-        faqButton.style.backgroundColor = this.primaryColor;
-        faqButton.style.color = "white";
-        faqButton.style.border = "none";
-        faqButton.style.borderRadius = "1.5rem";
-        faqButton.style.padding = "0.75rem 1.5rem";
-        faqButton.style.cursor = "pointer";
-        faqButton.style.fontSize = "0.9rem";
-        faqButton.style.fontWeight = "500";
-        faqButton.style.minWidth = "200px";
-        faqButton.style.transition = "all 0.3s ease";
-        faqButton.innerHTML = "📚 Preguntas Frecuentes";
-        
-        faqButton.addEventListener('mouseenter', () => {
-          faqButton.style.backgroundColor = this._darkenColor(this.primaryColor, 10);
-          faqButton.style.transform = "translateY(-2px)";
-        });
-        
-        faqButton.addEventListener('mouseleave', () => {
+        if (this.apiFaqs && this.apiFaqs.length > 0) {
           faqButton.style.backgroundColor = this.primaryColor;
-          faqButton.style.transform = "translateY(0)";
-        });
-        
-        faqButton.addEventListener('click', () => {
-          this._showFAQModal();
-        });
+          faqButton.style.color = "white";
+          faqButton.style.border = "none";
+          faqButton.style.borderRadius = "1.5rem";
+          // faqButton.style.padding = "0.75rem 1.5rem";
+          faqButton.style.padding = "0.75rem 0rem";
+          faqButton.style.cursor = "pointer";
+          faqButton.style.fontSize = "0.9rem";
+          faqButton.style.fontWeight = "500";
+          faqButton.style.minWidth = "200px";
+          faqButton.style.transition = "all 0.3s ease";
+          faqButton.innerHTML = "Preguntas Frecuentes";
+          
+          faqButton.addEventListener('mouseenter', () => {
+            faqButton.style.backgroundColor = this._darkenColor(this.primaryColor, 10);
+            faqButton.style.transform = "translateY(-2px)";
+          });
+          
+          faqButton.addEventListener('mouseleave', () => {
+            faqButton.style.backgroundColor = this.primaryColor;
+            faqButton.style.transform = "translateY(0)";
+          });
+          
+          faqButton.addEventListener('click', () => {
+            this._showFAQModal();
+          });
+        }
         
         // Botón de Productos (solo mostrar si hay productos disponibles)
+        const productsButton = document.createElement("button");
         if (this.products && this.products.length > 0) {
-          const productsButton = document.createElement("button");
           productsButton.style.backgroundColor = "#ff6b35";
           productsButton.style.color = "white";
           productsButton.style.border = "none";
@@ -2464,9 +2523,10 @@ class ChatBot {
           productsButton.style.cursor = "pointer";
           productsButton.style.fontSize = "0.9rem";
           productsButton.style.fontWeight = "500";
-          productsButton.style.minWidth = "200px";
+          productsButton.style.minWidth = "300px";
+          productsButton.style.maxWidth = "450px";
           productsButton.style.transition = "all 0.3s ease";
-          productsButton.innerHTML = "🛍️ Ver Productos";
+          productsButton.innerHTML = "Ver Productos";
           
           productsButton.addEventListener('mouseenter', () => {
             productsButton.style.backgroundColor = "#e55a2b";
@@ -2487,7 +2547,7 @@ class ChatBot {
         
         // Botón de Iniciar Chat
         const chatButton = document.createElement("button");
-        chatButton.style.backgroundColor = "#28a745";
+        chatButton.style.backgroundColor = this.primaryColor;
         chatButton.style.color = "white";
         chatButton.style.border = "none";
         chatButton.style.borderRadius = "1.5rem";
@@ -2497,15 +2557,25 @@ class ChatBot {
         chatButton.style.fontWeight = "500";
         chatButton.style.minWidth = "200px";
         chatButton.style.transition = "all 0.3s ease";
-        chatButton.innerHTML = "💬 Iniciar Chat";
+        chatButton.innerHTML = "Iniciar Conversación";
+
+        if (!this.products || this.products.length === 0) {
+          if (this.isFullscreen && this.isMobile) {
+            chatButton.style.minWidth = "200px";
+            chatButton.style.maxWidth = "300px";
+          } else {
+            chatButton.style.minWidth = "300px";
+            chatButton.style.maxWidth = "450px";
+          }
+        }
         
         chatButton.addEventListener('mouseenter', () => {
-          chatButton.style.backgroundColor = "#218838";
+          chatButton.style.backgroundColor = this._darkenColor(this.primaryColor, 10);
           chatButton.style.transform = "translateY(-2px)";
         });
         
         chatButton.addEventListener('mouseleave', () => {
-          chatButton.style.backgroundColor = "#28a745";
+          chatButton.style.backgroundColor = this.primaryColor;
           chatButton.style.transform = "translateY(0)";
         });
         
@@ -2513,8 +2583,13 @@ class ChatBot {
           this._startNormalChat();
         });
         
-        buttonsContainer.appendChild(faqButton);
-        buttonsContainer.appendChild(chatButton);
+        if (this.apiFaqs && this.apiFaqs.length > 0) {  
+          buttonsContainer.appendChild(faqButton);
+        }
+        if (this.products && this.products.length > 0) {
+          buttonsContainer.appendChild(productsButton);
+        }
+        buttonsContainer.appendChild(chatButton); 
         welcomeWrapper.appendChild(buttonsContainer);
       }
       
@@ -2539,7 +2614,7 @@ class ChatBot {
         faqButton.style.fontWeight = "500";
         faqButton.style.minWidth = "200px";
         faqButton.style.transition = "all 0.3s ease";
-        faqButton.innerHTML = "📚 Preguntas Frecuentes";
+        faqButton.innerHTML = "Preguntas Frecuentes";
         
         faqButton.addEventListener('mouseenter', () => {
           faqButton.style.backgroundColor = this._darkenColor(this.primaryColor, 10);
@@ -2567,7 +2642,7 @@ class ChatBot {
         chatButton.style.fontWeight = "500";
         chatButton.style.minWidth = "200px";
         chatButton.style.transition = "all 0.3s ease";
-        chatButton.innerHTML = "💬 Iniciar Chat";
+        chatButton.innerHTML = "Iniciar Chat";
         
         chatButton.addEventListener('mouseenter', () => {
           chatButton.style.backgroundColor = "#218838";
@@ -2691,6 +2766,21 @@ class ChatBot {
     }
     
     textP.innerHTML = this._parseMarkdown(msg.text);
+    
+    // Interceptar clics en enlaces dentro del contenido del mensaje
+    const links = textP.querySelectorAll('a');
+    links.forEach(link => {
+      link.addEventListener('click', (e) => {
+        e.preventDefault();
+        const url = link.href;
+        this._showLinkWarningModal(url);
+      });
+      
+      // Agregar estilo visual para indicar que es clickeable
+      link.style.color = this.primaryColor;
+      link.style.textDecoration = 'underline';
+      link.style.cursor = 'pointer';
+    });
 
     bubble.appendChild(info);
     bubble.appendChild(textP);
@@ -3480,11 +3570,36 @@ class ChatBot {
       this._log('_getProducts - Usando productos de prueba');
       return [
         {
+          category: 'Tejidos',
           code: '1313',
           title: 'Tejido Luffy',
           description: 'Amigurumi hecho a mano de **Luffy**, ideal para fans de *One Piece*.',
           price: 9990,
-          photo: 'https://apa.educk.cl/storage/assets/tienda//17506405663805.webp'
+          photo: 'https://res.cloudinary.com/dhqqkf4hy/image/upload/v1754206932/bot_icon_zgo153.png'
+        },
+        {
+          category: 'Tejidos 2',
+          code: '131322',
+          title: 'Tejido Luffy',
+          description: 'Amigurumi hecho a mano de **Luffy**, ideal para fans de *One Piece*.',
+          price: 9990,
+          photo: 'https://res.cloudinary.com/dhqqkf4hy/image/upload/v1754206932/bot_icon_zgo153.png'
+        },
+        {
+          category: 'Tejidos',
+          code: '131322',
+          title: 'Tejido Luffy',
+          description: 'Amigurumi hecho a mano de **Luffy**, ideal para fans de *One Piece*.',
+          price: 9990,
+          photo: 'https://res.cloudinary.com/dhqqkf4hy/image/upload/v1754206932/bot_icon_zgo153.png'
+        },
+        {
+          category: 'Sin categoria',
+          code: '131322',
+          title: 'Tejido Luffy',
+          description: 'Amigurumi hecho a mano de **Luffy**, ideal para fans de *One Piece*.',
+          price: 9990,
+          photo: 'https://res.cloudinary.com/dhqqkf4hy/image/upload/v1754206932/bot_icon_zgo153.png'
         }
       ];
     }
@@ -3513,10 +3628,10 @@ class ChatBot {
     const modalContent = document.createElement('div');
     modalContent.style.backgroundColor = 'white';
     modalContent.style.borderRadius = '1rem';
-    modalContent.style.padding = '2rem';
-    modalContent.style.maxWidth = '600px';
+    modalContent.style.padding = '1rem';
+    modalContent.style.maxWidth = '650px';
     modalContent.style.width = '90%';
-    modalContent.style.maxHeight = '80vh';
+    modalContent.style.maxHeight = '85vh';
     modalContent.style.overflow = 'hidden';
     modalContent.style.display = 'flex';
     modalContent.style.flexDirection = 'column';
@@ -3527,22 +3642,22 @@ class ChatBot {
     header.style.display = 'flex';
     header.style.justifyContent = 'space-between';
     header.style.alignItems = 'center';
-    header.style.marginBottom = '1.5rem';
+    header.style.marginBottom = '1rem';
     header.style.borderBottom = '1px solid #e9ecef';
     header.style.paddingBottom = '1rem';
     
     const title = document.createElement('h3');
     title.style.margin = '0';
     title.style.color = '#333';
-    title.style.fontSize = '1.5rem';
+    title.style.fontSize = '1rem';
     title.style.fontWeight = '600';
-    title.textContent = '📚 Preguntas Frecuentes';
+    title.textContent = 'Preguntas Frecuentes';
     
     const closeButton = document.createElement('button');
     closeButton.innerHTML = '✕';
     closeButton.style.background = 'none';
     closeButton.style.border = 'none';
-    closeButton.style.fontSize = '1.5rem';
+    closeButton.style.fontSize = '1rem';
     closeButton.style.cursor = 'pointer';
     closeButton.style.color = '#666';
     closeButton.style.padding = '0.5rem';
@@ -3575,8 +3690,9 @@ class ChatBot {
     
     const searchInput = document.createElement('input');
     searchInput.type = 'text';
-    searchInput.placeholder = '🔍 Buscar preguntas...';
+    searchInput.placeholder = 'Buscar preguntas...';
     searchInput.style.width = '100%';
+    searchInput.style.boxSizing = 'border-box';
     searchInput.style.padding = '0.75rem 1rem';
     searchInput.style.border = '2px solid #e9ecef';
     searchInput.style.borderRadius = '0.5rem';
@@ -3612,7 +3728,7 @@ class ChatBot {
         noResults.style.textAlign = 'center';
         noResults.style.padding = '2rem';
         noResults.style.color = '#666';
-        noResults.innerHTML = '🔍 No se encontraron preguntas que coincidan con tu búsqueda';
+        noResults.innerHTML = 'No se encontraron preguntas que coincidan con tu búsqueda';
         questionsContainer.appendChild(noResults);
         return;
       }
@@ -3620,8 +3736,8 @@ class ChatBot {
       questions.forEach((faq, index) => {
         const questionItem = document.createElement('div');
         questionItem.style.border = '1px solid #e9ecef';
-        questionItem.style.borderRadius = '0.5rem';
-        questionItem.style.marginBottom = '1rem';
+        questionItem.style.borderRadius = '0.8rem';
+        questionItem.style.marginBottom = '0.5rem';
         questionItem.style.overflow = 'hidden';
         questionItem.style.transition = 'all 0.3s ease';
         
@@ -3633,7 +3749,7 @@ class ChatBot {
         questionHeader.style.color = '#333';
         questionHeader.style.borderBottom = '1px solid #e9ecef';
         // Procesar título que puede ser HTML o Markdown
-        questionHeader.innerHTML = `❓ ${faq.title}`;
+        questionHeader.innerHTML = `${faq.title}`;
         
         const answerContent = document.createElement('div');
         answerContent.style.padding = '1rem';
@@ -3643,6 +3759,21 @@ class ChatBot {
         // Procesar contenido que puede ser HTML o Markdown
         answerContent.innerHTML = this._parseMarkdown(faq.content);
         answerContent.style.display = 'none';
+        
+        // Interceptar clics en enlaces dentro del contenido
+        const links = answerContent.querySelectorAll('a');
+        links.forEach(link => {
+          link.addEventListener('click', (e) => {
+            e.preventDefault();
+            const url = link.href;
+            this._showLinkWarningModal(url);
+          });
+          
+          // Agregar estilo visual para indicar que es clickeable
+          link.style.color = this.primaryColor;
+          link.style.textDecoration = 'underline';
+          link.style.cursor = 'pointer';
+        });
         
         questionHeader.addEventListener('click', () => {
           const isVisible = answerContent.style.display === 'block';
@@ -3675,37 +3806,37 @@ class ChatBot {
     });
     
     // Botón de cerrar en la parte inferior
-    const footer = document.createElement('div');
-    footer.style.marginTop = '1.5rem';
-    footer.style.textAlign = 'center';
-    footer.style.borderTop = '1px solid #e9ecef';
-    footer.style.paddingTop = '1rem';
+    // const footer = document.createElement('div');
+    // footer.style.marginTop = '1.5rem';
+    // footer.style.textAlign = 'center';
+    // footer.style.borderTop = '1px solid #e9ecef';
+    // footer.style.paddingTop = '1rem';
     
-    const closeFooterButton = document.createElement('button');
-    closeFooterButton.innerHTML = 'Cerrar';
-    closeFooterButton.style.backgroundColor = this.primaryColor;
-    closeFooterButton.style.color = 'white';
-    closeFooterButton.style.border = 'none';
-    closeFooterButton.style.borderRadius = '0.5rem';
-    closeFooterButton.style.padding = '0.75rem 2rem';
-    closeFooterButton.style.cursor = 'pointer';
-    closeFooterButton.style.fontSize = '1rem';
-    closeFooterButton.style.fontWeight = '500';
-    closeFooterButton.style.transition = 'background-color 0.3s ease';
+    // const closeFooterButton = document.createElement('button');
+    // closeFooterButton.innerHTML = 'Cerrar';
+    // closeFooterButton.style.backgroundColor = this.primaryColor;
+    // closeFooterButton.style.color = 'white';
+    // closeFooterButton.style.border = 'none';
+    // closeFooterButton.style.borderRadius = '0.5rem';
+    // closeFooterButton.style.padding = '0.75rem 2rem';
+    // closeFooterButton.style.cursor = 'pointer';
+    // closeFooterButton.style.fontSize = '1rem';
+    // closeFooterButton.style.fontWeight = '500';
+    // closeFooterButton.style.transition = 'background-color 0.3s ease';
     
-    closeFooterButton.addEventListener('mouseenter', () => {
-      closeFooterButton.style.backgroundColor = this._darkenColor(this.primaryColor, 10);
-    });
+    // closeFooterButton.addEventListener('mouseenter', () => {
+    //   closeFooterButton.style.backgroundColor = this._darkenColor(this.primaryColor, 10);
+    // });
     
-    closeFooterButton.addEventListener('mouseleave', () => {
-      closeFooterButton.style.backgroundColor = this.primaryColor;
-    });
+    // closeFooterButton.addEventListener('mouseleave', () => {
+    //   closeFooterButton.style.backgroundColor = this.primaryColor;
+    // });
     
-    closeFooterButton.addEventListener('click', () => {
-      document.body.removeChild(modal);
-    });
+    // closeFooterButton.addEventListener('click', () => {
+    //   document.body.removeChild(modal);
+    // });
     
-    footer.appendChild(closeFooterButton);
+    // footer.appendChild(closeFooterButton);
     
     // Cerrar modal con Escape
     const handleEscape = (e) => {
@@ -3728,7 +3859,7 @@ class ChatBot {
     modalContent.appendChild(header);
     modalContent.appendChild(searchContainer);
     modalContent.appendChild(questionsContainer);
-    modalContent.appendChild(footer);
+    // modalContent.appendChild(footer);
     modal.appendChild(modalContent);
     
     // Agregar al DOM
@@ -3758,10 +3889,10 @@ class ChatBot {
     const modalContent = document.createElement('div');
     modalContent.style.backgroundColor = 'white';
     modalContent.style.borderRadius = '1rem';
-    modalContent.style.padding = '2rem';
+    modalContent.style.padding = '1rem';
     modalContent.style.maxWidth = '800px';
     modalContent.style.width = '90%';
-    modalContent.style.maxHeight = '80vh';
+    modalContent.style.maxHeight = '85vh';
     modalContent.style.overflow = 'hidden';
     modalContent.style.display = 'flex';
     modalContent.style.flexDirection = 'column';
@@ -3772,22 +3903,22 @@ class ChatBot {
     header.style.display = 'flex';
     header.style.justifyContent = 'space-between';
     header.style.alignItems = 'center';
-    header.style.marginBottom = '1.5rem';
+    header.style.marginBottom = '1rem';
     header.style.borderBottom = '1px solid #e9ecef';
     header.style.paddingBottom = '1rem';
     
     const title = document.createElement('h3');
     title.style.margin = '0';
     title.style.color = '#333';
-    title.style.fontSize = '1.5rem';
+    title.style.fontSize = '1rem';
     title.style.fontWeight = '600';
-    title.textContent = '🛍️ Nuestros Productos';
+    title.textContent = 'Nuestros Productos';
     
     const closeButton = document.createElement('button');
     closeButton.innerHTML = '✕';
     closeButton.style.background = 'none';
     closeButton.style.border = 'none';
-    closeButton.style.fontSize = '1.5rem';
+    closeButton.style.fontSize = '1rem';
     closeButton.style.cursor = 'pointer';
     closeButton.style.color = '#666';
     closeButton.style.padding = '0.5rem';
@@ -3820,8 +3951,9 @@ class ChatBot {
     
     const searchInput = document.createElement('input');
     searchInput.type = 'text';
-    searchInput.placeholder = '🔍 Buscar productos...';
+    searchInput.placeholder = 'Buscar productos...';
     searchInput.style.width = '100%';
+    searchInput.style.boxSizing = 'border-box';
     searchInput.style.padding = '0.75rem 1rem';
     searchInput.style.border = '2px solid #e9ecef';
     searchInput.style.borderRadius = '0.5rem';
@@ -3857,7 +3989,7 @@ class ChatBot {
         noResults.style.textAlign = 'center';
         noResults.style.padding = '2rem';
         noResults.style.color = '#666';
-        noResults.innerHTML = '🔍 No se encontraron productos que coincidan con tu búsqueda';
+        noResults.innerHTML = 'No se encontraron productos que coincidan con tu búsqueda';
         productsContainer.appendChild(noResults);
         return;
       }
@@ -3865,8 +3997,8 @@ class ChatBot {
       products.forEach((product, index) => {
         const productItem = document.createElement('div');
         productItem.style.border = '1px solid #e9ecef';
-        productItem.style.borderRadius = '0.75rem';
-        productItem.style.marginBottom = '1.5rem';
+        productItem.style.borderRadius = '0.8rem';
+        productItem.style.marginBottom = '0.5rem';
         productItem.style.overflow = 'hidden';
         productItem.style.transition = 'all 0.3s ease';
         productItem.style.backgroundColor = '#fff';
@@ -3894,7 +4026,7 @@ class ChatBot {
         productImage.src = product.photo;
         productImage.alt = product.title;
         productImage.style.width = '120px';
-        productImage.style.height = '120px';
+        productImage.style.height = '100px';
         productImage.style.objectFit = 'cover';
         productImage.style.borderRadius = '0.5rem';
         productImage.style.flexShrink = '0';
@@ -3904,11 +4036,11 @@ class ChatBot {
         productInfo.style.flex = '1';
         
         // Código del producto
-        const productCode = document.createElement('div');
-        productCode.style.fontSize = '0.8rem';
-        productCode.style.color = '#666';
-        productCode.style.marginBottom = '0.5rem';
-        productCode.innerHTML = `Código: <strong>${product.code}</strong>`;
+        // const productCode = document.createElement('div');
+        // productCode.style.fontSize = '0.8rem';
+        // productCode.style.color = '#666';
+        // productCode.style.marginBottom = '0.5rem';
+        // productCode.innerHTML = `Código: <strong>${product.code}</strong>`;
         
         // Título del producto
         const productTitle = document.createElement('h4');
@@ -3916,7 +4048,7 @@ class ChatBot {
         productTitle.style.color = '#333';
         productTitle.style.fontSize = '1.2rem';
         productTitle.style.fontWeight = '600';
-        productTitle.innerHTML = this._parseMarkdown(product.title);
+        productTitle.innerHTML = product.title;
         
         // Descripción del producto
         const productDescription = document.createElement('div');
@@ -3932,7 +4064,7 @@ class ChatBot {
         productPrice.style.color = this.primaryColor;
         productPrice.innerHTML = `$${product.price.toLocaleString('es-CL')}`;
         
-        productInfo.appendChild(productCode);
+        // productInfo.appendChild(productCode);
         productInfo.appendChild(productTitle);
         productInfo.appendChild(productDescription);
         productInfo.appendChild(productPrice);
@@ -3964,37 +4096,37 @@ class ChatBot {
     });
     
     // Botón de cerrar en la parte inferior
-    const footer = document.createElement('div');
-    footer.style.marginTop = '1.5rem';
-    footer.style.textAlign = 'center';
-    footer.style.borderTop = '1px solid #e9ecef';
-    footer.style.paddingTop = '1rem';
+    // const footer = document.createElement('div');
+    // footer.style.marginTop = '1.5rem';
+    // footer.style.textAlign = 'center';
+    // footer.style.borderTop = '1px solid #e9ecef';
+    // footer.style.paddingTop = '1rem';
     
-    const closeFooterButton = document.createElement('button');
-    closeFooterButton.innerHTML = 'Cerrar';
-    closeFooterButton.style.backgroundColor = this.primaryColor;
-    closeFooterButton.style.color = 'white';
-    closeFooterButton.style.border = 'none';
-    closeFooterButton.style.borderRadius = '0.5rem';
-    closeFooterButton.style.padding = '0.75rem 2rem';
-    closeFooterButton.style.cursor = 'pointer';
-    closeFooterButton.style.fontSize = '1rem';
-    closeFooterButton.style.fontWeight = '500';
-    closeFooterButton.style.transition = 'background-color 0.3s ease';
+    // const closeFooterButton = document.createElement('button');
+    // closeFooterButton.innerHTML = 'Cerrar';
+    // closeFooterButton.style.backgroundColor = this.primaryColor;
+    // closeFooterButton.style.color = 'white';
+    // closeFooterButton.style.border = 'none';
+    // closeFooterButton.style.borderRadius = '0.5rem';
+    // closeFooterButton.style.padding = '0.75rem 2rem';
+    // closeFooterButton.style.cursor = 'pointer';
+    // closeFooterButton.style.fontSize = '1rem';
+    // closeFooterButton.style.fontWeight = '500';
+    // closeFooterButton.style.transition = 'background-color 0.3s ease';
     
-    closeFooterButton.addEventListener('mouseenter', () => {
-      closeFooterButton.style.backgroundColor = this._darkenColor(this.primaryColor, 10);
-    });
+    // closeFooterButton.addEventListener('mouseenter', () => {
+    //   closeFooterButton.style.backgroundColor = this._darkenColor(this.primaryColor, 10);
+    // });
     
-    closeFooterButton.addEventListener('mouseleave', () => {
-      closeFooterButton.style.backgroundColor = this.primaryColor;
-    });
+    // closeFooterButton.addEventListener('mouseleave', () => {
+    //   closeFooterButton.style.backgroundColor = this.primaryColor;
+    // });
     
-    closeFooterButton.addEventListener('click', () => {
-      document.body.removeChild(modal);
-    });
+    // closeFooterButton.addEventListener('click', () => {
+    //   document.body.removeChild(modal);
+    // });
     
-    footer.appendChild(closeFooterButton);
+    // footer.appendChild(closeFooterButton);
     
     // Cerrar modal con Escape
     const handleEscape = (e) => {
@@ -4017,7 +4149,7 @@ class ChatBot {
     modalContent.appendChild(header);
     modalContent.appendChild(searchContainer);
     modalContent.appendChild(productsContainer);
-    modalContent.appendChild(footer);
+    // modalContent.appendChild(footer);
     modal.appendChild(modalContent);
     
     // Agregar al DOM
@@ -4025,6 +4157,249 @@ class ChatBot {
     
     // Enfocar el buscador
     searchInput.focus();
+  }
+
+  _showLinkWarningModal(url) {
+    this._log('_showLinkWarningModal - Mostrando advertencia para enlace:', url);
+    
+    // Crear el modal
+    const modal = document.createElement('div');
+    modal.id = 'link-warning-modal';
+    modal.style.position = 'fixed';
+    modal.style.top = '0';
+    modal.style.left = '0';
+    modal.style.width = '100%';
+    modal.style.height = '100%';
+    modal.style.backgroundColor = 'rgba(0, 0, 0, 0.5)';
+    modal.style.display = 'flex';
+    modal.style.justifyContent = 'center';
+    modal.style.alignItems = 'center';
+    modal.style.zIndex = '10001'; // Mayor que el modal de FAQ
+    
+    const modalContent = document.createElement('div');
+    modalContent.style.backgroundColor = 'white';
+    modalContent.style.borderRadius = '1rem';
+    modalContent.style.padding = '2rem';
+    modalContent.style.maxWidth = '500px';
+    modalContent.style.width = '90%';
+    modalContent.style.boxShadow = '0 10px 30px rgba(0, 0, 0, 0.3)';
+    modalContent.style.textAlign = 'center';
+    modalContent.style.position = 'relative';
+    
+    // Botón de cerrar en la esquina superior derecha
+    const closeButton = document.createElement('button');
+    closeButton.innerHTML = '✕';
+    closeButton.style.position = 'absolute';
+    closeButton.style.top = '1rem';
+    closeButton.style.right = '1rem';
+    closeButton.style.background = 'none';
+    closeButton.style.border = 'none';
+    closeButton.style.fontSize = '1.5rem';
+    closeButton.style.cursor = 'pointer';
+    closeButton.style.color = '#666';
+    closeButton.style.padding = '0.5rem';
+    closeButton.style.borderRadius = '50%';
+    closeButton.style.width = '40px';
+    closeButton.style.height = '40px';
+    closeButton.style.display = 'flex';
+    closeButton.style.alignItems = 'center';
+    closeButton.style.justifyContent = 'center';
+    closeButton.style.transition = 'background-color 0.3s ease';
+    closeButton.style.zIndex = '1';
+    
+    closeButton.addEventListener('mouseenter', () => {
+      closeButton.style.backgroundColor = '#f8f9fa';
+    });
+    
+    closeButton.addEventListener('mouseleave', () => {
+      closeButton.style.backgroundColor = 'transparent';
+    });
+    
+    closeButton.addEventListener('click', () => {
+      document.body.removeChild(modal);
+    });
+    
+    // Icono de advertencia
+    // const warningIcon = document.createElement('div');
+    // warningIcon.style.fontSize = '3rem';
+    // warningIcon.style.marginBottom = '1rem';
+    // warningIcon.innerHTML = '⚠️';
+    
+    // Título
+    const title = document.createElement('h3');
+    title.style.margin = '0 0 1rem 0';
+    title.style.color = '#d32f2f';
+    title.style.fontSize = '1rem';
+    title.style.fontWeight = '600';
+    title.textContent = 'Este enlace no está verificado';
+    
+    // Contenido
+    const content = document.createElement('p');
+    content.style.margin = '0 0 1.5rem 0';
+    content.style.color = '#666';
+    content.style.lineHeight = '1.6';
+    content.style.fontSize = '1rem';
+    content.innerHTML = 'Asegúrate de que confías en este enlace antes de continuar. Si no reconoces la URL, no abras el enlace para acceder al sitio.';
+    
+    // URL del sitio
+    const urlDisplay = document.createElement('div');
+    urlDisplay.style.backgroundColor = '#f5f5f5';
+    urlDisplay.style.padding = '0.75rem';
+    urlDisplay.style.borderRadius = '0.5rem';
+    urlDisplay.style.marginBottom = '1.5rem';
+    urlDisplay.style.fontFamily = 'monospace';
+    urlDisplay.style.fontSize = '0.9rem';
+    urlDisplay.style.color = '#333';
+    urlDisplay.style.wordBreak = 'break-all';
+    urlDisplay.textContent = url;
+    
+    // Contenedor de botones
+    const buttonsContainer = document.createElement('div');
+    buttonsContainer.style.display = 'flex';
+    buttonsContainer.style.gap = '1rem';
+    buttonsContainer.style.justifyContent = 'center';
+    buttonsContainer.style.flexWrap = 'wrap';
+    
+    // Botón Copiar Enlace
+    const copyButton = document.createElement('button');
+    copyButton.innerHTML = 'Copiar Enlace';
+    copyButton.style.backgroundColor = '#6c757d';
+    copyButton.style.color = 'white';
+    copyButton.style.border = 'none';
+    copyButton.style.borderRadius = '0.8rem';
+    copyButton.style.padding = '0.75rem 1.5rem';
+    copyButton.style.cursor = 'pointer';
+    copyButton.style.fontSize = '0.8rem';
+    copyButton.style.fontWeight = '500';
+    copyButton.style.transition = 'background-color 0.3s ease';
+    copyButton.style.flex = '1';
+    copyButton.style.minWidth = '140px';
+    
+    copyButton.addEventListener('mouseenter', () => {
+      copyButton.style.backgroundColor = '#5a6268';
+    });
+    
+    copyButton.addEventListener('mouseleave', () => {
+      copyButton.style.backgroundColor = '#6c757d';
+    });
+    
+    copyButton.addEventListener('click', () => {
+      navigator.clipboard.writeText(url).then(() => {
+        // Cambiar temporalmente el texto del botón
+        const originalText = copyButton.innerHTML;
+        copyButton.innerHTML = '¡Copiado!';
+        copyButton.style.backgroundColor = '#28a745';
+        setTimeout(() => {
+          copyButton.innerHTML = originalText;
+          copyButton.style.backgroundColor = '#6c757d';
+        }, 2000);
+      }).catch(err => {
+        console.error('Error al copiar:', err);
+        // Fallback para navegadores que no soportan clipboard API
+        const textArea = document.createElement('textarea');
+        textArea.value = url;
+        document.body.appendChild(textArea);
+        textArea.select();
+        document.execCommand('copy');
+        document.body.removeChild(textArea);
+        
+        const originalText = copyButton.innerHTML;
+        copyButton.innerHTML = '¡Copiado!';
+        copyButton.style.backgroundColor = '#28a745';
+        setTimeout(() => {
+          copyButton.innerHTML = originalText;
+          copyButton.style.backgroundColor = '#6c757d';
+        }, 2000);
+      });
+    });
+    
+    // Botón Abrir Enlace
+    const openButton = document.createElement('button');
+    openButton.innerHTML = 'Abrir Enlace';
+    openButton.style.backgroundColor = this.primaryColor;
+    openButton.style.color = 'white';
+    openButton.style.border = 'none';
+    openButton.style.borderRadius = '0.8rem';
+    openButton.style.padding = '0.75rem 1.5rem';
+    openButton.style.cursor = 'pointer';
+    openButton.style.fontSize = '0.8rem';
+    openButton.style.fontWeight = '500';
+    openButton.style.transition = 'background-color 0.3s ease';
+    openButton.style.flex = '1';
+    openButton.style.minWidth = '140px';
+    
+    openButton.addEventListener('mouseenter', () => {
+      openButton.style.backgroundColor = this._darkenColor(this.primaryColor, 10);
+    });
+    
+    openButton.addEventListener('mouseleave', () => {
+      openButton.style.backgroundColor = this.primaryColor;
+    });
+    
+    openButton.addEventListener('click', () => {
+      window.open(url, '_blank', 'noopener,noreferrer');
+      document.body.removeChild(modal);
+    });
+    
+    // Botón Cancelar
+    // const cancelButton = document.createElement('button');
+    // cancelButton.innerHTML = '❌ Cancelar';
+    // cancelButton.style.backgroundColor = '#dc3545';
+    // cancelButton.style.color = 'white';
+    // cancelButton.style.border = 'none';
+    // cancelButton.style.borderRadius = '0.5rem';
+    // cancelButton.style.padding = '0.75rem 1.5rem';
+    // cancelButton.style.cursor = 'pointer';
+    // cancelButton.style.fontSize = '0.8rem';
+    // cancelButton.style.fontWeight = '500';
+    // cancelButton.style.transition = 'background-color 0.3s ease';
+    // cancelButton.style.flex = '1';
+    // cancelButton.style.minWidth = '140px';
+    
+    // cancelButton.addEventListener('mouseenter', () => {
+    //   cancelButton.style.backgroundColor = '#c82333';
+    // });
+    
+    // cancelButton.addEventListener('mouseleave', () => {
+    //   cancelButton.style.backgroundColor = '#dc3545';
+    // });
+    
+    // cancelButton.addEventListener('click', () => {
+    //   document.body.removeChild(modal);
+    // });
+    
+    buttonsContainer.appendChild(copyButton);
+    buttonsContainer.appendChild(openButton);
+    // buttonsContainer.appendChild(cancelButton);
+    
+    // Cerrar modal con Escape
+    const handleEscape = (e) => {
+      if (e.key === 'Escape') {
+        document.body.removeChild(modal);
+        document.removeEventListener('keydown', handleEscape);
+      }
+    };
+    
+    document.addEventListener('keydown', handleEscape);
+    
+    // Cerrar modal al hacer clic fuera
+    modal.addEventListener('click', (e) => {
+      if (e.target === modal) {
+        document.body.removeChild(modal);
+      }
+    });
+    
+    // Ensamblar modal
+    // modalContent.appendChild(warningIcon);
+    modalContent.appendChild(closeButton);
+    modalContent.appendChild(title);
+    modalContent.appendChild(content);
+    modalContent.appendChild(urlDisplay);
+    modalContent.appendChild(buttonsContainer);
+    modal.appendChild(modalContent);
+    
+    // Agregar al DOM
+    document.body.appendChild(modal);
   }
 
   // Método para comenzar chat normal
