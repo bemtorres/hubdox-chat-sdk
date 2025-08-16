@@ -1,0 +1,209 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Ejemplo - Límite de Caracteres para Preguntas</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 20px;
+            background-color: #f5f5f5;
+        }
+        .container {
+            max-width: 800px;
+            margin: 0 auto;
+            background: white;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+        h1 {
+            color: #333;
+            text-align: center;
+        }
+        .demo-section {
+            margin: 20px 0;
+            padding: 15px;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+        }
+        .controls {
+            display: flex;
+            gap: 10px;
+            margin: 10px 0;
+            align-items: center;
+        }
+        input[type="number"] {
+            padding: 5px;
+            border: 1px solid #ccc;
+            border-radius: 3px;
+            width: 100px;
+        }
+        button {
+            padding: 8px 16px;
+            background-color: #007bff;
+            color: white;
+            border: none;
+            border-radius: 3px;
+            cursor: pointer;
+        }
+        button:hover {
+            background-color: #0056b3;
+        }
+        .info {
+            background-color: #e7f3ff;
+            padding: 10px;
+            border-radius: 5px;
+            margin: 10px 0;
+        }
+        .feature-list {
+            background-color: #f8f9fa;
+            padding: 15px;
+            border-radius: 5px;
+            margin: 15px 0;
+        }
+        .feature-list ul {
+            margin: 0;
+            padding-left: 20px;
+        }
+        .feature-list li {
+            margin: 5px 0;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🔤 Ejemplo: Límite de Caracteres para Preguntas</h1>
+        
+        <div class="info">
+            <strong>💡 Funcionalidad:</strong> Este ejemplo demuestra cómo limitar la entrada de texto en el chat para controlar la longitud de las preguntas del usuario.
+        </div>
+
+        <div class="feature-list">
+            <h3>✨ Características implementadas:</h3>
+            <ul>
+                <li><strong>Límite configurable:</strong> Establecer un número máximo de caracteres (por defecto: 500)</li>
+                <li><strong>Contador visual:</strong> Muestra cuántos caracteres se han usado (ej: 45/500)</li>
+                <li><strong>Validación en tiempo real:</strong> El botón de envío se deshabilita cuando se excede el límite</li>
+                <li><strong>Indicador visual:</strong> El input cambia de color cuando se excede el límite</li>
+                <li><strong>Prevención de envío:</strong> No se pueden enviar mensajes que excedan el límite</li>
+                <li><strong>Configuración dinámica:</strong> Cambiar el límite después de la inicialización</li>
+            </ul>
+        </div>
+
+        <div class="demo-section">
+            <h3>🎛️ Controles de Demostración</h3>
+            <div class="controls">
+                <label for="maxLength">Límite de caracteres:</label>
+                <input type="number" id="maxLength" value="500" min="10" max="2000">
+                <button onclick="setMaxLength()">Aplicar</button>
+                <button onclick="getCurrentLength()">Ver límite actual</button>
+            </div>
+            <div id="currentLimit" class="info"></div>
+        </div>
+
+        <div class="demo-section">
+            <h3>📝 Código de Ejemplo</h3>
+            <pre><code>// Inicialización con límite personalizado
+const chatBot = new ChatBot({
+    baseUrl: 'https://api.example.com',
+    apiKey: 'your-api-key',
+    options: {
+        maxQuestionLength: 300 // Límite de 300 caracteres
+    }
+});
+
+// Cambiar límite después de la inicialización
+chatBot.setMaxQuestionLength(200);
+
+// Obtener límite actual
+const currentLimit = chatBot.getMaxQuestionLength();
+console.log('Límite actual:', currentLimit);</code></pre>
+        </div>
+
+        <div class="demo-section">
+            <h3>🎯 Casos de Uso</h3>
+            <ul>
+                <li><strong>Control de costos:</strong> Limitar la longitud para reducir el consumo de tokens en APIs de IA</li>
+                <li><strong>Mejora de UX:</strong> Forzar preguntas más concisas y directas</li>
+                <li><strong>Prevención de spam:</strong> Evitar mensajes excesivamente largos</li>
+                <li><strong>Optimización de rendimiento:</strong> Reducir el tiempo de procesamiento</li>
+                <li><strong>Consistencia:</strong> Mantener un formato estándar en las consultas</li>
+            </ul>
+        </div>
+    </div>
+
+    <script src="../src/index.js"></script>
+    <script>
+        // Configuración del chat bot
+        const chatBot = new ChatBot({
+            baseUrl: 'https://api.example.com',
+            apiKey: 'demo-key',
+            options: {
+                testMode: true,
+                maxQuestionLength: 500 // Límite inicial de 500 caracteres
+            },
+            custom: {
+                primaryColor: '#007bff',
+                botName: 'Asistente Demo'
+            }
+        });
+
+        // Función para establecer el límite de caracteres
+        function setMaxLength() {
+            const input = document.getElementById('maxLength');
+            const length = parseInt(input.value);
+            
+            if (length > 0) {
+                const success = chatBot.setMaxQuestionLength(length);
+                if (success) {
+                    showMessage(`✅ Límite configurado a ${length} caracteres`);
+                    updateCurrentLimit();
+                } else {
+                    showMessage('❌ Error: Longitud inválida');
+                }
+            } else {
+                showMessage('❌ Error: Ingresa un número válido');
+            }
+        }
+
+        // Función para obtener el límite actual
+        function getCurrentLength() {
+            const currentLimit = chatBot.getMaxQuestionLength();
+            showMessage(`📊 Límite actual: ${currentLimit} caracteres`);
+            updateCurrentLimit();
+        }
+
+        // Función para mostrar mensajes
+        function showMessage(message) {
+            const currentLimitDiv = document.getElementById('currentLimit');
+            currentLimitDiv.innerHTML = `<strong>${message}</strong>`;
+            
+            // Limpiar mensaje después de 3 segundos
+            setTimeout(() => {
+                currentLimitDiv.innerHTML = '';
+            }, 3000);
+        }
+
+        // Función para actualizar la información del límite actual
+        function updateCurrentLimit() {
+            const currentLimit = chatBot.getMaxQuestionLength();
+            const currentLimitDiv = document.getElementById('currentLimit');
+            currentLimitDiv.innerHTML = `
+                <strong>📊 Información actual:</strong><br>
+                • Límite configurado: ${currentLimit} caracteres<br>
+                • El contador se muestra en la parte inferior del input<br>
+                • El botón se deshabilita cuando se excede el límite<br>
+                • El input cambia de color cuando se excede el límite
+            `;
+        }
+
+        // Mostrar información inicial
+        updateCurrentLimit();
+
+        // Inicializar el chat
+        chatBot.init();
+    </script>
+</body>
+</html> 

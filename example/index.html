@@ -228,13 +228,14 @@ chat.clearCache();
         <script>
             const chat = new ChatBot({
                 baseUrl: 'https://hubdocs.test',
-                apiKey: 'Ae812043-87ed-4bde-ba4a-0daaff8aadad',
+                apiKey: 'Ac7bdb20-ecdc-453f-bdca-40e90880d424',
                 tenant: 'nomed',
                 options: {
                     show: true,
-                    register: true,    // Solicita registro
+                    register: false,    // Solicita registro
                     testMode: false,   // Usa API real
                     stream: true,
+                    cache: false,
                 },
                 custom: {
                     primaryColor: "#1e1e1e",
@@ -252,6 +253,7 @@ chat.clearCache();
                     showTime: true, // Mostrar hora en los mensajes
                     sound: true,
                     reminderTimeout: 10000, // 10 segundos
+                    maxQuestionLength: 50, // Límite de caracteres para preguntas
                     position: {
                         bottom: "24px",
                         right: "24px"

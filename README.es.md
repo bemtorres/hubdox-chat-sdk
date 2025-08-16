@@ -87,11 +87,13 @@ const chat = new ChatBot({
 |------------|---------|-------------|-----------------------------------------------------------------------------|
 | `register` | boolean | `false`     | Si es `true`, muestra una pantalla de registro donde el bot solicita el nombre del usuario antes de iniciar el chat.                  |
 | `show`     | boolean | `true`      | Muestra u oculta el widget de chat en la inicialización.                    |
-| `cache`    | boolean | `true`      | Habilita o deshabilita el almacenamiento en caché de la sesión de chat y los mensajes. |
+| `cache`    | boolean | `false`     | Habilita o deshabilita el almacenamiento en caché de la sesión de chat y los mensajes. |
+| `cacheExpiration` | number | `30`        | Tiempo de expiración del cache en minutos. Por defecto 30 minutos. |
 | `testMode` | boolean | `false`     | Habilita o deshabilita el modo de prueba.                                   |
 | `stream`   | boolean | `false`     | Si es `true`, simula el efecto de typing mostrando el mensaje carácter por carácter. |
 | `devMode`  | boolean | `false`     | Habilita logs de desarrollo. En producción debe ser `false`.               |
 | `useShadowDOM` | boolean | `true`     | Si es `true`, usa Shadow DOM para aislamiento de CSS. Si es `false`, usa Bootstrap. |
+| `maxQuestionLength` | number | `50`       | Límite máximo de caracteres para las preguntas del usuario. Incluye contador visual y validación en tiempo real. |
 
 ### Objeto `user` (Opcional)
 
@@ -438,6 +440,23 @@ const status = chat.getRegistrationStatus();
 console.log(status);
 ```
 
+### `setMaxQuestionLength(length)`
+
+Configura el límite máximo de caracteres para las preguntas del usuario.
+
+```javascript
+chat.setMaxQuestionLength(300); // Establece límite de 300 caracteres
+```
+
+### `getMaxQuestionLength()`
+
+Obtiene el límite actual de caracteres para las preguntas.
+
+```javascript
+const currentLimit = chat.getMaxQuestionLength();
+console.log('Límite actual:', currentLimit); // 500 (por defecto)
+```
+
 ## 🎯 Pantalla de Registro
 
 La nueva funcionalidad de pantalla de registro separa claramente el proceso de registro del chat normal, evitando confusiones y mejorando la experiencia del usuario.
@@ -566,6 +585,74 @@ El streaming incluye:
 - **Borde izquierdo** especial durante el streaming
 - **Fondo degradado** sutil para destacar el mensaje
 - **Velocidad variable** que simula typing humano
+
+## 🔤 Límite de Caracteres para Preguntas
+
+El ChatBot SDK incluye una funcionalidad para limitar la longitud de las preguntas del usuario, incluyendo validación en tiempo real y un contador visual.
+
+### Características
+
+- **Límite configurable**: Establecer un número máximo de caracteres (por defecto: 500)
+- **Contador visual**: Muestra cuántos caracteres se han usado (ej: 45/500)
+- **Validación en tiempo real**: El botón de envío se deshabilita cuando se excede el límite
+- **Indicador visual**: El input cambia de color cuando se excede el límite
+- **Prevención de envío**: No se pueden enviar mensajes que excedan el límite
+- **Configuración dinámica**: Cambiar el límite después de la inicialización
+
+### Configuración Inicial
+
+```javascript
+const chat = new ChatBot({
+  baseUrl: 'https://tu-api.com',
+  apiKey: 'tu-api-key',
+  tenant: 'tu-tenant',
+  options: {
+    maxQuestionLength: 300, // Límite de 300 caracteres
+  }
+});
+```
+
+### Configuración Dinámica
+
+```javascript
+// Cambiar límite después de la inicialización
+chat.setMaxQuestionLength(200);
+
+// Obtener límite actual
+const currentLimit = chat.getMaxQuestionLength();
+console.log('Límite actual:', currentLimit);
+```
+
+### Casos de Uso
+
+- **Control de costos**: Limitar la longitud para reducir el consumo de tokens en APIs de IA
+- **Mejora de UX**: Forzar preguntas más concisas y directas
+- **Prevención de spam**: Evitar mensajes excesivamente largos
+- **Optimización de rendimiento**: Reducir el tiempo de procesamiento
+- **Consistencia**: Mantener un formato estándar en las consultas
+
+### Ejemplo Completo
+
+```javascript
+const chat = new ChatBot({
+  baseUrl: 'https://api.ejemplo.com',
+  apiKey: 'mi-api-key',
+  tenant: 'mi-tenant',
+  options: {
+    maxQuestionLength: 250, // Límite de 250 caracteres
+    testMode: true
+  }
+});
+
+// Inicializar el chat
+chat.init();
+
+// Cambiar límite dinámicamente
+setTimeout(() => {
+  chat.setMaxQuestionLength(150);
+  console.log('Nuevo límite:', chat.getMaxQuestionLength());
+}, 5000);
+```
 
 ## 🔧 Modo Desarrollo
 
@@ -698,6 +785,43 @@ const chat = new ChatBot({
 });
 ```
 
+## 🔧 Métodos de Cache
+
+El SDK incluye métodos para gestionar el cache de sesión:
+
+### Configuración de Cache
+
+```javascript
+// Habilitar/deshabilitar cache
+chat.setCacheEnabled(true);
+
+// Configurar tiempo de expiración (en minutos)
+chat.setCacheExpiration(60); // 1 hora
+
+// Obtener estado del cache
+const cacheStatus = chat.getCacheStatus();
+console.log('Cache habilitado:', cacheStatus.enabled);
+console.log('Expira en:', cacheStatus.expiration, 'minutos');
+console.log('¿Es válido?', cacheStatus.isValid);
+```
+
+### Métodos Disponibles
+
+| Método | Descripción |
+|--------|-------------|
+| `setCacheEnabled(enabled)` | Habilita o deshabilita el cache |
+| `setCacheExpiration(minutes)` | Configura el tiempo de expiración en minutos |
+| `getCacheStatus()` | Obtiene el estado completo del cache |
+| `getCacheExpiration()` | Obtiene el tiempo de expiración actual |
+
+### Características del Cache
+
+- **Guardado Automático**: Se guarda después de cada mensaje
+- **Expiración Configurable**: Por defecto 30 minutos
+- **Limpieza Automática**: Se elimina automáticamente al expirar
+- **Recuperación de Estado**: Restaura mensajes, usuario y configuración
+- **Persistencia Local**: Almacenado en localStorage del navegador
+
 ## 📁 Archivos de Ejemplo
 
 El SDK incluye varios archivos de ejemplo para diferentes casos de uso:
@@ -710,6 +834,7 @@ El SDK incluye varios archivos de ejemplo para diferentes casos de uso:
 - **`example/options-menu.html`**: Configurador visual con Bootstrap
 - **`example/options-menu-tailwind.html`**: Configurador visual con Tailwind CSS
 - **`example/registration-screen-example.html`**: Ejemplo de pantalla de registro
+- **`example/session-cache.html`**: Ejemplo completo de cache de sesión por 30 minutos
 - **`index.html`**: 30 ejemplos diferentes de configuración
 
 ### Pruebas

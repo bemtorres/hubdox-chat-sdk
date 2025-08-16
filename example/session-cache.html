@@ -1,0 +1,326 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>HubDox Chat SDK - Cache de Sesión</title>
+    <style>
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            margin: 0;
+            padding: 20px;
+            background-color: #f5f5f5;
+        }
+        .container {
+            max-width: 800px;
+            margin: 0 auto;
+            background: white;
+            padding: 30px;
+            border-radius: 10px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+        h1 {
+            color: #333;
+            text-align: center;
+            margin-bottom: 30px;
+        }
+        .feature {
+            background: #f8f9fa;
+            padding: 20px;
+            margin: 20px 0;
+            border-radius: 8px;
+            border-left: 4px solid #007bff;
+        }
+        .feature h3 {
+            color: #007bff;
+            margin-top: 0;
+        }
+        .code {
+            background: #e9ecef;
+            padding: 15px;
+            border-radius: 5px;
+            font-family: 'Courier New', monospace;
+            overflow-x: auto;
+            margin: 10px 0;
+        }
+        .button {
+            background: #007bff;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 5px;
+            cursor: pointer;
+            margin: 5px;
+            font-size: 14px;
+        }
+        .button:hover {
+            background: #0056b3;
+        }
+        .button.secondary {
+            background: #6c757d;
+        }
+        .button.secondary:hover {
+            background: #545b62;
+        }
+        .button.danger {
+            background: #dc3545;
+        }
+        .button.danger:hover {
+            background: #c82333;
+        }
+        .status {
+            background: #d4edda;
+            border: 1px solid #c3e6cb;
+            color: #155724;
+            padding: 15px;
+            border-radius: 5px;
+            margin: 20px 0;
+        }
+        .info {
+            background: #d1ecf1;
+            border: 1px solid #bee5eb;
+            color: #0c5460;
+            padding: 15px;
+            border-radius: 5px;
+            margin: 20px 0;
+        }
+        .warning {
+            background: #fff3cd;
+            border: 1px solid #ffeaa7;
+            color: #856404;
+            padding: 15px;
+            border-radius: 5px;
+            margin: 20px 0;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🚀 HubDox Chat SDK - Cache de Sesión</h1>
+        
+        <div class="feature">
+            <h3>✨ Nueva Funcionalidad: Cache de Sesión por 30 Minutos</h3>
+            <p>El SDK ahora incluye un sistema de cache automático que guarda la sesión del chat en el navegador por 30 minutos, permitiendo que los usuarios continúen sus conversaciones incluso después de cerrar y reabrir el navegador.</p>
+        </div>
+
+        <div class="info">
+            <h4>🔑 Características Principales:</h4>
+            <ul>
+                <li><strong>Cache Automático:</strong> Se guarda automáticamente después de cada mensaje</li>
+                <li><strong>Expiración Configurable:</strong> Por defecto 30 minutos, pero se puede personalizar</li>
+                <strong>Persistencia Inteligente:</strong> Solo guarda cuando está habilitado</li>
+                <li><strong>Limpieza Automática:</strong> Elimina automáticamente el cache expirado</li>
+                <li><strong>Recuperación de Estado:</strong> Restaura mensajes, usuario y configuración</li>
+            </ul>
+        </div>
+
+        <div class="feature">
+            <h3>📝 Configuración Básica</h3>
+            <p>Para habilitar el cache de sesión, simplemente agrega la opción <code>cache: true</code> en la configuración:</p>
+            
+            <div class="code">
+const chatBot = new ChatBot({
+    baseUrl: 'https://api.hubdox.com',
+    apiKey: 'tu-api-key',
+    tenant: 'tu-tenant',
+    options: {
+        cache: true, // Habilita el cache de sesión
+        cacheExpiration: 30 // 30 minutos (opcional, por defecto es 30)
+    }
+});
+            </div>
+        </div>
+
+        <div class="feature">
+            <h3>⚙️ Configuración Avanzada</h3>
+            <p>Puedes configurar el cache dinámicamente después de la inicialización:</p>
+            
+            <div class="code">
+// Cambiar tiempo de expiración (en minutos)
+chatBot.setCacheExpiration(60); // 1 hora
+
+// Habilitar/deshabilitar cache
+chatBot.setCacheEnabled(true);
+
+// Obtener estado del cache
+const cacheStatus = chatBot.getCacheStatus();
+console.log('Cache habilitado:', cacheStatus.enabled);
+console.log('Expira en:', cacheStatus.expiration, 'minutos');
+console.log('¿Es válido?', cacheStatus.isValid);
+            </div>
+        </div>
+
+        <div class="warning">
+            <h4>⚠️ Consideraciones Importantes:</h4>
+            <ul>
+                <li>El cache se almacena en <code>localStorage</code> del navegador</li>
+                <li>Los datos se eliminan automáticamente después del tiempo de expiración</li>
+                <li>El cache se limpia automáticamente al usar "Limpiar Historial"</li>
+                <li>Los datos son locales al navegador y dispositivo</li>
+            </ul>
+        </div>
+
+        <div class="feature">
+            <h3>🧪 Demo Interactivo</h3>
+            <p>Prueba la funcionalidad del cache con estos botones:</p>
+            
+            <button class="button" onclick="initChatBot()">Inicializar ChatBot con Cache</button>
+            <button class="button secondary" onclick="showCacheStatus()">Mostrar Estado del Cache</button>
+            <button class="button secondary" onclick="changeExpiration()">Cambiar a 1 Hora</button>
+            <button class="button danger" onclick="clearCache()">Limpiar Cache</button>
+            <button class="button secondary" onclick="reloadPage()">Recargar Página</button>
+        </div>
+
+        <div id="status" class="status" style="display: none;"></div>
+
+        <div class="feature">
+            <h3>📊 Métodos Disponibles</h3>
+            <div class="code">
+// Configuración
+chatBot.setCacheEnabled(true/false)
+chatBot.setCacheExpiration(minutes)
+
+// Consulta
+chatBot.getCacheStatus()
+chatBot.getCacheExpiration()
+
+// Internos (automáticos)
+chatBot._saveSessionToCache()
+chatBot._loadSessionFromCache()
+chatBot._clearCache()
+chatBot._isCacheValid()
+chatBot._cleanExpiredCache()
+            </div>
+        </div>
+
+        <div class="feature">
+            <h3>🔄 Flujo de Funcionamiento</h3>
+            <ol>
+                <li><strong>Inicialización:</strong> Se verifica si hay cache válido disponible</li>
+                <li><strong>Cache Válido:</strong> Se restaura la sesión anterior automáticamente</li>
+                <li><strong>Sin Cache:</strong> Se inicia una nueva sesión normalmente</li>
+                <li><strong>Durante el Chat:</strong> Cada mensaje se guarda automáticamente</li>
+                <li><strong>Expiración:</strong> El cache se limpia automáticamente al expirar</li>
+            </ol>
+        </div>
+    </div>
+
+    <script src="../src/index.js"></script>
+    <script>
+        let chatBot = null;
+
+        function initChatBot() {
+            try {
+                chatBot = new ChatBot({
+                    baseUrl: 'https://api.hubdox.com',
+                    apiKey: 'demo-api-key',
+                    tenant: 'demo-tenant',
+                    options: {
+                        cache: true,
+                        cacheExpiration: 30,
+                        testMode: true
+                    }
+                });
+                
+                showStatus('✅ ChatBot inicializado con cache habilitado (30 minutos)', 'success');
+                showCacheStatus();
+            } catch (error) {
+                showStatus('❌ Error al inicializar ChatBot: ' + error.message, 'error');
+            }
+        }
+
+        function showCacheStatus() {
+            if (!chatBot) {
+                showStatus('⚠️ Primero inicializa el ChatBot', 'warning');
+                return;
+            }
+
+            const status = chatBot.getCacheStatus();
+            const html = `
+                <h4>📊 Estado del Cache:</h4>
+                <p><strong>Habilitado:</strong> ${status.enabled ? '✅ Sí' : '❌ No'}</p>
+                <p><strong>Expiración:</strong> ${status.expiration} minutos</p>
+                <p><strong>Válido:</strong> ${status.isValid ? '✅ Sí' : '❌ No'}</p>
+                <p><strong>Con Datos:</strong> ${status.hasData ? '✅ Sí' : '❌ No'}</p>
+            `;
+            
+            showStatus(html, 'info');
+        }
+
+        function changeExpiration() {
+            if (!chatBot) {
+                showStatus('⚠️ Primero inicializa el ChatBot', 'warning');
+                return;
+            }
+
+            const success = chatBot.setCacheExpiration(60);
+            if (success) {
+                showStatus('✅ Tiempo de expiración cambiado a 1 hora', 'success');
+                showCacheStatus();
+            } else {
+                showStatus('❌ Error al cambiar el tiempo de expiración', 'error');
+            }
+        }
+
+        function clearCache() {
+            if (!chatBot) {
+                showStatus('⚠️ Primero inicializa el ChatBot', 'warning');
+                return;
+            }
+
+            chatBot._clearCache();
+            showStatus('🗑️ Cache limpiado correctamente', 'success');
+            showCacheStatus();
+        }
+
+        function reloadPage() {
+            showStatus('🔄 Recargando página...', 'info');
+            setTimeout(() => {
+                window.location.reload();
+            }, 1000);
+        }
+
+        function showStatus(message, type) {
+            const statusDiv = document.getElementById('status');
+            statusDiv.innerHTML = message;
+            statusDiv.style.display = 'block';
+            
+            // Cambiar clase según el tipo
+            statusDiv.className = 'status';
+            if (type === 'error') {
+                statusDiv.style.background = '#f8d7da';
+                statusDiv.style.borderColor = '#f5c6cb';
+                statusDiv.style.color = '#721c24';
+            } else if (type === 'warning') {
+                statusDiv.style.background = '#fff3cd';
+                statusDiv.style.borderColor = '#ffeaa7';
+                statusDiv.style.color = '#856404';
+            } else if (type === 'info') {
+                statusDiv.style.background = '#d1ecf1';
+                statusDiv.style.borderColor = '#bee5eb';
+                statusDiv.style.color = '#0c5460';
+            }
+        }
+
+        // Verificar si hay cache al cargar la página
+        window.addEventListener('load', () => {
+            try {
+                const cachedData = localStorage.getItem('hubdox_chat_cache');
+                if (cachedData) {
+                    const sessionData = JSON.parse(cachedData);
+                    const isExpired = sessionData.expiration && Date.now() > sessionData.expiration;
+                    
+                    if (!isExpired) {
+                        showStatus('🔍 Cache detectado en localStorage. Inicializa el ChatBot para restaurar la sesión.', 'info');
+                    } else {
+                        showStatus('⏰ Cache expirado detectado. Se limpiará automáticamente.', 'warning');
+                        localStorage.removeItem('hubdox_chat_cache');
+                    }
+                }
+            } catch (error) {
+                console.log('No hay cache válido disponible');
+            }
+        });
+    </script>
+</body>
+</html>

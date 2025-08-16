@@ -14,10 +14,13 @@ class ChatBot {
     const optionsConfig = options.options || {};
     this.register = optionsConfig.register || false;
     this.show = optionsConfig.show !== undefined ? optionsConfig.show : true;
+    this.cache = optionsConfig.cache || true; // Opción para habilitar cache de sesión
+    this.cacheExpiration = optionsConfig.cacheExpiration || 30 * 60 * 1000; // 30 minutos por defecto
 
     this.testMode = optionsConfig.testMode || false;
     this.devMode = optionsConfig.devMode || false;
     this.stream = optionsConfig.stream || false;
+    this.maxQuestionLength = optionsConfig.maxQuestionLength || 50; // Límite de caracteres para preguntas
     
 
     
@@ -144,8 +147,16 @@ class ChatBot {
     // Inicialización
     this._boundHandleResize = this._handleResize.bind(this);
     
+    // Limpiar cache expirado si está habilitado
+    if (this.cache) {
+      this._cleanExpiredCache();
+    } else {
+      this._clearCache();
+    }
+    
     // Inicializar con Shadow DOM
     this._renderFloatingButton();
+    // this._renderFloatingMain();
     this._handleResize();
     this._initializeChat();
   }
@@ -165,6 +176,14 @@ class ChatBot {
         this._renderChatPanel();
         this._checkRegistrationStatus();
         return;
+      }
+      
+      // Intentar cargar sesión desde cache si está habilitado
+      if (this.cache && this._loadSessionFromCache()) {
+        this._log('_initializeSession - Sesión cargada desde cache');
+        this._renderChatPanel();
+        this._checkRegistrationStatus();
+        // return;
       }
       
       // Paso 1: Registrar usuario para obtener configuración del bot
@@ -231,7 +250,11 @@ class ChatBot {
       this._log('Registro exitoso:', data);
       
       // Actualizar datos de la sesión
-      this.session = data.session;
+      if (this.cache && this._loadSessionFromCache()) {
+        this._log('Sesión cargada desde cache:', this.session);
+      } else {
+        this.session = data.session;
+      }
       this.license = data.license; // name, logo, active, url, showFooter
       
       // Solo marcar como registrado si la licencia está activa Y register es true
@@ -281,6 +304,9 @@ class ChatBot {
       
       // Actualizar el footer después del registro
       this._updateFooter();
+      
+      // Guardar sesión en cache después del registro exitoso
+      this._saveSessionToCache();
     } catch (error) {
       this._logError('Error en _registerUser:', error);
       throw error;
@@ -1166,6 +1192,67 @@ class ChatBot {
     this.floatingBtn.addEventListener("click", () => {
       this._toggleChatPanel();
     });
+
+
+
+    
+  }
+
+  _renderFloatingMain() {
+
+
+    // Crear contenedor con Shadow DOM
+    this.floatingBtnContainer = document.createElement("div");
+    this.floatingBtnContainer.id = "chatbot-floating-btn-container-main";
+    
+    // Crear Shadow DOM
+    this.floatingBtnShadow = this.floatingBtnContainer.attachShadow({ mode: 'open' });
+    
+    // Estilos encapsulados
+    const styles = document.createElement('style');
+    styles.textContent = `
+      .floating-btn-main {
+        position: fixed;
+        bottom: 35px; 
+        right: 200px;
+        top: auto;
+        left: ${this.chatWidth / 2 + 60 + "px"};
+        transform: ${this.buttonPosition.transform || "none"};
+        width: 120px;
+        height: 25px;
+        background-color: ${this.iconButton && this.iconButton !== this.bot.img ? 'transparent' : this.primaryColor};
+        border: none;
+        border-radius: 0.5rem;
+        cursor: pointer;
+        color: ;
+        box-shadow: 0 4px 10px ${this._hexToRgba(this.primaryColor, 0.5)};
+        display: 'flex';
+        align-items: center;
+        justify-content: center;
+        z-index: 1050;
+        transition: transform 0.2s ease;
+        overflow: hidden;
+        font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+      }
+      
+      .floating-btn-main:hover {
+        transform: ${this.buttonPosition.transform || "none"} scale(1.1);
+      }
+    `;
+    
+    this.floatingBtnShadow.appendChild(styles);
+    
+    // Crear botón
+    this.floatingBtnMain = document.createElement("button");
+    this.floatingBtnMain.type = "button";
+    this.floatingBtnMain.title = "Abrir chat";
+    this.floatingBtnMain.className = "floating-btn-main";
+    
+    this.floatingBtnMain.innerHTML = "Provider"
+    
+    this.floatingBtnShadow.appendChild(this.floatingBtnMain);
+    document.body.appendChild(this.floatingBtnContainer);
+    
   }
 
   _renderChatPanel() {
@@ -1676,6 +1763,7 @@ class ChatBot {
               id="chat-input"
               placeholder="${this._getTranslation('write_message_placeholder')}"
               autocomplete="off"
+              maxlength="${this.maxQuestionLength}"
             />
             <button
               type="submit"
@@ -1727,7 +1815,20 @@ class ChatBot {
 
     // Input change
     this.input.addEventListener("input", () => {
-      this.sendButton.disabled = this.input.value.trim() === "" || this.loading;
+      const currentLength = this.input.value.length;
+      const maxLength = this.maxQuestionLength;
+      
+      // Deshabilitar botón si está vacío, cargando o excede el límite
+      this.sendButton.disabled = this.input.value.trim() === "" || this.loading || currentLength > maxLength;
+      
+      // Mostrar indicador visual si se excede el límite
+      if (currentLength > maxLength) {
+        this.input.style.borderColor = '#ff4444';
+        this.input.style.color = '#ff4444';
+      } else {
+        this.input.style.borderColor = '';
+        this.input.style.color = '';
+      }
     });
 
     // Close button
@@ -2410,6 +2511,9 @@ class ChatBot {
     
     // Verificar si el mensaje contiene enlaces y mostrar advertencia
     this._checkMessageForLinks(text);
+    
+    // Guardar sesión en cache después de cada mensaje
+    this._saveSessionToCache();
   }
 
   _checkMessageForLinks(text) {
@@ -2970,6 +3074,12 @@ class ChatBot {
   async _sendMessage() {
     const msg = this.input.value.trim();
     if (!msg || this.loading) return;
+    
+    // Validar longitud del mensaje
+    if (msg.length > this.maxQuestionLength) {
+      this._log('_sendMessage - Mensaje excede el límite de caracteres:', msg.length, '>', this.maxQuestionLength);
+      return;
+    }
 
     // Verificar si estamos en la pantalla de registro con botones
     if (this.registrationScreen && this.messages.some(msg => msg.showWelcomeButtons)) {
@@ -4466,12 +4576,7 @@ class ChatBot {
     
     // Limpiar cache si está habilitado
     if (this.cache) {
-      try {
-        localStorage.removeItem('hubdox_chat_cache');
-        this._log('clearHistory - Cache limpiado');
-      } catch (error) {
-        this._logError('clearHistory - Error limpiando cache:', error);
-      }
+      this._clearCache();
     }
     
     // Reiniciar estado de registro
@@ -4519,6 +4624,109 @@ class ChatBot {
     };
   }
 
+  // Método para guardar la sesión en cache
+  _saveSessionToCache() {
+    if (!this.cache) return;
+    
+    try {
+      const sessionData = {
+        session: this.session,
+        // messages: this.messages,
+        // user: this.user,
+        // registered: this.registered,
+        // registrationCompleted: this.registrationCompleted,
+        // license: this.license,
+        timestamp: Date.now(),
+        expiration: Date.now() + this.cacheExpiration
+      };
+      
+      localStorage.setItem('hubdox_chat_cache', JSON.stringify(sessionData));
+      this._log('_saveSessionToCache - Sesión guardada en cache');
+    } catch (error) {
+      this._logError('_saveSessionToCache - Error guardando en cache:', error);
+    }
+  }
+
+  // Método para cargar la sesión desde cache
+  _loadSessionFromCache() {
+    if (!this.cache) return false;
+    
+    try {
+      const cachedData = localStorage.getItem('hubdox_chat_cache');
+      if (!cachedData) return false;
+      
+      const sessionData = JSON.parse(cachedData);
+      
+      // Verificar si el cache ha expirado
+      if (sessionData.expiration && Date.now() > sessionData.expiration) {
+        this._log('_loadSessionFromCache - Cache expirado, limpiando');
+        this._clearCache();
+        return false;
+      }
+      
+      // Restaurar datos de la sesión
+      this.session = sessionData.session;
+      // this.messages = sessionData.messages || [];
+      // this.user = sessionData.user || this.user;
+      // this.registered = sessionData.registered || false;
+      // this.registrationCompleted = sessionData.registrationCompleted || false;
+      // this.license = sessionData.license || this.license;
+      this._log('_loadSessionFromCache - Sesión cargada desde cache');
+      return true;
+    } catch (error) {
+      this._logError('_loadSessionFromCache - Error cargando desde cache:', error);
+      this._clearCache();
+      return false;
+    }
+  }
+
+  // Método para limpiar el cache
+  _clearCache() {
+    try {
+      localStorage.removeItem('hubdox_chat_cache');
+      this._log('_clearCache - Cache limpiado');
+    } catch (error) {
+      this._logError('_clearCache - Error limpiando cache:', error);
+    }
+  }
+
+  // Método para verificar si el cache está activo y válido
+  _isCacheValid() {
+    if (!this.cache) return false;
+    
+    try {
+      const cachedData = localStorage.getItem('hubdox_chat_cache');
+      if (!cachedData) return false;
+      
+      const sessionData = JSON.parse(cachedData);
+      return sessionData.expiration && Date.now() <= sessionData.expiration;
+    } catch (error) {
+      return false;
+    }
+  }
+
+  // Método para limpiar cache expirado
+  _cleanExpiredCache() {
+    if (!this.cache) return;
+    
+    try {
+      const cachedData = localStorage.getItem('hubdox_chat_cache');
+      if (!cachedData) return;
+      
+      const sessionData = JSON.parse(cachedData);
+      
+      // Si el cache ha expirado, limpiarlo
+      if (sessionData.expiration && Date.now() > sessionData.expiration) {
+        this._log('_cleanExpiredCache - Cache expirado detectado, limpiando');
+        this._clearCache();
+      }
+    } catch (error) {
+      this._logError('_cleanExpiredCache - Error verificando cache expirado:', error);
+      // Si hay error al leer el cache, limpiarlo por seguridad
+      this._clearCache();
+    }
+  }
+
   // Configurar tiempo de recordatorio
   setReminderTimeout(timeout) {
     this.reminderTimeout = timeout;
@@ -4532,6 +4740,73 @@ class ChatBot {
       lastUserMessageTime: this.lastUserMessageTime,
       hasActiveTimer: this.reminderTimer !== null,
       timeSinceLastMessage: this.lastUserMessageTime ? Date.now() - this.lastUserMessageTime : null
+    };
+  }
+
+  // Configurar límite de caracteres para preguntas
+  setMaxQuestionLength(length) {
+    if (typeof length === 'number' && length > 0) {
+      this.maxQuestionLength = length;
+      this._log('setMaxQuestionLength - Límite de caracteres configurado a:', length);
+      
+      // Actualizar el atributo maxlength del input si existe
+      if (this.input) {
+        this.input.maxLength = length;
+      }      
+      return true;
+    } else {
+      this._logError('setMaxQuestionLength - Longitud inválida:', length);
+      return false;
+    }
+  }
+
+  // Obtener límite de caracteres actual
+  getMaxQuestionLength() {
+    return this.maxQuestionLength;
+  }
+
+  // Configurar tiempo de expiración del cache
+  setCacheExpiration(minutes) {
+    if (typeof minutes === 'number' && minutes > 0) {
+      this.cacheExpiration = minutes * 60 * 1000; // Convertir minutos a milisegundos
+      this._log('setCacheExpiration - Tiempo de expiración del cache configurado a:', minutes, 'minutos');
+      return true;
+    } else {
+      this._logError('setCacheExpiration - Tiempo inválido:', minutes);
+      return false;
+    }
+  }
+
+  // Obtener tiempo de expiración actual del cache
+  getCacheExpiration() {
+    return this.cacheExpiration / (60 * 1000); // Convertir milisegundos a minutos
+  }
+
+  // Habilitar o deshabilitar el cache
+  setCacheEnabled(enabled) {
+    if (typeof enabled === 'boolean') {
+      this.cache = enabled;
+      this._log('setCacheEnabled - Cache', enabled ? 'habilitado' : 'deshabilitado');
+      
+      // Si se deshabilita el cache, limpiarlo
+      if (!enabled) {
+        this._clearCache();
+      }
+      
+      return true;
+    } else {
+      this._logError('setCacheEnabled - Valor inválido:', enabled);
+      return false;
+    }
+  }
+
+  // Obtener estado del cache
+  getCacheStatus() {
+    return {
+      enabled: this.cache,
+      expiration: this.getCacheExpiration(),
+      isValid: this._isCacheValid(),
+      hasData: this._isCacheValid()
     };
   }
 
