@@ -1,0 +1,312 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Debug Test Mode - ChatBot SDK</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 20px;
+            background-color: #f5f5f5;
+        }
+        .container {
+            background: white;
+            padding: 20px;
+            border-radius: 10px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+            margin-bottom: 20px;
+        }
+        h1 {
+            color: #333;
+            text-align: center;
+        }
+        .debug-info {
+            background: #e3f2fd;
+            padding: 15px;
+            border-radius: 8px;
+            margin-bottom: 20px;
+            border-left: 4px solid #2196f3;
+        }
+        .controls {
+            display: flex;
+            gap: 10px;
+            flex-wrap: wrap;
+            margin-bottom: 20px;
+        }
+        button {
+            padding: 10px 20px;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 14px;
+            background: #007bff;
+            color: white;
+        }
+        button:hover {
+            background: #0056b3;
+        }
+        .log {
+            background: #f8f9fa;
+            border: 1px solid #dee2e6;
+            border-radius: 5px;
+            padding: 15px;
+            max-height: 400px;
+            overflow-y: auto;
+            font-family: monospace;
+            font-size: 12px;
+        }
+        .log-entry {
+            margin-bottom: 5px;
+            padding: 2px 0;
+        }
+        .log-entry.info { color: #0066cc; }
+        .log-entry.success { color: #28a745; }
+        .log-entry.warning { color: #ffc107; }
+        .log-entry.error { color: #dc3545; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🐛 Debug Test Mode - ChatBot SDK</h1>
+        
+        <div class="debug-info">
+            <h3>🔍 Información de Debug</h3>
+            <div id="debug-info">Cargando...</div>
+        </div>
+
+        <div class="controls">
+            <button onclick="showDebugInfo()">📊 Mostrar Info Debug</button>
+            <button onclick="startNormalChat()">🎭 Iniciar Conversación</button>
+            <button onclick="sendName()">✍️ Enviar Nombre "Juan"</button>
+            <button onclick="clearHistory()">🗑️ Limpiar Historial</button>
+            <button onclick="showConsole()">📝 Mostrar Console</button>
+        </div>
+
+        <div class="container">
+            <h3>📝 Log de Debug</h3>
+            <div class="log" id="debug-log">
+                <div class="log-entry info">Iniciando debug del modo de prueba...</div>
+            </div>
+        </div>
+    </div>
+
+    <script src="../src/index.js"></script>
+    <script>
+        let chatbot;
+        let logCounter = 0;
+
+        // Función para agregar entradas al log
+        function addLogEntry(message, type = 'info') {
+            const log = document.getElementById('debug-log');
+            const entry = document.createElement('div');
+            entry.className = `log-entry ${type}`;
+            entry.textContent = `[${new Date().toLocaleTimeString()}] ${message}`;
+            log.appendChild(entry);
+            log.scrollTop = log.scrollHeight;
+            logCounter++;
+            
+            if (logCounter > 100) {
+                log.innerHTML = '';
+                logCounter = 0;
+            }
+        }
+
+        // Función para mostrar información de debug
+        function showDebugInfo() {
+            if (!chatbot) {
+                addLogEntry('❌ ChatBot no está inicializado', 'error');
+                return;
+            }
+
+            try {
+                const convStatus = chatbot.getConversationStatus();
+                const regStatus = chatbot.getRegistrationStatus();
+                
+                const debugInfo = `
+                    <strong>Estado de Conversación:</strong> ${convStatus.currentStatus}<br>
+                    <strong>Usuario:</strong> ${convStatus.user.name || 'null'}<br>
+                    <strong>Email:</strong> ${convStatus.user.email || 'null'}<br>
+                    <strong>Modo Prueba:</strong> ${chatbot.testMode ? 'Activado' : 'Desactivado'}<br>
+                    <strong>Registrado:</strong> ${regStatus.registered}<br>
+                    <strong>Registro Completado:</strong> ${regStatus.registrationCompleted}<br>
+                    <strong>Pantalla de Registro:</strong> ${regStatus.registrationScreen}<br>
+                    <strong>Estado Interno:</strong> ${JSON.stringify({
+                        statusConversation: chatbot.statusConversation,
+                        STATUS_CONVERSATION: chatbot.STATUS_CONVERSATION
+                    }, null, 2)}
+                `;
+                
+                document.getElementById('debug-info').innerHTML = debugInfo;
+                addLogEntry('✅ Información de debug actualizada', 'success');
+                
+            } catch (error) {
+                addLogEntry(`❌ Error obteniendo info debug: ${error.message}`, 'error');
+            }
+        }
+
+        // Función para iniciar conversación normal
+        function startNormalChat() {
+            if (!chatbot) {
+                addLogEntry('❌ ChatBot no está inicializado', 'error');
+                return;
+            }
+
+            try {
+                addLogEntry('🎭 Iniciando conversación normal...', 'info');
+                chatbot._startNormalChat();
+                addLogEntry('✅ Conversación normal iniciada', 'success');
+                
+                // Mostrar info actualizada
+                setTimeout(() => {
+                    showDebugInfo();
+                }, 1000);
+                
+            } catch (error) {
+                addLogEntry(`❌ Error iniciando conversación: ${error.message}`, 'error');
+            }
+        }
+
+        // Función para enviar nombre
+        function sendName() {
+            if (!chatbot) {
+                addLogEntry('❌ ChatBot no está inicializado', 'error');
+                return;
+            }
+
+            try {
+                addLogEntry('✍️ Enviando nombre "Juan"...', 'info');
+                
+                // Simular entrada del usuario
+                if (chatbot.input) {
+                    chatbot.input.value = 'Juan';
+                    addLogEntry('✅ Nombre "Juan" escrito en input', 'success');
+                    
+                    // Enviar mensaje
+                    chatbot._sendMessage();
+                    addLogEntry('✅ Mensaje enviado', 'success');
+                    
+                    // Mostrar info actualizada
+                    setTimeout(() => {
+                        showDebugInfo();
+                    }, 2000);
+                } else {
+                    addLogEntry('❌ Input no disponible', 'error');
+                }
+                
+            } catch (error) {
+                addLogEntry(`❌ Error enviando nombre: ${error.message}`, 'error');
+            }
+        }
+
+        // Función para limpiar historial
+        function clearHistory() {
+            if (!chatbot) {
+                addLogEntry('❌ ChatBot no está inicializado', 'error');
+                return;
+            }
+
+            try {
+                addLogEntry('🗑️ Limpiando historial...', 'info');
+                chatbot.clearHistory();
+                addLogEntry('✅ Historial limpiado', 'success');
+                
+                // Mostrar info actualizada
+                setTimeout(() => {
+                    showDebugInfo();
+                }, 1000);
+                
+            } catch (error) {
+                addLogEntry(`❌ Error limpiando historial: ${error.message}`, 'error');
+            }
+        }
+
+        // Función para mostrar información de la consola
+        function showConsole() {
+            addLogEntry('📝 Abriendo consola del navegador...', 'info');
+            addLogEntry('💡 Presiona F12 y ve a la pestaña Console para ver logs detallados', 'info');
+        }
+
+        // Inicializar el chatbot
+        document.addEventListener('DOMContentLoaded', function() {
+            addLogEntry('🚀 Inicializando ChatBot en modo debug...', 'info');
+            
+            try {
+                chatbot = new ChatBot({
+                    baseUrl: 'https://api.example.com',
+                    apiKey: 'test-api-key',
+                    tenant: 'test-tenant',
+                    options: {
+                        testMode: true,
+                        register: false,
+                        devMode: true,
+                        stream: false
+                    },
+                    user: {
+                        name: null,
+                        email: null,
+                        photo: "https://res.cloudinary.com/dhqqkf4hy/image/upload/v1754206933/user_icon_wbwkja.png"
+                    },
+                    bot: {
+                        name: "Bot Debug",
+                        img: "https://res.cloudinary.com/dhqqkf4hy/image/upload/v1754206932/bot_icon_zgo153.png"
+                    },
+                    custom: {
+                        primaryColor: "#007bff",
+                        showTime: true
+                    }
+                });
+                
+                addLogEntry('✅ ChatBot inicializado correctamente', 'success');
+                addLogEntry('🔍 Verificando configuración...', 'info');
+                
+                if (chatbot.testMode) {
+                    addLogEntry('✅ testMode está activado', 'success');
+                } else {
+                    addLogEntry('❌ testMode NO está activado', 'error');
+                }
+                
+                // Mostrar información inicial
+                setTimeout(() => {
+                    showDebugInfo();
+                }, 1000);
+                
+            } catch (error) {
+                addLogEntry(`❌ Error inicializando ChatBot: ${error.message}`, 'error');
+            }
+        });
+
+        // Interceptar console.log para mostrar en nuestro log
+        const originalLog = console.log;
+        const originalError = console.error;
+        const originalWarn = console.warn;
+        const originalInfo = console.info;
+
+        console.log = function(...args) {
+            originalLog.apply(console, args);
+            if (args[0] && typeof args[0] === 'string' && args[0].includes('_handleTestResponse')) {
+                addLogEntry(`🔍 Console: ${args.join(' ')}`, 'info');
+            }
+        };
+
+        console.error = function(...args) {
+            originalError.apply(console, args);
+            addLogEntry(`❌ Console Error: ${args.join(' ')}`, 'error');
+        };
+
+        console.warn = function(...args) {
+            originalWarn.apply(console, args);
+            addLogEntry(`⚠️ Console Warning: ${args.join(' ')}`, 'warning');
+        };
+
+        console.info = function(...args) {
+            originalInfo.apply(console, args);
+            if (args[0] && typeof args[0] === 'string' && args[0].includes('testMode')) {
+                addLogEntry(`ℹ️ Console Info: ${args.join(' ')}`, 'info');
+            }
+        };
+    </script>
+</body>
+</html>

@@ -1,0 +1,268 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Flujo Simple Test Mode - ChatBot SDK</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 600px;
+            margin: 0 auto;
+            padding: 20px;
+            background-color: #f5f5f5;
+        }
+        .container {
+            background: white;
+            padding: 20px;
+            border-radius: 10px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+            margin-bottom: 20px;
+        }
+        h1 {
+            color: #333;
+            text-align: center;
+        }
+        .status {
+            background: #e3f2fd;
+            padding: 15px;
+            border-radius: 8px;
+            margin-bottom: 20px;
+            border-left: 4px solid #2196f3;
+        }
+        .controls {
+            display: flex;
+            gap: 10px;
+            flex-wrap: wrap;
+            margin-bottom: 20px;
+        }
+        button {
+            padding: 10px 20px;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 14px;
+            background: #007bff;
+            color: white;
+        }
+        button:hover {
+            background: #0056b3;
+        }
+        .log {
+            background: #f8f9fa;
+            border: 1px solid #dee2e6;
+            border-radius: 5px;
+            padding: 15px;
+            max-height: 300px;
+            overflow-y: auto;
+            font-family: monospace;
+            font-size: 12px;
+        }
+        .log-entry {
+            margin-bottom: 5px;
+            padding: 2px 0;
+        }
+        .log-entry.info { color: #0066cc; }
+        .log-entry.success { color: #28a745; }
+        .log-entry.error { color: #dc3545; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🧪 Flujo Simple Test Mode</h1>
+        
+        <div class="status">
+            <h3>📊 Estado Actual</h3>
+            <div id="current-status">Cargando...</div>
+        </div>
+
+        <div class="controls">
+            <button onclick="step1()">1️⃣ Iniciar Conversación</button>
+            <button onclick="step2()">2️⃣ Enviar Nombre "Juan"</button>
+            <button onclick="step3()">3️⃣ Enviar Mensaje "Hola"</button>
+            <button onclick="showStatus()">📊 Ver Estado</button>
+            <button onclick="reset()">🔄 Reiniciar</button>
+        </div>
+
+        <div class="container">
+            <h3>📝 Log de Actividad</h3>
+            <div class="log" id="activity-log">
+                <div class="log-entry info">Iniciando prueba del flujo simple...</div>
+            </div>
+        </div>
+    </div>
+
+    <script src="../src/index.js"></script>
+    <script>
+        let chatbot;
+
+        function addLog(message, type = 'info') {
+            const log = document.getElementById('activity-log');
+            const entry = document.createElement('div');
+            entry.className = `log-entry ${type}`;
+            entry.textContent = `[${new Date().toLocaleTimeString()}] ${message}`;
+            log.appendChild(entry);
+            log.scrollTop = log.scrollHeight;
+        }
+
+        function showStatus() {
+            if (!chatbot) {
+                addLog('❌ ChatBot no está inicializado', 'error');
+                return;
+            }
+
+            try {
+                const status = chatbot.getConversationStatus();
+                const regStatus = chatbot.getRegistrationStatus();
+                
+                document.getElementById('current-status').innerHTML = `
+                    <strong>Estado:</strong> ${status.currentStatus}<br>
+                    <strong>Usuario:</strong> ${status.user.name || 'null'}<br>
+                    <strong>Registrado:</strong> ${regStatus.registered}<br>
+                    <strong>Registro Completado:</strong> ${regStatus.registrationCompleted}<br>
+                    <strong>Test Mode:</strong> ${chatbot.testMode ? 'Activado' : 'Desactivado'}
+                `;
+                
+                addLog(`✅ Estado actualizado: ${status.currentStatus}`, 'success');
+                
+            } catch (error) {
+                addLog(`❌ Error obteniendo estado: ${error.message}`, 'error');
+            }
+        }
+
+        function step1() {
+            if (!chatbot) {
+                addLog('❌ ChatBot no está inicializado', 'error');
+                return;
+            }
+
+            try {
+                addLog('🎭 Paso 1: Iniciando conversación...', 'info');
+                chatbot._startNormalChat();
+                addLog('✅ Conversación iniciada', 'success');
+                
+                setTimeout(() => {
+                    showStatus();
+                }, 1000);
+                
+            } catch (error) {
+                addLog(`❌ Error en paso 1: ${error.message}`, 'error');
+            }
+        }
+
+        function step2() {
+            if (!chatbot) {
+                addLog('❌ ChatBot no está inicializado', 'error');
+                return;
+            }
+
+            try {
+                addLog('✍️ Paso 2: Enviando nombre "Juan"...', 'info');
+                
+                if (chatbot.input) {
+                    chatbot.input.value = 'Juan';
+                    chatbot._sendMessage();
+                    addLog('✅ Nombre enviado', 'success');
+                    
+                    setTimeout(() => {
+                        showStatus();
+                    }, 2000);
+                } else {
+                    addLog('❌ Input no disponible', 'error');
+                }
+                
+            } catch (error) {
+                addLog(`❌ Error en paso 2: ${error.message}`, 'error');
+            }
+        }
+
+        function step3() {
+            if (!chatbot) {
+                addLog('❌ ChatBot no está inicializado', 'error');
+                return;
+            }
+
+            try {
+                addLog('💬 Paso 3: Enviando mensaje "Hola"...', 'info');
+                
+                if (chatbot.input) {
+                    chatbot.input.value = 'Hola';
+                    chatbot._sendMessage();
+                    addLog('✅ Mensaje enviado', 'success');
+                    
+                    setTimeout(() => {
+                        showStatus();
+                    }, 2000);
+                } else {
+                    addLog('❌ Input no disponible', 'error');
+                }
+                
+            } catch (error) {
+                addLog(`❌ Error en paso 3: ${error.message}`, 'error');
+            }
+        }
+
+        function reset() {
+            if (!chatbot) {
+                addLog('❌ ChatBot no está inicializado', 'error');
+                return;
+            }
+
+            try {
+                addLog('🔄 Reiniciando...', 'info');
+                chatbot.clearHistory();
+                addLog('✅ Reiniciado', 'success');
+                
+                setTimeout(() => {
+                    showStatus();
+                }, 1000);
+                
+            } catch (error) {
+                addLog(`❌ Error reiniciando: ${error.message}`, 'error');
+            }
+        }
+
+        // Inicializar
+        document.addEventListener('DOMContentLoaded', function() {
+            addLog('🚀 Inicializando ChatBot...', 'info');
+            
+            try {
+                chatbot = new ChatBot({
+                    baseUrl: 'https://api.example.com',
+                    apiKey: 'test-api-key',
+                    tenant: 'test-tenant',
+                    options: {
+                        testMode: true,
+                        register: false,
+                        devMode: true,
+                        stream: false
+                    },
+                    user: {
+                        name: null,
+                        email: null,
+                        photo: "https://res.cloudinary.com/dhqqkf4hy/image/upload/v1754206933/user_icon_wbwkja.png"
+                    },
+                    bot: {
+                        name: "Bot Test",
+                        img: "https://res.cloudinary.com/dhqqkf4hy/image/upload/v1754206932/bot_icon_zgo153.png"
+                    },
+                    custom: {
+                        primaryColor: "#007bff",
+                        showTime: true
+                    }
+                });
+                
+                addLog('✅ ChatBot inicializado', 'success');
+                addLog(`🔍 Test Mode: ${chatbot.testMode ? 'Activado' : 'Desactivado'}`, 'info');
+                
+                setTimeout(() => {
+                    showStatus();
+                }, 1000);
+                
+            } catch (error) {
+                addLog(`❌ Error inicializando: ${error.message}`, 'error');
+            }
+        });
+    </script>
+</body>
+</html>

@@ -41,10 +41,11 @@ class ChatBot {
     this.products = [];
     
     this.user = options.user || {
-      email: 'test@mail.com',
-      name: "Usuario",
+      email: null,
+      name: null,
       photo: "https://res.cloudinary.com/dhqqkf4hy/image/upload/v1754206933/user_icon_wbwkja.png",
     };
+    
     this.bot = options.bot || {
       name: options.botName || "Bot",
       img: "https://res.cloudinary.com/dhqqkf4hy/image/upload/v1754206932/bot_icon_zgo153.png",
@@ -80,6 +81,16 @@ class ChatBot {
       bottom: "24px",
       right: "24px"
     };
+    
+    // Estados de conversación
+    this.STATUS_CONVERSATION = {
+      PRESENTATION: 'presentation',      // 1. Bot se presenta y muestra menú
+      ASKING_NAME: 'asking_name',        // 2. Preguntando por el nombre
+      CHAT_READY: 'chat_ready'          // 3. Chat listo para conversación
+    };
+    
+    // Estado actual de la conversación
+    this.statusConversation = this.STATUS_CONVERSATION.PRESENTATION;
     
     // Estado interno
     this.session = null;
@@ -278,7 +289,7 @@ class ChatBot {
         this.bot.name = data.chatbot.name || this.bot.name;
         this.bot.img = data.chatbot.photo || this.bot.img;
         this.botName = data.chatbot.name || this.botName;
-        this.saludoInicial = data.chatbot.initial_message;
+        this.saludoInicial = data.chatbot.initial_message || this._getTranslation('advanced_init_message');
       }
       
       // Guardar las FAQs de la API si están disponibles
@@ -386,6 +397,8 @@ class ChatBot {
         cancel: "Cancelar",
         confirm: "Confirmar",
         close: "Cerrar",
+        faq_button: "Preguntas Frecuentes",
+        products_button: "Ver Productos",
         // Mensajes de test
         test_welcome_1: "¡Hola! 👋 Soy tu asistente virtual. ¿Cómo te llamas?",
         test_welcome_2: "¡Bienvenido! 😊 Me encantaría conocer tu nombre.",
@@ -413,7 +426,10 @@ class ChatBot {
         test_unknown_2: "Hmm, esa es una buena pregunta. ¿Podrías reformularla? 🤷‍♂️",
         test_unknown_3: "No estoy seguro de entender. ¿Podrías ser más específico? 🤔",
         test_unknown_4: "Esa pregunta me hace pensar... ¿Qué más te gustaría saber? 💭",
+        // Onboarding
+        select_option: "Selecciona una opción para continuar...",
         // Onboarding avanzado
+        advanced_init_message: "¡Hola! 👋 Soy tu asistente virtual. ¿En qué puedo asistirte?",
         advanced_welcome_message: "¡Hola! 👋 Soy tu asistente virtual. Para personalizar tu experiencia, ¿podrías decirme tu nombre?",
         advanced_name_prompt: "Escribe tu nombre...",
         advanced_name_received: "¡Perfecto! Ahora tienes dos opciones:",
@@ -479,6 +495,8 @@ class ChatBot {
         cancel: "Cancel",
         confirm: "Confirm",
         close: "Close",
+        faq_button: "Frequently Asked Questions",
+        products_button: "View Products",
         // Test messages
         test_welcome_1: "Hello! 👋 I'm your virtual assistant. What's your name?",
         test_welcome_2: "Welcome! 😊 I'd love to know your name.",
@@ -506,7 +524,10 @@ class ChatBot {
         test_unknown_2: "Hmm, that's a good question. Could you rephrase it? 🤷‍♂️",
         test_unknown_3: "I'm not sure I understand. Could you be more specific? 🤔",
         test_unknown_4: "That question makes me think... What else would you like to know? 💭",
+        // Onboarding
+        select_option: "Select an option to continue...",
         // Advanced onboarding
+        advanced_init_message: "Hello! 👋 I'm your virtual assistant. How can I assist you?", // en ingles   
         advanced_welcome_message: "Hello! 👋 I'm your virtual assistant. To personalize your experience, could you tell me your name?",
         advanced_name_prompt: "Write your name...",
         advanced_name_received: "Perfect! Now you have two options:",
@@ -572,6 +593,10 @@ class ChatBot {
         cancel: "Cancelar",
         confirm: "Confirmar",
         close: "Fechar",
+        faq_button: "Perguntas Frequentes",
+        products_button: "Ver Produtos",
+        // Onboarding
+        select_option: "Selecione uma opção para continuar...",
         // Mensagens de teste
         test_welcome_1: "Olá! 👋 Sou seu assistente virtual. Como você se chama?",
         test_welcome_2: "Bem-vindo! 😊 Adoraria conhecer seu nome.",
@@ -602,6 +627,24 @@ class ChatBot {
       },
       ru: {
         // Русский
+        advanced_init_message: "Привет! 👋 Я ваш виртуальный помощник. Как я могу вам помочь?",
+        advanced_welcome_message: "Привет! 👋 Я ваш виртуальный помощник. Чтобы персонализировать ваш опыт, могли бы вы сказать мне ваше имя?",
+        advanced_name_prompt: "Напишите ваше имя...",
+        advanced_name_received: "Отлично! Теперь у вас есть две опции:",
+        advanced_faq_option: "📚 Часто задаваемые вопросы",
+        advanced_chat_option: "💬 Начать общение",
+        advanced_faq_title: "Часто задаваемые вопросы",
+        advanced_faq_back: "← Назад",
+        advanced_faq_list: [
+          {
+            title: "Как работает чат?",
+            content: "Чат работает в режиме реального времени. Вы можете писать сообщения и получать ответы в реальном времени. Виртуальный помощник разработан для помощи вам с информацией, ответов на вопросы и поддержания дружеской беседы. Для получения дополнительной информации посетите нашу [документацию](https://www.example.com/docs)."
+          },
+          {
+            title: "Что я могу спросить?",
+            content: "Вы можете задавать вопросы о любой теме: общей информации, интересных фактах, помощи с задачами, объяснении понятий или просто общении. Помощник здесь, чтобы помочь вам с тем, что вам нужно. Посетите нашу [страницу часто задаваемых вопросов](https://www.example.com/faq) для примеров."
+          },
+        ],
         welcome_message: "Привет {name}, я {botName} и я здесь, чтобы помочь вам. Как я могу вам помочь?",
         reminder_message: "Могу ли я помочь вам еще с чем-то? 😊",
         limit_reached_message: "⚠️ Вы достигли лимита сообщений для этой сессии. Чат временно заблокирован.",
@@ -622,6 +665,10 @@ class ChatBot {
         cancel: "Отмена",
         confirm: "Подтвердить",
         close: "Закрыть",
+        faq_button: "Часто задаваемые вопросы",
+        products_button: "Просмотр продуктов",
+          // Onboarding
+        select_option: "Выберите опцию для продолжения...",
         // Тестовые сообщения
         test_welcome_1: "Привет! 👋 Я ваш виртуальный помощник. Как вас зовут?",
         test_welcome_2: "Добро пожаловать! 😊 Хотел бы узнать ваше имя.",
@@ -652,6 +699,24 @@ class ChatBot {
       },
       de: {
         // Deutsch
+        advanced_init_message: "Hallo! 👋 Ich bin Ihr virtueller Assistent. Wie kann ich Ihnen helfen?",
+        advanced_welcome_message: "Hallo! 👋 Ich bin Ihr virtueller Assistent. Um Ihre Erfahrung zu personalisieren, könnten Sie mir Ihren Namen sagen?",
+        advanced_name_prompt: "Schreiben Sie Ihren Namen...",
+        advanced_name_received: "Perfekt! Jetzt haben Sie zwei Optionen:",
+        advanced_faq_option: "📚 Häufig gestellte Fragen",
+        advanced_chat_option: "💬 Chat beginnen",
+        advanced_faq_title: "Häufig gestellte Fragen",
+        advanced_faq_back: "← Zurück",
+        advanced_faq_list: [
+          {
+            title: "Wie funktioniert der Chat?",
+            content: "Der Chat funktioniert in Echtzeit. Sie können Nachrichten schreiben und Echtzeit-Antworten erhalten. Der virtuelle Assistent wurde entwickelt, um Ihnen bei Informationen, Antworten auf Fragen und der Führung einer freundlichen Unterhaltung zu helfen. Besuchen Sie unsere [Dokumentation](https://www.example.com/docs) für weitere Informationen."
+          },
+          {
+            title: "Was kann ich fragen?",
+            content: "Sie können Fragen zu jedem Thema stellen: Allgemeiner Information, Interessante Fakten, Hilfe bei Aufgaben, Erklärung von Konzepten oder einfache Unterhaltung. Ich bin hier, um Ihnen zu helfen, was Sie brauchen. Besuchen Sie unsere [Seite häufig gestellter Fragen](https://www.example.com/faq) für Beispiele."
+          },
+        ],
         welcome_message: "Hallo {name}, ich bin {botName} und bin hier, um Ihnen zu helfen. Wie kann ich Ihnen helfen?",
         reminder_message: "Kann ich Ihnen noch bei etwas anderem helfen? 😊",
         limit_reached_message: "⚠️ Sie haben das Nachrichtenlimit für diese Sitzung erreicht. Der Chat wurde vorübergehend blockiert.",
@@ -672,6 +737,10 @@ class ChatBot {
         cancel: "Abbrechen",
         confirm: "Bestätigen",
         close: "Schließen",
+        faq_button: "Häufig gestellte Fragen",
+        products_button: "Produkte anzeigen",
+        // Onboarding
+        select_option: "Wählen Sie eine Option für die Fortsetzung...",
         // Testnachrichten
         test_welcome_1: "Hallo! 👋 Ich bin Ihr virtueller Assistent. Wie heißen Sie?",
         test_welcome_2: "Willkommen! 😊 Ich würde gerne Ihren Namen kennenlernen.",
@@ -722,6 +791,10 @@ class ChatBot {
         close: "关闭",
         cancel: "取消",
         confirm: "确认",
+        faq_button: "常见问题",
+        products_button: "查看产品",
+        // Onboarding
+        select_option: "选择一个选项以继续...",
         // 测试消息
         test_welcome_1: "你好！👋 我是您的虚拟助手。您叫什么名字？",
         test_welcome_2: "欢迎！😊 我很想知道您的名字。",
@@ -748,7 +821,25 @@ class ChatBot {
         test_unknown_1: "有趣的问题 🤔 让我想想...",
         test_unknown_2: "嗯，这是一个好问题。您能重新表述一下吗？🤷‍♂️",
         test_unknown_3: "我不确定我是否理解。您能更具体一些吗？🤔",
-        test_unknown_4: "这个问题让我思考...您还想知道什么？💭"
+        test_unknown_4: "这个问题让我思考...您还想知道什么？💭",
+        advanced_init_message: "你好！👋 我是您的虚拟助手。我能帮您什么？",
+        advanced_welcome_message: "你好！👋 我是您的虚拟助手。为了个性化您的体验，您能告诉我您的名字吗？",
+        advanced_name_prompt: "请输入您的名字...",
+        advanced_name_received: "太好了！现在您有两个选项：",
+        advanced_faq_option: "📚 常见问题",
+        advanced_chat_option: "💬 开始聊天",
+        advanced_faq_title: "常见问题",
+        advanced_faq_back: "← 返回",
+        advanced_faq_list: [
+          {
+            title: "如何使用聊天功能？",
+            content: "聊天功能实时工作。您可以发送消息并实时收到回复。虚拟助手旨在帮助您获取信息、回答问题并进行友好对话。有关更多信息，请访问我们的[文档](https://www.example.com/docs)。"
+          },
+          {
+            title: "我可以问什么问题？",
+            content: "您可以问任何问题：一般信息、有趣的事实、任务帮助、概念解释或简单的对话。我在这里是为了帮助您解决您需要的问题。访问我们的[常见问题页面](https://www.example.com/faq)以获取示例。"
+          },
+        ],
       },
       ja: {
         // 日本語
@@ -772,6 +863,10 @@ class ChatBot {
         cancel: "キャンセル",
         confirm: "確認",
         close: "閉じる",
+        faq_button: "よくある質問",
+        products_button: "製品を表示",
+        // Onboarding
+        select_option: "続行するためのオプションを選択してください...",
         // テストメッセージ
         test_welcome_1: "こんにちは！👋 私はあなたの仮想アシスタントです。お名前は何ですか？",
         test_welcome_2: "ようこそ！😊 あなたの名前を知りたいです。",
@@ -798,7 +893,25 @@ class ChatBot {
         test_unknown_1: "興味深い質問ですね 🤔 それについて考えてみましょう...",
         test_unknown_2: "うーん、それは良い質問です。言い換えていただけますか？🤷‍♂️",
         test_unknown_3: "理解しているかどうかわかりません。もっと具体的にしていただけますか？🤔",
-        test_unknown_4: "その質問は私に考えさせます...他に何を知りたいですか？💭"
+        test_unknown_4: "その質問は私に考えさせます...他に何を知りたいですか？💭",
+        advanced_init_message: "こんにちは！👋 私はあなたの仮想アシスタントです。何かお手伝いできますか？",
+        advanced_welcome_message: "こんにちは！👋 私はあなたの仮想アシスタントです。あなたの名前を教えていただけますか？",
+        advanced_name_prompt: "あなたの名前を入力してください...",
+        advanced_name_received: "すばらしい！今あなたには2つのオプションがあります：",
+        advanced_faq_option: "📚 よくある質問",
+        advanced_chat_option: "💬 チャットを開始",
+        advanced_faq_title: "よくある質問",
+        advanced_faq_back: "← 戻る",
+        advanced_faq_list: [
+          {
+            title: "チャットの仕組みは？",
+            content: "チャットはリアルタイムで動作します。メッセージを送信すると、リアルタイムで返信が表示されます。仮想アシスタントは、情報の取得、質問への回答、および友好的なチャットを支援するために開発されています。詳細については、[ドキュメント](https://www.example.com/docs)をご覧ください。"
+          },
+          {
+            title: "何を質問できますか？",
+            content: "あなたは、一般的な情報、興味深い事実、タスクの支援、概念の説明、またはシンプルなチャットについて質問できます。私はここにいて、あなたが必要なことを手助けします。[よくある質問ページ](https://www.example.com/faq)をご覧ください。"
+          },
+        ],
       }
     };
 
@@ -999,30 +1112,51 @@ class ChatBot {
       return;
     }
     
-    // Validar que el nombre no esté vacío
-    if (!userMessage.trim()) {
-      this._log('_handleRegistrationResponse - Nombre vacío, solicitando nombre');
-      this._addMessage("bot", this._getTranslation('registration_name_prompt'));
+    // Si no tenemos nombre, solicitarlo primero
+    if (!this.user.name || this.user.name.trim() === "") {
+      // Validar que el nombre no esté vacío
+      if (!userMessage.trim()) {
+        this._log('_handleRegistrationResponse - Nombre vacío, solicitando nombre');
+        this._addMessage("bot", "Por favor, escribe tu nombre.");
+        return;
+      }
+      
+      this._log('_handleRegistrationResponse - Procesando nombre:', userMessage.trim());
+      this.user.name = userMessage.trim();
+      
+      // Establecer estado de chat listo
+      this.statusConversation = this.STATUS_CONVERSATION.CHAT_READY;
+      
+      // Marcar como registrado y actualizar el estado
+      this._log('_handleRegistrationResponse - Estableciendo registered = true');
+      this.registered = true;
+      this.registrationCompleted = true;
+      this.registrationScreen = false; // Ya no estamos en modo registro
+      
+      // Mostrar mensaje de bienvenida personalizado
+      const welcomeMessage = {
+        from: "bot",
+        text: `¡Hola ${this.user.name}! 👋 ¿En qué puedo ayudarte hoy?`,
+        time: this._getCurrentTime(),
+        isWelcome: true,
+        statusConversation: this.statusConversation
+      };
+      
+      this.messages.push(welcomeMessage);
+      
+      // Actualizar placeholder del input
+      if (this.input) {
+        this.input.placeholder = this._getTranslation('write_message_placeholder');
+      }
+      
+      // Renderizar mensajes
+      if (this.messagesContainer) {
+        this._renderMessages();
+      }
+      
+      this._log('_handleRegistrationResponse - Registro completado');
       return;
     }
-    
-    this._log('_handleRegistrationResponse - Procesando nombre:', userMessage.trim());
-    this.user.name = userMessage.trim();
-    
-    // Marcar como registrado y actualizar el estado
-    this._log('_handleRegistrationResponse - Estableciendo registered = true');
-    this.registered = true;
-    this.registrationCompleted = true;
-    
-    // Mostrar mensaje de confirmación
-    this._addMessage("bot", this._getTranslation('registration_complete'));
-    
-    // Transicionar al chat normal después de un breve delay
-    setTimeout(() => {
-      this._showChatScreen();
-    }, 1500);
-    
-    this._log('_handleRegistrationResponse - Registro completado');
   }
 
   // Métodos para manejar errores y reintentos
@@ -2467,6 +2601,22 @@ class ChatBot {
       return;
     }
     
+    // Verificar si el usuario tiene información válida
+    const hasValidUserInfo = this.user.name && 
+                            this.user.name.trim() !== "" && 
+                            this.user.name !== "Usuario" &&
+                            this.user.email && 
+                            this.user.email.trim() !== "";
+    
+    // Solo mostrar mensaje inicial si el usuario tiene información válida
+    if (!hasValidUserInfo) {
+      this._log('_addInitialMessage - Usuario no tiene información válida, omitiendo mensaje inicial');
+      return;
+    }
+    
+    // Establecer estado de presentación
+    this.statusConversation = this.STATUS_CONVERSATION.PRESENTATION;
+    
     let message;
     
     if (this.testMode) {
@@ -2475,14 +2625,31 @@ class ChatBot {
       message = testMessages.welcome[Math.floor(Math.random() * testMessages.welcome.length)];
     } else {
       // Mensaje normal para modo producción
-      message = this.saludoInicial || this._getTranslation('welcome_message');
+      message = this.saludoInicial || "Hola soy tu asistente ¿Qué gustaría hacer?";
     }
     
     this._log('_addInitialMessage - Agregando mensaje inicial:', message);
-    this._addMessage("bot", message);
+    
+    // Crear mensaje con botones de opciones
+    const welcomeMessage = {
+      from: "bot",
+      text: message,
+      time: this._getCurrentTime(),
+      isWelcome: true,
+      isRegistration: true,
+      showWelcomeButtons: true, // Mostrar los botones del menú
+      statusConversation: this.statusConversation
+    };
+    
+    this.messages.push(welcomeMessage);
 
     // Reproducir sonido de notificación en el primer mensaje del bot
     this._playNotificationSound();
+    
+    // Renderizar mensajes para mostrar los botones
+    if (this.messagesContainer) {
+      this._renderMessages();
+    }
   }
 
   _addMessage(from, text, isRegistration = false) {
@@ -2599,7 +2766,7 @@ class ChatBot {
           faqButton.style.fontWeight = "500";
           faqButton.style.minWidth = "200px";
           faqButton.style.transition = "all 0.3s ease";
-          faqButton.innerHTML = "Preguntas Frecuentes";
+          faqButton.innerHTML = this._getTranslation('faq_button');
           
           faqButton.addEventListener('mouseenter', () => {
             faqButton.style.backgroundColor = this._darkenColor(this.primaryColor, 10);
@@ -2630,7 +2797,7 @@ class ChatBot {
           productsButton.style.minWidth = "300px";
           productsButton.style.maxWidth = "450px";
           productsButton.style.transition = "all 0.3s ease";
-          productsButton.innerHTML = "Ver Productos";
+          productsButton.innerHTML = this._getTranslation('products_button');
           
           productsButton.addEventListener('mouseenter', () => {
             productsButton.style.backgroundColor = "#e55a2b";
@@ -3097,6 +3264,7 @@ class ChatBot {
       onboardingStep: this.onboardingStep,
       testMode: this.testMode,
       stream: this.stream,
+      statusConversation: this.statusConversation,
       message: msg
     });
 
@@ -3122,7 +3290,7 @@ class ChatBot {
         } else if (this.registrationScreen && !this.registrationCompleted) {
           this._log('_sendMessage - Procesando registro en pantalla de registro');
           await this._handleRegistrationResponse(msg);
-        } else if (this.registered && this.registrationCompleted) {
+        } else if ((this.registered && this.registrationCompleted) || (!this.registered && !this.registrationScreen)) {
           // Envío normal de mensaje solo si está registrado y completado
           this._log('_sendMessage - Enviando mensaje al API');
           const answer = await this._sendMessageToAPI(msg);
@@ -3385,39 +3553,96 @@ class ChatBot {
   async _handleTestResponse(userMessage) {
     this._log('_handleTestResponse - Procesando mensaje de test:', userMessage);
     
-    // Simular delay de procesamiento
-    await new Promise(resolve => setTimeout(resolve, 500 + Math.random() * 1000));
+    // Verificar el estado de conversación actual
+    this._log('_handleTestResponse - Estado de conversación:', this.statusConversation);
     
-    let response = "";
-    
-    // Obtener mensajes de test traducidos
-    const testMessages = this._getTestMessages();
-    
-    // Lógica de respuesta basada en el mensaje del usuario
-    const lowerMessage = userMessage.toLowerCase();
-    
-    if (lowerMessage.includes('hola') || lowerMessage.includes('hello') || lowerMessage.includes('hi')) {
-      response = testMessages.greetings[Math.floor(Math.random() * testMessages.greetings.length)];
-    } else if (lowerMessage.includes('ayuda') || lowerMessage.includes('help') || lowerMessage.includes('qué puedes hacer')) {
-      response = testMessages.help[Math.floor(Math.random() * testMessages.help.length)];
-    } else if (lowerMessage.includes('curiosidad') || lowerMessage.includes('dato') || lowerMessage.includes('interesante')) {
-      response = testMessages.curiosities[Math.floor(Math.random() * testMessages.curiosities.length)];
-    } else {
-      response = testMessages.unknown[Math.floor(Math.random() * testMessages.unknown.length)];
+    // Si estamos preguntando por el nombre, procesar como registro
+    if (this.statusConversation === this.STATUS_CONVERSATION.ASKING_NAME) {
+      this._log('_handleTestResponse - Procesando nombre en modo test');
+      
+      // Validar que el nombre no esté vacío
+      if (!userMessage.trim()) {
+        this._log('_handleTestResponse - Nombre vacío, solicitando nombre');
+        this._addMessage("bot", "Por favor, escribe tu nombre.");
+        return;
+      }
+      
+      this._log('_handleTestResponse - Procesando nombre:', userMessage.trim());
+      this.user.name = userMessage.trim();
+      
+      // Establecer estado de chat listo
+      this.statusConversation = this.STATUS_CONVERSATION.CHAT_READY;
+      
+      // Marcar como registrado y actualizar el estado
+      this._log('_handleTestResponse - Estableciendo registered = true');
+      this.registered = true;
+      this.registrationCompleted = true;
+      
+      // Mostrar mensaje de bienvenida personalizado
+      const welcomeMessage = {
+        from: "bot",
+        text: `¡Hola ${this.user.name}! 👋 ¿En qué puedo ayudarte hoy?`,
+        time: this._getCurrentTime(),
+        isWelcome: true,
+        statusConversation: this.statusConversation
+      };
+      
+      this.messages.push(welcomeMessage);
+      
+      // Actualizar placeholder del input
+      if (this.input) {
+        this.input.placeholder = this._getTranslation('write_message_placeholder');
+      }
+      
+      // Renderizar mensajes
+      if (this.messagesContainer) {
+        this._renderMessages();
+      }
+      
+      this._log('_handleTestResponse - Registro completado en modo test');
+      return;
     }
     
-    // Si streaming está habilitado, mostrar el texto carácter por carácter
-    if (this.stream) {
-      // Ocultar el indicador de typing antes de mostrar el streaming
-      this._hideTypingIndicator();
-      await this._displayMessageWithStreaming(response);
+    // Si el chat está listo, procesar como conversación normal
+    if (this.statusConversation === this.STATUS_CONVERSATION.CHAT_READY) {
+      this._log('_handleTestResponse - Procesando conversación normal en modo test');
+      
+      // Simular delay de procesamiento
+      await new Promise(resolve => setTimeout(resolve, 500 + Math.random() * 1000));
+      
+      let response = "";
+      
+      // Obtener mensajes de test traducidos
+      const testMessages = this._getTestMessages();
+      
+      // Lógica de respuesta basada en el mensaje del usuario
+      const lowerMessage = userMessage.toLowerCase();
+      
+      if (lowerMessage.includes('hola') || lowerMessage.includes('hello') || lowerMessage.includes('hi')) {
+        response = testMessages.greetings[Math.floor(Math.random() * testMessages.greetings.length)];
+      } else if (lowerMessage.includes('ayuda') || lowerMessage.includes('help') || lowerMessage.includes('qué puedes hacer')) {
+        response = testMessages.help[Math.floor(Math.random() * testMessages.help.length)];
+      } else if (lowerMessage.includes('curiosidad') || lowerMessage.includes('dato') || lowerMessage.includes('interesante')) {
+        response = testMessages.curiosities[Math.floor(Math.random() * testMessages.curiosities.length)];
+      } else {
+        response = testMessages.unknown[Math.floor(Math.random() * testMessages.unknown.length)];
+      }
+      
+      // Si streaming está habilitado, mostrar el texto carácter por carácter
+      if (this.stream) {
+        // Ocultar el indicador de typing antes de mostrar el streaming
+        this._hideTypingIndicator();
+        await this._displayMessageWithStreaming(response);
+      } else {
+        // Ocultar el indicador de typing y mostrar el mensaje completo
+        this._hideTypingIndicator();
+        this._addMessage("bot", response);
+      }
+      
+      this._log('_handleTestResponse - Respuesta generada:', response);
     } else {
-      // Ocultar el indicador de typing y mostrar el mensaje completo
-      this._hideTypingIndicator();
-      this._addMessage("bot", response);
+      this._log('_handleTestResponse - Estado de conversación no válido para procesar mensaje:', this.statusConversation);
     }
-    
-    this._log('_handleTestResponse - Respuesta generada:', response);
   }
 
   // Nuevo método para verificar el estado de registro
@@ -3435,12 +3660,17 @@ class ChatBot {
     }
     
     // Condiciones para mostrar pantalla de registro (onboarding básico):
-    // 1. Cuando register es true
-    // 2. Cuando register es true o el nombre del usuario no existe
-    // 3. Cuando register es true o el usuario no existe
+    // 1. Cuando register es true (forzado por configuración)
+    // 2. Cuando el usuario no tiene nombre o email válidos
+    // 3. Cuando el usuario no está registrado
+    const hasValidUserInfo = this.user.name && 
+                            this.user.name.trim() !== "" && 
+                            this.user.name !== "Usuario" &&
+                            this.user.email && 
+                            this.user.email.trim() !== "";
+    
     const shouldShowRegistration = this.register || 
-                                 !this.user.name || 
-                                 this.user.name === "Usuario" ||
+                                 !hasValidUserInfo ||
                                  !this.registered;
 
     if (shouldShowRegistration && this.session) {
@@ -3448,7 +3678,13 @@ class ChatBot {
       this._showRegistrationScreen();
     } else if (this.session) {
       this._log('_checkRegistrationStatus - Mostrando chat normal');
+      // Si no se requiere registro, mostrar directamente el mensaje inicial con menú
+      if (!this.register) {
       this._showChatScreen();
+        this._addInitialMessage();
+      } else {
+        this._showChatScreen();
+      }
     } else {
       this._log('_checkRegistrationStatus - No hay sesión, mostrando error');
       this._showBotInfoWithRetry();
@@ -3474,7 +3710,8 @@ class ChatBot {
     // Mostrar pantalla de bienvenida con imagen del bot y botones de opciones
     const welcomeMessage = {
       from: "bot",
-      text: this._getTranslation('registration_name_prompt'),
+      text: this.saludoInicial || this._getTranslation('advanced_init_message'),
+      // text: this._getTranslation('registration_name_prompt'),
       time: this._getCurrentTime(),
       isWelcome: true,
       isRegistration: true,
@@ -3490,7 +3727,7 @@ class ChatBot {
     
     // El input permanece deshabilitado hasta que el usuario seleccione una opción
     if (this.input) {
-      this.input.placeholder = "Selecciona una opción para continuar...";
+      this.input.placeholder = this._getTranslation('select_option');
     }
   }
 
@@ -3511,8 +3748,17 @@ class ChatBot {
       this.input.focus();
     }
     
-    // Mostrar mensaje inicial del bot
+    // Verificar si el usuario tiene información válida antes de mostrar el mensaje inicial
+    const hasValidUserInfo = this.user.name && 
+                            this.user.name.trim() !== "" && 
+                            this.user.name !== "Usuario" &&
+                            this.user.email && 
+                            this.user.email.trim() !== "";
+    
+    // Solo mostrar mensaje inicial si el usuario tiene información válida
+    if (hasValidUserInfo && this.messages.length === 0) {
     this._addInitialMessage();
+    }
   }
 
   // Método para mostrar el onboarding avanzado
@@ -3538,7 +3784,7 @@ class ChatBot {
     // Mostrar mensaje de bienvenida SIN botones inicialmente
     const welcomeMessage = {
       from: "bot",
-      text: this._getTranslation('advanced_welcome_message'),
+      text: this._getTranslation('advanced_init_message'),
       time: this._getCurrentTime(),
       isWelcome: true,
       isAdvancedOnboarding: true
@@ -4517,26 +4763,31 @@ class ChatBot {
     this._log('_startNormalChat - Comenzando chat normal');
     
     this.advancedOnboarding = false;
-    this.registrationScreen = false;
-    this.registered = true;
-    this.registrationCompleted = true;
+    this.registrationScreen = true; // Establecer en true para indicar que estamos en modo registro
+    this.registered = false; // No está registrado hasta que proporcione el nombre
+    this.registrationCompleted = false;
+    
+    // Establecer estado de preguntar por el nombre
+    this.statusConversation = this.STATUS_CONVERSATION.ASKING_NAME;
     
     // Limpiar mensajes anteriores
     this.messages = [];
     
-    // Mostrar mensaje de bienvenida al chat
-    const welcomeMessage = {
+    // Mostrar mensaje preguntando por el nombre
+    const namePromptMessage = {
       from: "bot",
-      text: `¡Hola ${this.user.name || 'usuario'}! 👋 ¿En qué puedo ayudarte hoy?`,
+      text: this._getTranslation('registration_name_prompt'),
+      // text: "¡Hola! Para comenzar, ¿cuál es tu nombre?",
       time: this._getCurrentTime(),
-      isWelcome: true
+      isWelcome: true,
+      statusConversation: this.statusConversation
     };
     
-    this.messages.push(welcomeMessage);
+    this.messages.push(namePromptMessage);
     
-    // Habilitar el input y actualizar placeholder
+    // Habilitar el input para que pueda escribir su nombre
     if (this.input) {
-      this.input.placeholder = this._getTranslation('write_message_placeholder');
+      this.input.placeholder = "Escribe tu nombre...";
       this.input.disabled = false;
       this.input.focus();
     }
@@ -4586,6 +4837,9 @@ class ChatBot {
     this.advancedOnboarding = false;
     this.onboardingStep = 0;
     
+    // Reiniciar estado de conversación
+    this.statusConversation = this.STATUS_CONVERSATION.PRESENTATION;
+    
     // Reiniciar el estado del input
     if (this.input && this.sendButton) {
       this.input.disabled = true;
@@ -4617,6 +4871,21 @@ class ChatBot {
       session: this.session ? true : false,
       licenseActive: this.license?.active || false,
       welcomeMessages: this.messages.filter(msg => msg.isWelcome).length,
+      user: {
+        name: this.user.name,
+        email: this.user.email
+      }
+    };
+  }
+
+  // Método público para obtener el estado actual de la conversación
+  getConversationStatus() {
+    return {
+      currentStatus: this.statusConversation,
+      availableStatuses: this.STATUS_CONVERSATION,
+      isPresentation: this.statusConversation === this.STATUS_CONVERSATION.PRESENTATION,
+      isAskingName: this.statusConversation === this.STATUS_CONVERSATION.ASKING_NAME,
+      isChatReady: this.statusConversation === this.STATUS_CONVERSATION.CHAT_READY,
       user: {
         name: this.user.name,
         email: this.user.email

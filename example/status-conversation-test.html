@@ -1,0 +1,369 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Test Estados de Conversación - ChatBot SDK</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 20px;
+            background-color: #f5f5f5;
+        }
+        .container {
+            background: white;
+            padding: 30px;
+            border-radius: 10px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+            margin-bottom: 20px;
+        }
+        h1 {
+            color: #333;
+            text-align: center;
+            margin-bottom: 30px;
+        }
+        .status-info {
+            background: #e3f2fd;
+            padding: 20px;
+            border-radius: 8px;
+            margin-bottom: 20px;
+            border-left: 4px solid #2196f3;
+        }
+        .status-info h3 {
+            margin-top: 0;
+            color: #1976d2;
+        }
+        .status-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 15px;
+            margin-bottom: 20px;
+        }
+        .status-item {
+            background: #f8f9fa;
+            padding: 15px;
+            border-radius: 6px;
+            border: 1px solid #dee2e6;
+        }
+        .status-item.active {
+            background: #d4edda;
+            border-color: #c3e6cb;
+            color: #155724;
+        }
+        .controls {
+            display: flex;
+            gap: 10px;
+            flex-wrap: wrap;
+            margin-bottom: 20px;
+        }
+        button {
+            padding: 10px 20px;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 14px;
+            transition: all 0.3s ease;
+        }
+        .btn-primary {
+            background: #007bff;
+            color: white;
+        }
+        .btn-primary:hover {
+            background: #0056b3;
+        }
+        .btn-success {
+            background: #28a745;
+            color: white;
+        }
+        .btn-success:hover {
+            background: #1e7e34;
+        }
+        .btn-warning {
+            background: #ffc107;
+            color: #212529;
+        }
+        .btn-warning:hover {
+            background: #e0a800;
+        }
+        .btn-info {
+            background: #17a2b8;
+            color: white;
+        }
+        .btn-info:hover {
+            background: #138496;
+        }
+        .log {
+            background: #f8f9fa;
+            border: 1px solid #dee2e6;
+            border-radius: 5px;
+            padding: 15px;
+            max-height: 300px;
+            overflow-y: auto;
+            font-family: monospace;
+            font-size: 12px;
+        }
+        .log-entry {
+            margin-bottom: 5px;
+            padding: 2px 0;
+        }
+        .log-entry.info { color: #0066cc; }
+        .log-entry.success { color: #28a745; }
+        .log-entry.warning { color: #ffc107; }
+        .log-entry.error { color: #dc3545; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🧪 Test Estados de Conversación - ChatBot SDK</h1>
+        
+        <div class="status-info">
+            <h3>📊 Estado Actual de la Conversación</h3>
+            <div id="current-status">Cargando...</div>
+        </div>
+
+        <div class="controls">
+            <button class="btn-primary" onclick="showStatus()">🔄 Actualizar Estado</button>
+            <button class="btn-success" onclick="showRegistrationStatus()">📋 Estado de Registro</button>
+            <button class="btn-warning" onclick="clearHistory()">🗑️ Limpiar Historial</button>
+            <button class="btn-info" onclick="showAllStatuses()">📊 Todos los Estados</button>
+        </div>
+
+        <div class="status-grid" id="status-grid">
+            <!-- Los estados se mostrarán aquí dinámicamente -->
+        </div>
+
+        <div class="container">
+            <h3>📝 Log de Actividad</h3>
+            <div class="log" id="activity-log">
+                <div class="log-entry info">Iniciando test de estados de conversación...</div>
+            </div>
+        </div>
+    </div>
+
+    <script src="../src/index.js"></script>
+    <script>
+        let chatbot;
+        let logCounter = 0;
+
+        // Función para agregar entradas al log
+        function addLogEntry(message, type = 'info') {
+            const log = document.getElementById('activity-log');
+            const entry = document.createElement('div');
+            entry.className = `log-entry ${type}`;
+            entry.textContent = `[${new Date().toLocaleTimeString()}] ${message}`;
+            log.appendChild(entry);
+            log.scrollTop = log.scrollHeight;
+            logCounter++;
+            
+            // Limpiar log si hay demasiadas entradas
+            if (logCounter > 100) {
+                log.innerHTML = '';
+                logCounter = 0;
+            }
+        }
+
+        // Función para mostrar el estado actual
+        function showStatus() {
+            if (!chatbot) {
+                addLogEntry('❌ ChatBot no está inicializado', 'error');
+                return;
+            }
+
+            try {
+                const status = chatbot.getConversationStatus();
+                addLogEntry(`✅ Estado actual: ${status.currentStatus}`, 'success');
+                
+                // Actualizar la información del estado
+                document.getElementById('current-status').innerHTML = `
+                    <strong>Estado Actual:</strong> ${status.currentStatus}<br>
+                    <strong>Usuario:</strong> ${status.user.name || 'No definido'}<br>
+                    <strong>Email:</strong> ${status.user.email || 'No definido'}
+                `;
+                
+                // Actualizar la cuadrícula de estados
+                updateStatusGrid(status);
+                
+            } catch (error) {
+                addLogEntry(`❌ Error obteniendo estado: ${error.message}`, 'error');
+            }
+        }
+
+        // Función para mostrar el estado de registro
+        function showRegistrationStatus() {
+            if (!chatbot) {
+                addLogEntry('❌ ChatBot no está inicializado', 'error');
+                return;
+            }
+
+            try {
+                const status = chatbot.getRegistrationStatus();
+                addLogEntry(`📋 Estado de registro obtenido`, 'info');
+                addLogEntry(`   - Registrado: ${status.registered}`, 'info');
+                addLogEntry(`   - Pantalla de registro: ${status.registrationScreen}`, 'info');
+                addLogEntry(`   - Registro completado: ${status.registrationCompleted}`, 'info');
+                addLogEntry(`   - Sesión: ${status.session}`, 'info');
+                addLogEntry(`   - Licencia activa: ${status.licenseActive}`, 'info');
+                
+            } catch (error) {
+                addLogEntry(`❌ Error obteniendo estado de registro: ${error.message}`, 'error');
+            }
+        }
+
+        // Función para limpiar el historial
+        function clearHistory() {
+            if (!chatbot) {
+                addLogEntry('❌ ChatBot no está inicializado', 'error');
+                return;
+            }
+
+            try {
+                chatbot.clearHistory();
+                addLogEntry(`🗑️ Historial limpiado`, 'success');
+                
+                // Esperar un momento y luego actualizar el estado
+                setTimeout(() => {
+                    showStatus();
+                }, 1000);
+                
+            } catch (error) {
+                addLogEntry(`❌ Error limpiando historial: ${error.message}`, 'error');
+            }
+        }
+
+        // Función para mostrar todos los estados
+        function showAllStatuses() {
+            if (!chatbot) {
+                addLogEntry('❌ ChatBot no está inicializado', 'error');
+                return;
+            }
+
+            try {
+                const convStatus = chatbot.getConversationStatus();
+                const regStatus = chatbot.getRegistrationStatus();
+                
+                addLogEntry(`📊 Estado completo de la conversación:`, 'info');
+                addLogEntry(`   Conversación: ${convStatus.currentStatus}`, 'info');
+                addLogEntry(`   Registrado: ${regStatus.registered}`, 'info');
+                addLogEntry(`   Registro completado: ${regStatus.registrationCompleted}`, 'info');
+                addLogEntry(`   Usuario: ${convStatus.user.name || 'No definido'}`, 'info');
+                
+            } catch (error) {
+                addLogEntry(`❌ Error obteniendo estados: ${error.message}`, 'error');
+            }
+        }
+
+        // Función para actualizar la cuadrícula de estados
+        function updateStatusGrid(status) {
+            const grid = document.getElementById('status-grid');
+            grid.innerHTML = '';
+            
+            const statuses = [
+                {
+                    key: 'PRESENTATION',
+                    label: 'Presentación',
+                    description: 'Bot se presenta y muestra menú',
+                    isActive: status.isPresentation
+                },
+                {
+                    key: 'ASKING_NAME',
+                    label: 'Preguntando Nombre',
+                    description: 'Solicitando nombre del usuario',
+                    isActive: status.isAskingName
+                },
+                {
+                    key: 'CHAT_READY',
+                    label: 'Chat Listo',
+                    description: 'Conversación activa',
+                    isActive: status.isChatReady
+                }
+            ];
+            
+            statuses.forEach(statusItem => {
+                const item = document.createElement('div');
+                item.className = `status-item ${statusItem.isActive ? 'active' : ''}`;
+                item.innerHTML = `
+                    <strong>${statusItem.label}</strong><br>
+                    <small>${statusItem.description}</small><br>
+                    <span style="color: ${statusItem.isActive ? '#155724' : '#6c757d'}">
+                        ${statusItem.isActive ? '✅ Activo' : '⏸️ Inactivo'}
+                    </span>
+                `;
+                grid.appendChild(item);
+            });
+        }
+
+        // Inicializar el chatbot cuando se cargue la página
+        document.addEventListener('DOMContentLoaded', function() {
+            addLogEntry('🚀 Inicializando ChatBot...', 'info');
+            
+            try {
+                // Configurar el chatbot
+                chatbot = new ChatBot({
+                    baseUrl: 'https://api.example.com',
+                    apiKey: 'test-api-key',
+                    tenant: 'test-tenant',
+                    options: {
+                        testMode: true,
+                        register: false,
+                        devMode: true
+                    },
+                    user: {
+                        name: null, // Usuario sin nombre para probar el flujo
+                        email: null,
+                        photo: "https://res.cloudinary.com/dhqqkf4hy/image/upload/v1754206933/user_icon_wbwkja.png"
+                    },
+                    bot: {
+                        name: "Bot de Prueba",
+                        img: "https://res.cloudinary.com/dhqqkf4hy/image/upload/v1754206932/bot_icon_zgo153.png"
+                    },
+                    custom: {
+                        primaryColor: "#007bff",
+                        showTime: true
+                    }
+                });
+                
+                addLogEntry('✅ ChatBot inicializado correctamente', 'success');
+                
+                // Mostrar el estado inicial
+                setTimeout(() => {
+                    showStatus();
+                }, 2000);
+                
+            } catch (error) {
+                addLogEntry(`❌ Error inicializando ChatBot: ${error.message}`, 'error');
+            }
+        });
+
+        // Función para simular interacciones del usuario
+        function simulateUserInteraction() {
+            if (!chatbot) {
+                addLogEntry('❌ ChatBot no está inicializado', 'error');
+                return;
+            }
+
+            addLogEntry('🎭 Simulando interacción del usuario...', 'info');
+            
+            // Simular clic en "Iniciar Conversación"
+            setTimeout(() => {
+                try {
+                    chatbot._startNormalChat();
+                    addLogEntry('✅ Simulado clic en "Iniciar Conversación"', 'success');
+                    showStatus();
+                } catch (error) {
+                    addLogEntry(`❌ Error simulando interacción: ${error.message}`, 'error');
+                }
+            }, 1000);
+        }
+
+        // Agregar botón de simulación
+        const controlsDiv = document.querySelector('.controls');
+        const simulateBtn = document.createElement('button');
+        simulateBtn.className = 'btn-warning';
+        simulateBtn.textContent = '🎭 Simular Interacción';
+        simulateBtn.onclick = simulateUserInteraction;
+        controlsDiv.appendChild(simulateBtn);
+    </script>
+</body>
+</html>

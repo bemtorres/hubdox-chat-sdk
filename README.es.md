@@ -380,6 +380,79 @@ Este punto final se llama cada vez que un usuario envía un mensaje a través de
 }
 ```
 
+## 🎯 Flujo del Menú
+
+El chatbot implementa un flujo mejorado que incluye un menú inicial con opciones para el usuario, seguido de una captura del nombre y email antes de comenzar la conversación principal.
+
+### Flujo del Usuario
+
+1. **Mensaje Inicial**: El bot muestra "Hola soy tu asistente ¿Qué gustaría hacer?" (solo si el usuario tiene información completa)
+
+2. **Registro Obligatorio**: Si el usuario no tiene nombre o email válidos, se muestra automáticamente la pantalla de registro
+
+3. **Menú de Opciones**: Se muestran tres botones:
+   - 🛍️ **Producto**: Muestra productos disponibles (si hay)
+   - ❓ **Pregunta Frecuente**: Muestra FAQs (si hay)
+   - 💬 **Iniciar Conversación**: Comienza el flujo de captura de datos
+
+4. **Captura de Datos**: 
+   - Primero pregunta usando `this.saludoInicial` o "¡Hola! Para comenzar, ¿cuál es tu nombre?"
+   - Luego pregunta "¡Excelente! Ahora ¿cuál es tu email?"
+
+5. **Saludo Personalizado**: Después de capturar ambos datos, el bot dice `¡Hola ${nombre}! 👋 ¿En qué puedo ayudarte hoy?`
+
+### Configuración
+
+```javascript
+const chatbot = new ChatBot({
+    baseUrl: 'https://api.hubdox.com',
+    apiKey: 'your-api-key',
+    tenant: 'your-tenant',
+    options: {
+        register: false,        // No requiere registro inicial
+        testMode: true,         // Modo de prueba activado
+        show: true,
+        cache: false
+    }
+});
+```
+
+Para más detalles sobre el flujo del menú, consulta [MENU_FLOW.md](docs/MENU_FLOW.md).
+
+## 📊 Sistema de Estados de Conversación
+
+El chatbot implementa un sistema de estados (`status_conversation`) que controla el flujo de la conversación de manera estructurada:
+
+### Estados Disponibles
+
+1. **PRESENTATION**: Bot se presenta y muestra menú de opciones
+2. **ASKING_NAME**: Bot solicita el nombre del usuario (solo si `options.user.name == null`)
+3. **CHAT_READY**: Chat completamente funcional para conversación
+
+### Métodos Disponibles
+
+- `getConversationStatus()`: Obtiene el estado actual de la conversación
+- `getRegistrationStatus()`: Obtiene el estado del registro
+
+### Ejemplo de Uso
+
+```javascript
+// Obtener estado actual
+const status = chatbot.getConversationStatus();
+console.log('Estado:', status.currentStatus);
+
+// Verificar estado específico
+if (status.isPresentation) {
+    console.log('Bot en modo presentación');
+} else if (status.isAskingName) {
+    console.log('Bot preguntando por el nombre');
+} else if (status.isChatReady) {
+    console.log('Chat listo para conversación');
+}
+```
+
+Para más detalles sobre los estados de conversación, consulta [STATUS_CONVERSATION.md](docs/STATUS_CONVERSATION.md).
+
 ## ⚙️ Métodos Públicos
 
 ### `toggleChatPanel()`
@@ -440,6 +513,18 @@ const status = chat.getRegistrationStatus();
 console.log(status);
 ```
 
+### `getConversationStatus()`
+
+Obtiene el estado actual de la conversación.
+
+```javascript
+const status = chat.getConversationStatus();
+console.log('Estado actual:', status.currentStatus);
+console.log('¿Es presentación?', status.isPresentation);
+console.log('¿Está preguntando por nombre?', status.isAskingName);
+console.log('¿Está listo para chat?', status.isChatReady);
+```
+
 ### `setMaxQuestionLength(length)`
 
 Configura el límite máximo de caracteres para las preguntas del usuario.
@@ -497,6 +582,37 @@ const chat = new ChatBot({
 ## 🧪 Modo de Prueba
 
 Cuando `testMode: true` está habilitado, el widget de chat utiliza un conjunto predefinido de respuestas para fines de prueba, sin necesidad de una API en vivo.
+
+### Estados de Conversación en Modo de Prueba
+
+El modo de prueba respeta completamente el sistema de estados de conversación:
+
+- **PRESENTATION**: Bot se presenta y muestra menú (funciona igual que en modo normal)
+- **ASKING_NAME**: Solicita nombre del usuario (procesa respuestas como registro)
+- **CHAT_READY**: Genera respuestas automáticas usando mensajes predefinidos
+
+### Archivos de Prueba para Modo de Prueba
+
+#### 1. Test Completo del Flujo
+**`example/test-mode-status-flow.html`** - Test automático del flujo completo:
+- Verificación de que `testMode: true` esté activado
+- Test automático del flujo completo de estados
+- Simulación de interacciones del usuario
+- Log detallado de todas las transiciones de estado
+
+#### 2. Debug Detallado
+**`example/debug-test-mode.html`** - Debug completo con interceptación de console:
+- Monitoreo en tiempo real de todos los estados
+- Interceptación de logs de console para debugging
+- Verificación detallada de la configuración
+- Diagnóstico de problemas del flujo
+
+#### 3. Flujo Simple Paso a Paso
+**`example/simple-test-flow.html`** - Flujo simplificado para pruebas básicas:
+- Botones paso a paso para cada etapa del flujo
+- Verificación del estado después de cada acción
+- Log claro de cada operación
+- Ideal para debugging inicial
 
 ```javascript
 const chat = new ChatBot({

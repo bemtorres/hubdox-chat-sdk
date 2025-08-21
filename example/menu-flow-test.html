@@ -1,0 +1,168 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Prueba de Flujo del Menú - HubDox Chat SDK</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 20px;
+            background-color: #f5f5f5;
+        }
+        .container {
+            max-width: 800px;
+            margin: 0 auto;
+            background: white;
+            padding: 20px;
+            border-radius: 10px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+        h1 {
+            color: #333;
+            text-align: center;
+        }
+        .description {
+            background: #e3f2fd;
+            padding: 15px;
+            border-radius: 5px;
+            margin: 20px 0;
+            border-left: 4px solid #2196f3;
+        }
+        .test-info {
+            background: #fff3e0;
+            padding: 15px;
+            border-radius: 5px;
+            margin: 20px 0;
+            border-left: 4px solid #ff9800;
+        }
+        .step {
+            background: #f1f8e9;
+            padding: 10px;
+            margin: 10px 0;
+            border-radius: 5px;
+            border-left: 4px solid #4caf50;
+        }
+        .code {
+            background: #f5f5f5;
+            padding: 10px;
+            border-radius: 3px;
+            font-family: monospace;
+            margin: 10px 0;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🧪 Prueba de Flujo del Menú</h1>
+        
+        <div class="description">
+            <h3>🎯 Objetivo de la Prueba</h3>
+            <p>Verificar que el chatbot muestre correctamente el menú inicial con las opciones:</p>
+            <ul>
+                <li><strong>Producto</strong> - Para ver productos disponibles</li>
+                <li><strong>Pregunta Frecuente</strong> - Para ver FAQs</li>
+                <li><strong>Iniciar Conversación</strong> - Para comenzar el chat</li>
+            </ul>
+        </div>
+
+        <div class="test-info">
+            <h3>📋 Flujo Esperado</h3>
+            <div class="step">
+                <strong>Paso 1:</strong> El bot muestra el mensaje inicial: "Hola soy tu asistente ¿Qué gustaría hacer?"
+            </div>
+            <div class="step">
+                <strong>Paso 2:</strong> Se muestran los botones del menú con las tres opciones
+            </div>
+            <div class="step">
+                <strong>Paso 3:</strong> Al hacer clic en "Iniciar Conversación", el bot pregunta: "¡Hola! ¿Cuál es tu nombre?"
+            </div>
+            <div class="step">
+                <strong>Paso 4:</strong> Al escribir el nombre, el bot responde: "¡Hola [nombre]! 👋 ¿En qué puedo ayudarte hoy?"
+            </div>
+        </div>
+
+        <div class="code">
+            <strong>Configuración del SDK:</strong><br>
+            register: false,<br>
+            testMode: true,<br>
+            initial_message: null (usará el mensaje por defecto)
+        </div>
+
+        <div class="test-info">
+            <h3>🔍 Verificaciones</h3>
+            <ul>
+                <li>✅ El mensaje inicial se muestra correctamente</li>
+                <li>✅ Los botones del menú aparecen</li>
+                <li>✅ El botón "Producto" funciona (si hay productos)</li>
+                <li>✅ El botón "Pregunta Frecuente" funciona (si hay FAQs)</li>
+                <li>✅ El botón "Iniciar Conversación" funciona</li>
+                <li>✅ Se captura correctamente el nombre del usuario</li>
+                <li>✅ Se muestra el saludo personalizado</li>
+            </ul>
+        </div>
+
+        <div id="chatbot-container"></div>
+    </div>
+
+    <script src="../src/index.js"></script>
+    <script>
+        // Configuración del chatbot para la prueba
+        const chatbot = new ChatBot({
+            baseUrl: 'https://api.hubdox.com',
+            apiKey: 'test-api-key',
+            tenant: 'test-tenant',
+            options: {
+                register: false, // No requiere registro inicial
+                testMode: true,  // Modo de prueba activado
+                show: true,
+                cache: false
+            },
+            user: {
+                email: 'test@example.com',
+                name: 'Usuario',
+                photo: 'https://res.cloudinary.com/dhqqkf4hy/image/upload/v1754206933/user_icon_wbwkja.png'
+            },
+            bot: {
+                name: 'Asistente de Prueba',
+                img: 'https://res.cloudinary.com/dhqqkf4hy/image/upload/v1754206932/bot_icon_zgo153.png'
+            },
+            custom: {
+                primaryColor: '#2196f3',
+                language: 'es'
+            }
+        });
+
+        // Inicializar el chatbot
+        chatbot.init().then(() => {
+            console.log('Chatbot inicializado correctamente');
+        }).catch(error => {
+            console.error('Error inicializando chatbot:', error);
+        });
+
+        // Función para limpiar y reiniciar la conversación
+        function resetConversation() {
+            chatbot.clearHistory();
+        }
+
+        // Agregar botón de reinicio
+        const resetButton = document.createElement('button');
+        resetButton.textContent = '🔄 Reiniciar Conversación';
+        resetButton.style.cssText = `
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            padding: 10px 15px;
+            background: #ff5722;
+            color: white;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 14px;
+            z-index: 1000;
+        `;
+        resetButton.onclick = resetConversation;
+        document.body.appendChild(resetButton);
+    </script>
+</body>
+</html>
