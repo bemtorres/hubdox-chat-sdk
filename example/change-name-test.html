@@ -1,0 +1,272 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Prueba de Cambio de Nombre - Hubdox Chat SDK</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 20px;
+            background-color: #f5f5f5;
+        }
+        .container {
+            max-width: 800px;
+            margin: 0 auto;
+            background: white;
+            padding: 30px;
+            border-radius: 10px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+        h1 {
+            color: #333;
+            text-align: center;
+            margin-bottom: 30px;
+        }
+        .test-section {
+            background: #f8f9fa;
+            padding: 20px;
+            border-radius: 8px;
+            margin-bottom: 20px;
+            border-left: 4px solid #28a745;
+        }
+        .test-section h3 {
+            margin-top: 0;
+            color: #28a745;
+        }
+        .code-block {
+            background: #1e1e1e;
+            color: #00ff00;
+            padding: 15px;
+            border-radius: 5px;
+            font-family: 'Courier New', monospace;
+            font-size: 14px;
+            overflow-x: auto;
+            margin: 10px 0;
+        }
+        .instructions {
+            background: #e7f3ff;
+            padding: 15px;
+            border-radius: 5px;
+            margin: 10px 0;
+            border-left: 4px solid #007bff;
+        }
+        .success {
+            background: #d4edda;
+            padding: 15px;
+            border-radius: 5px;
+            margin: 10px 0;
+            border-left: 4px solid #28a745;
+        }
+        .warning {
+            background: #fff3cd;
+            padding: 15px;
+            border-radius: 5px;
+            margin: 10px 0;
+            border-left: 4px solid #ffc107;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🧪 Prueba de Funcionalidad de Cambio de Nombre</h1>
+        
+        <div class="test-section">
+            <h3>✅ Funcionalidad Implementada</h3>
+            <ul>
+                <li><strong>Botón en menú lateral:</strong> Se agregó "Cambiar nombre" en el menú de acciones</li>
+                <li><strong>Modal interactivo:</strong> Formulario para ingresar nuevo nombre</li>
+                <li><strong>Validación:</strong> Verifica que el nombre sea válido (mínimo 2 caracteres)</li>
+                <li><strong>Persistencia:</strong> Guarda el nuevo nombre en caché</li>
+                <li><strong>Confirmación:</strong> Muestra mensaje de éxito</li>
+                <li><strong>Internacionalización:</strong> Soporte para múltiples idiomas</li>
+            </ul>
+        </div>
+
+        <div class="instructions">
+            <h3>📋 Instrucciones de Prueba</h3>
+            <ol>
+                <li><strong>Inicializar el chat:</strong> Haz clic en "Inicializar ChatBot"</li>
+                <li><strong>Abrir menú lateral:</strong> Haz clic en el botón de tres puntos (⋮) en el header del chat</li>
+                <li><strong>Seleccionar "Cambiar nombre":</strong> Aparecerá un modal con el formulario</li>
+                <li><strong>Ingresar nuevo nombre:</strong> Escribe un nombre válido (mínimo 2 caracteres)</li>
+                <li><strong>Guardar cambios:</strong> Haz clic en "Confirmar" o presiona Enter</li>
+                <li><strong>Verificar:</strong> El nombre se actualiza y aparece un mensaje de confirmación</li>
+            </ol>
+        </div>
+
+        <div class="test-section">
+            <h3>🔧 Configuración del ChatBot</h3>
+            <div class="code-block">
+const chat = new ChatBot({
+  baseUrl: 'https://hubdocs.test',
+  apiKey: 'Ac7bdb20-ecdc-453f-bdca-40e90880d424',
+  tenant: 'nomed',
+  user: { 
+    name: '', // Nombre vacío para forzar registro
+    email: 'usuario@example.com', 
+    photo: "https://res.cloudinary.com/dhqqkf4hy/image/upload/v1754206933/user_icon_wbwkja.png"
+  },
+  bot: { 
+    name: 'Boti', 
+    img: "../src/img/bot_icon.png"  
+  },
+  options: {
+    show: true,
+    stream: true,
+    cache: true,        // ✅ Habilitar caché
+    register: true,     // ✅ Habilitar registro
+    testMode: false,    // ✅ Usar API real
+  },
+  custom: {
+    primaryColor: "#007bff",
+    botName: "Asistente Virtual",
+    headerBgColor: "#007bff",
+    headerTextColor: "#fff",
+    sendButtonText: "Enviar",
+    chatWidth: "500px",
+    chatHeight: "70vh",
+    chatMaxWidth: "90vw",
+    chatMaxHeight: "80vh",
+    fullscreenEnabled: true,
+    messagesHeight: "350px",
+    buttonSize: "56px",
+    showTime: true,
+    sound: true,
+    reminderTimeout: 10000,
+    maxQuestionLength: 50,
+    position: {
+      bottom: "24px",
+      right: "24px"
+    }
+  }
+});
+            </div>
+        </div>
+
+        <div class="success">
+            <h3>🎯 Características del Modal de Cambio de Nombre</h3>
+            <ul>
+                <li><strong>Diseño responsivo:</strong> Se adapta a diferentes tamaños de pantalla</li>
+                <li><strong>Validación en tiempo real:</strong> El botón se habilita/deshabilita según la entrada</li>
+                <li><strong>Navegación por teclado:</strong> Soporte para Enter y Escape</li>
+                <li><strong>Mensajes de error:</strong> Muestra errores de validación claros</li>
+                <li><strong>Estado actual:</strong> Muestra el nombre actual del usuario</li>
+                <li><strong>Persistencia:</strong> Los cambios se guardan automáticamente</li>
+            </ul>
+        </div>
+
+        <div class="warning">
+            <h3>⚠️ Notas Importantes</h3>
+            <ul>
+                <li><strong>Registro requerido:</strong> El usuario debe estar registrado para cambiar el nombre</li>
+                <li><strong>Validación:</strong> El nombre debe tener al menos 2 caracteres</li>
+                <li><strong>Caché:</strong> Los cambios se guardan en localStorage si está habilitado</li>
+                <li><strong>Idiomas:</strong> El modal se adapta al idioma configurado del chat</li>
+            </ul>
+        </div>
+
+        <!-- Botón para inicializar el chat -->
+        <div style="text-align: center; margin: 30px 0;">
+            <button id="init-chat-btn" style="
+                background: #007bff;
+                color: white;
+                border: none;
+                padding: 15px 30px;
+                border-radius: 8px;
+                font-size: 16px;
+                cursor: pointer;
+                font-weight: bold;
+            ">
+                🚀 Inicializar ChatBot
+            </button>
+        </div>
+
+        <!-- Chat Bot -->
+        <script src="../src/index.js"></script>
+        <script>
+            let chat = null;
+
+            document.getElementById('init-chat-btn').addEventListener('click', function() {
+                if (chat) {
+                    alert('El chat ya está inicializado. Cierra el panel actual primero.');
+                    return;
+                }
+
+                // Crear nueva instancia del ChatBot
+                chat = new ChatBot({
+                    baseUrl: 'https://hubdocs.test',
+                    apiKey: 'Ac7bdb20-ecdc-453f-bdca-40e90880d424',
+                    tenant: 'nomed',
+                    user: { 
+                        name: '', // Nombre vacío para forzar registro
+                        email: 'usuario@example.com', 
+                        photo: "https://res.cloudinary.com/dhqqkf4hy/image/upload/v1754206933/user_icon_wbwkja.png"
+                    },
+                    bot: { 
+                        name: 'Boti', 
+                        img: "../src/img/bot_icon.png"  
+                    },
+                    options: {
+                        show: true,
+                        stream: true,
+                        cache: true,        // ✅ Habilitar caché
+                        register: true,     // ✅ Habilitar registro
+                        testMode: false,    // ✅ Usar API real
+                    },
+                    custom: {
+                        primaryColor: "#007bff",
+                        botName: "Asistente Virtual",
+                        headerBgColor: "#007bff",
+                        headerTextColor: "#fff",
+                        sendButtonText: "Enviar",
+                        chatWidth: "500px",
+                        chatHeight: "70vh",
+                        chatMaxWidth: "90vw",
+                        chatMaxHeight: "80vh",
+                        fullscreenEnabled: true,
+                        messagesHeight: "350px",
+                        buttonSize: "56px",
+                        showTime: true,
+                        sound: true,
+                        reminderTimeout: 10000,
+                        maxQuestionLength: 50,
+                        position: {
+                            bottom: "24px",
+                            right: "24px"
+                        }
+                    }
+                });
+
+                // Inicializar el chat
+                chat.init().then(() => {
+                    console.log('✅ ChatBot inicializado correctamente');
+                    console.log('📝 Para probar el cambio de nombre:');
+                    console.log('1. Haz clic en el botón de tres puntos (⋮) en el header del chat');
+                    console.log('2. Selecciona "Cambiar nombre"');
+                    console.log('3. Ingresa un nuevo nombre y haz clic en "Confirmar"');
+                }).catch((error) => {
+                    console.error('❌ Error al inicializar ChatBot:', error);
+                    alert('Error al inicializar el chat. Revisa la consola para más detalles.');
+                });
+
+                // Cambiar el botón
+                this.textContent = '🔄 Reinicializar ChatBot';
+                this.style.background = '#ffc107';
+                this.style.color = '#000';
+            });
+
+            // Verificar estado después de 3 segundos
+            setTimeout(() => {
+                if (chat) {
+                    console.log('=== ESTADO DEL CHAT ===');
+                    console.log('Usuario:', chat.user);
+                    console.log('Registrado:', chat.registered);
+                    console.log('Estado de conversación:', chat.statusConversation);
+                    console.log('======================');
+                }
+            }, 3000);
+        </script>
+    </div>
+</body>
+</html>

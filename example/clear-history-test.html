@@ -1,0 +1,291 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Prueba - Limpiar Historial y Volver al Menú Inicial</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 20px;
+            background-color: #f5f5f5;
+        }
+        .container {
+            max-width: 800px;
+            margin: 0 auto;
+            background: white;
+            padding: 30px;
+            border-radius: 10px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+        h1 {
+            color: #333;
+            text-align: center;
+            margin-bottom: 30px;
+        }
+        .test-section {
+            background: #f8f9fa;
+            padding: 20px;
+            border-radius: 8px;
+            margin-bottom: 20px;
+            border-left: 4px solid #28a745;
+        }
+        .test-section h3 {
+            margin-top: 0;
+            color: #28a745;
+        }
+        .instructions {
+            background: #e7f3ff;
+            padding: 20px;
+            border-radius: 8px;
+            margin-bottom: 20px;
+            border-left: 4px solid #007bff;
+        }
+        .instructions h3 {
+            margin-top: 0;
+            color: #007bff;
+        }
+        .warning {
+            background: #fff3cd;
+            padding: 20px;
+            border-radius: 8px;
+            margin-bottom: 20px;
+            border-left: 4px solid #ffc107;
+        }
+        .warning h3 {
+            margin-top: 0;
+            color: #856404;
+        }
+        .success {
+            background: #d4edda;
+            padding: 20px;
+            border-radius: 8px;
+            margin-bottom: 20px;
+            border-left: 4px solid #28a745;
+        }
+        .success h3 {
+            margin-top: 0;
+            color: #155724;
+        }
+        .init-button {
+            text-align: center;
+            margin: 30px 0;
+        }
+        .init-button button {
+            background: #007bff;
+            color: white;
+            border: none;
+            padding: 15px 30px;
+            border-radius: 8px;
+            font-size: 16px;
+            cursor: pointer;
+            font-weight: bold;
+            margin: 0 10px;
+        }
+        .init-button button:hover {
+            background: #0056b3;
+        }
+        .clear-button {
+            background: #dc3545 !important;
+        }
+        .clear-button:hover {
+            background: #c82333 !important;
+        }
+        .test-steps {
+            background: #f8f9fa;
+            padding: 20px;
+            border-radius: 8px;
+            margin-bottom: 20px;
+            border-left: 4px solid #6c757d;
+        }
+        .test-steps h3 {
+            margin-top: 0;
+            color: #6c757d;
+        }
+        .test-steps ol {
+            margin: 0;
+            padding-left: 20px;
+        }
+        .test-steps li {
+            margin-bottom: 8px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🧪 Prueba - Limpiar Historial y Volver al Menú Inicial</h1>
+        
+        <div class="test-section">
+            <h3>✅ Funcionalidad Implementada</h3>
+            <ul>
+                <li><strong>Limpiar historial:</strong> Elimina todos los mensajes y reinicia la conversación</li>
+                <li><strong>Volver al menú inicial:</strong> Regresa al estado inicial con botones de opciones</li>
+                <li><strong>Reinicio completo:</strong> Limpia el estado del usuario y la conversación</li>
+                <li><strong>Pantalla de registro:</strong> Muestra la pantalla inicial con opciones</li>
+                <li><strong>Estado limpio:</strong> Input deshabilitado y botón habilitado</li>
+            </ul>
+        </div>
+
+        <div class="instructions">
+            <h3>📋 Objetivo de la Prueba</h3>
+            <p>Verificar que cuando se hace clic en "Limpiar historial" desde el menú de acciones, el chat:</p>
+            <ol>
+                <li>Limpia todos los mensajes</li>
+                <li>Vuelve al estado inicial del menú</li>
+                <li>Muestra la pantalla de registro con botones de opciones</li>
+                <li>Reinicia completamente el estado del usuario</li>
+            </ol>
+        </div>
+
+        <div class="test-steps">
+            <h3>🔍 Pasos de la Prueba</h3>
+            <ol>
+                <li><strong>Inicializar:</strong> Haz clic en "🚀 Inicializar ChatBot"</li>
+                <li><strong>Registrar usuario:</strong> Completa el registro con tu nombre</li>
+                <li><strong>Enviar mensajes:</strong> Envía algunos mensajes para crear historial</li>
+                <li><strong>Abrir menú:</strong> Haz clic en el botón de tres puntos (⋮) en el header</li>
+                <li><strong>Limpiar historial:</strong> Selecciona "🗑️ Limpiar historial"</li>
+                <li><strong>Confirmar:</strong> Confirma la acción en el modal</li>
+                <li><strong>Verificar:</strong> El chat debe volver al estado inicial del menú</li>
+            </ol>
+        </div>
+
+        <div class="success">
+            <h3>🎯 Resultado Esperado</h3>
+            <ul>
+                <li><strong>Mensajes limpios:</strong> No debe haber mensajes anteriores</li>
+                <li><strong>Pantalla inicial:</strong> Debe mostrar la pantalla de registro con botones</li>
+                <li><strong>Estado reiniciado:</strong> Usuario no registrado, conversación en estado inicial</li>
+                <li><strong>Input deshabilitado:</strong> Campo de texto debe estar deshabilitado</li>
+                <li><strong>Botón habilitado:</strong> Botón de enviar debe estar habilitado</li>
+            </ul>
+        </div>
+
+        <div class="warning">
+            <h3>⚠️ Notas Importantes</h3>
+            <ul>
+                <li><strong>Confirmación requerida:</strong> Se mostrará un modal de confirmación antes de limpiar</li>
+                <li><strong>Pérdida de datos:</strong> Todos los mensajes y el estado se perderán permanentemente</li>
+                <li><strong>Reinicio completo:</strong> El usuario deberá registrarse nuevamente</li>
+                <li><strong>Caché limpiado:</strong> Si está habilitado, también se limpiará el caché</li>
+            </ul>
+        </div>
+
+        <!-- Botones de control -->
+        <div class="init-button">
+            <button id="init-chat-btn">🚀 Inicializar ChatBot</button>
+            <button id="clear-history-btn" class="clear-button" disabled>🗑️ Limpiar Historial</button>
+        </div>
+
+        <!-- Chat Bot -->
+        <script src="../src/index.js"></script>
+        <script>
+            let chat = null;
+
+            document.getElementById('init-chat-btn').addEventListener('click', function() {
+                if (chat) {
+                    alert('El chat ya está inicializado. Cierra el panel actual primero.');
+                    return;
+                }
+
+                // Crear nueva instancia del ChatBot
+                chat = new ChatBot({
+                    baseUrl: 'https://hubdocs.test',
+                    apiKey: 'Ac7bdb20-ecdc-453f-bdca-40e90880d424',
+                    tenant: 'nomed',
+                    user: { 
+                        name: '', // Nombre vacío para forzar registro
+                        email: 'usuario@example.com', 
+                        photo: "https://res.cloudinary.com/dhqqkf4hy/image/upload/v1754206933/user_icon_wbwkja.png"
+                    },
+                    bot: { 
+                        name: 'Boti', 
+                        img: "../src/img/bot_icon.png"  
+                    },
+                    options: {
+                        show: true,
+                        stream: true,
+                        cache: true,        // ✅ Habilitar caché
+                        register: true,     // ✅ Habilitar registro
+                        testMode: false,    // ✅ Usar API real
+                    },
+                    custom: {
+                        primaryColor: "#007bff",
+                        botName: "Asistente Virtual",
+                        headerBgColor: "#007bff",
+                        headerTextColor: "#fff",
+                        sendButtonText: "Enviar",
+                        chatWidth: "500px",
+                        chatHeight: "70vh",
+                        chatMaxWidth: "90vw",
+                        chatMaxHeight: "80vh",
+                        fullscreenEnabled: true,
+                        messagesHeight: "350px",
+                        buttonSize: "56px",
+                        showTime: true,
+                        sound: true,
+                        reminderTimeout: 10000,
+                        maxQuestionLength: 50,
+                        position: {
+                            bottom: "24px",
+                            right: "24px"
+                        }
+                    }
+                });
+
+                // Inicializar el chat
+                chat.init().then(() => {
+                    console.log('✅ ChatBot inicializado correctamente');
+                    console.log('📝 Para probar limpiar historial:');
+                    console.log('1. Completa el registro con tu nombre');
+                    console.log('2. Envía algunos mensajes para crear historial');
+                    console.log('3. Haz clic en el botón de tres puntos (⋮) en el header');
+                    console.log('4. Selecciona "🗑️ Limpiar historial"');
+                    console.log('5. Confirma la acción en el modal');
+                    
+                    // Cambiar el botón
+                    this.textContent = '🔄 Reinicializar ChatBot';
+                    this.style.background = '#ffc107';
+                    this.style.color = '#000';
+                    
+                    // Habilitar botón de limpiar historial
+                    document.getElementById('clear-history-btn').disabled = false;
+                }).catch((error) => {
+                    console.error('❌ Error al inicializar ChatBot:', error);
+                    alert('Error al inicializar el chat. Revisa la consola para más detalles.');
+                });
+            });
+
+            // Botón para limpiar historial (alternativa al menú del chat)
+            document.getElementById('clear-history-btn').addEventListener('click', function() {
+                if (!chat) {
+                    alert('Primero debes inicializar el ChatBot.');
+                    return;
+                }
+
+                if (confirm('¿Estás seguro de que quieres limpiar todo el historial del chat? Esta acción no se puede deshacer.')) {
+                    console.log('🧹 Limpiando historial del chat...');
+                    chat.clearHistory();
+                    
+                    // Deshabilitar botón después de limpiar
+                    this.disabled = true;
+                    
+                    console.log('✅ Historial limpiado. El chat debe estar en el estado inicial del menú.');
+                }
+            });
+
+            // Verificar estado después de 3 segundos
+            setTimeout(() => {
+                if (chat) {
+                    console.log('=== ESTADO DEL CHAT ===');
+                    console.log('Usuario:', chat.user);
+                    console.log('Registrado:', chat.registered);
+                    console.log('Estado de conversación:', chat.statusConversation);
+                    console.log('======================');
+                }
+            }, 3000);
+        </script>
+    </div>
+</body>
+</html>
+

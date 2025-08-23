@@ -386,6 +386,12 @@ class ChatBot {
         fullscreen: "Pantalla completa",
         minimize: "Minimizar",
         chat_info: "Información del chat",
+        change_name: "Cambiar nombre",
+        current_name_label: "Nombre actual:",
+        new_name_label: "Nuevo nombre:",
+        new_name_placeholder: "Escribe tu nuevo nombre...",
+        name_validation_error: "Por favor, escribe un nombre válido.",
+        name_update_success: "¡Perfecto! Tu nombre ha sido actualizado a",
         powered_by: "Desarrollado por",
         registration_name_prompt: "¡Hola! ¿Cuál es tu nombre?",
         registration_complete: "¡Perfecto! Ahora puedo ayudarte mejor.",
@@ -484,6 +490,12 @@ class ChatBot {
         fullscreen: "Fullscreen",
         minimize: "Minimize",
         chat_info: "Chat information",
+        change_name: "Change Name",
+        current_name_label: "Current name:",
+        new_name_label: "New name:",
+        new_name_placeholder: "Write your new name...",
+        name_validation_error: "Please write a valid name.",
+        name_update_success: "Perfect! Your name has been updated to",
         powered_by: "Powered by",
         registration_name_prompt: "Hello! What's your name?",
         registration_complete: "Perfect! Now I can help you better.",
@@ -582,6 +594,12 @@ class ChatBot {
         fullscreen: "Tela cheia",
         minimize: "Minimizar",
         chat_info: "Informações do chat",
+        change_name: "Alterar Nome",
+        current_name_label: "Nome atual:",
+        new_name_label: "Novo nome:",
+        new_name_placeholder: "Escreva seu novo nome...",
+        name_validation_error: "Por favor, escreva um nome válido.",
+        name_update_success: "Perfeito! Seu nome foi atualizado para",
         powered_by: "Desenvolvido por",
         registration_name_prompt: "Olá! Qual é o seu nome?",
         registration_complete: "Perfeito! Agora posso ajudá-lo melhor.",
@@ -654,6 +672,12 @@ class ChatBot {
         clear_history: "Очистить историю",
         fullscreen: "Полный экран",
         chat_info: "Информация о чате",
+        change_name: "Изменить имя",
+        current_name_label: "Текущее имя:",
+        new_name_label: "Новое имя:",
+        new_name_placeholder: "Напишите ваше новое имя...",
+        name_validation_error: "Пожалуйста, напишите действительное имя.",
+        name_update_success: "Отлично! Ваше имя было обновлено на",
         powered_by: "Разработано",
         registration_name_prompt: "Привет! Как вас зовут?",
         registration_complete: "Отлично! Теперь я могу лучше вам помочь.",
@@ -726,6 +750,12 @@ class ChatBot {
         clear_history: "Verlauf löschen",
         fullscreen: "Vollbild",
         chat_info: "Chat-Informationen",
+        change_name: "Namen ändern",
+        current_name_label: "Aktueller Name:",
+        new_name_label: "Neuer Name:",
+        new_name_placeholder: "Schreiben Sie Ihren neuen Namen...",
+        name_validation_error: "Bitte schreiben Sie einen gültigen Namen.",
+        name_update_success: "Perfekt! Ihr Name wurde aktualisiert auf",
         powered_by: "Entwickelt von",
         registration_name_prompt: "Hallo! Wie heißen Sie?",
         registration_complete: "Perfekt! Jetzt kann ich Ihnen besser helfen.",
@@ -780,6 +810,12 @@ class ChatBot {
         clear_history: "清除历史",
         fullscreen: "全屏",
         chat_info: "聊天信息",
+        change_name: "更改姓名",
+        current_name_label: "当前姓名:",
+        new_name_label: "新姓名:",
+        new_name_placeholder: "请输入您的新姓名...",
+        name_validation_error: "请输入有效的姓名。",
+        name_update_success: "完美！您的姓名已更新为",
         powered_by: "由开发",
         registration_name_prompt: "你好！你叫什么名字？",
         registration_complete: "完美！现在我可以更好地帮助你。",
@@ -852,6 +888,12 @@ class ChatBot {
         clear_history: "履歴をクリア",
         fullscreen: "全画面",
         chat_info: "チャット情報",
+        change_name: "名前を変更",
+        current_name_label: "現在の名前:",
+        new_name_label: "新しい名前:",
+        new_name_placeholder: "新しい名前を入力してください...",
+        name_validation_error: "有効な名前を入力してください。",
+        name_update_success: "完璧です！あなたの名前が更新されました",
         powered_by: "開発者",
         registration_name_prompt: "こんにちは！お名前は何ですか？",
         registration_complete: "完璧です！これでより良くお手伝いできます。",
@@ -1874,6 +1916,13 @@ class ChatBot {
                 </button>
                 ` : ''}
                 <div class="dropdown-divider"></div>
+                <button class="dropdown-item" id="change-name-btn">
+                  <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" viewBox="0 0 16 16">
+                    <path d="M8 8a3 3 0 1 0 0-6 3 3 0 0 0 0 6zm2-3a2 2 0 1 1-4 0 2 2 0 0 1 4 0zm4 8c0 1-1 1-1 1H3s-1 0-1-1 1-4 6-4 6 3 6 4zm-1-.004c-.001-.246-.154-.986-.832-1.664C11.516 10.68 10.289 10 8 10c-2.29 0-3.516.68-4.168 1.332-.678.678-.83 1.418-.832 1.664h10z"/>
+                    <path d="M8 9a2 2 0 1 0 0-4 2 2 0 0 0 0 4z"/>
+                  </svg>
+                  ${this._getTranslation('change_name')}
+                </button>
                 <button class="dropdown-item" id="chat-info-btn">
                   <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" viewBox="0 0 16 16">
                     <path d="M8 15A7 7 0 1 1 8 1a7 7 0 0 1 0 14zm0 1A8 8 0 1 0 8 0a8 8 0 0 0 0 16z"/>
@@ -2021,6 +2070,17 @@ class ChatBot {
     if (chatInfoBtn) {
       chatInfoBtn.addEventListener("click", () => {
         this._showChatInfo();
+        if (dropdownMenu) {
+          dropdownMenu.classList.remove("show");
+        }
+      });
+    }
+
+    // Change name button
+    const changeNameBtn = this.chatPanelShadow.querySelector("#change-name-btn");
+    if (changeNameBtn) {
+      changeNameBtn.addEventListener("click", () => {
+        this._showChangeNameModal();
         if (dropdownMenu) {
           dropdownMenu.classList.remove("show");
         }
@@ -2519,6 +2579,343 @@ class ChatBot {
     document.addEventListener("keydown", handleEscape);
   }
 
+  _showChangeNameModal() {
+    this._log('_showChangeNameModal - Mostrando modal para cambiar nombre');
+    
+    // Crear contenedor del modal con Shadow DOM
+    const changeNameModalContainer = document.createElement("div");
+    changeNameModalContainer.id = "chatbot-change-name-modal-container";
+    
+    // Crear Shadow DOM para el modal
+    const changeNameModalShadow = changeNameModalContainer.attachShadow({ mode: 'open' });
+    
+    // Estilos del modal
+    const changeNameModalStyles = document.createElement('style');
+    changeNameModalStyles.textContent = `
+      .modal-overlay {
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100vw;
+        height: 100vh;
+        background-color: rgba(0, 0, 0, 0.5);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        z-index: 1060;
+        opacity: 0;
+        visibility: hidden;
+        transition: opacity 0.3s ease, visibility 0.3s ease;
+      }
+      
+      .modal-overlay.show {
+        opacity: 1;
+        visibility: visible;
+      }
+      
+      .modal-dialog {
+        background: white;
+        border-radius: 0.5rem;
+        box-shadow: 0 0.5rem 1rem rgba(0, 0, 0, 0.15);
+        max-width: 450px;
+        width: 90%;
+        margin: 1.75rem auto;
+        transform: scale(0.8);
+        transition: transform 0.3s ease;
+      }
+      
+      .modal-overlay.show .modal-dialog {
+        transform: scale(1);
+      }
+      
+      .modal-header {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        padding: 1rem 1.5rem;
+        border-bottom: 1px solid #dee2e6;
+        border-radius: 0.5rem 0.5rem 0 0;
+      }
+      
+      .modal-title {
+        margin: 0;
+        font-size: 1.25rem;
+        font-weight: 600;
+        color: #212529;
+      }
+      
+      .modal-close {
+        background: transparent;
+        border: 0;
+        font-size: 1.5rem;
+        font-weight: 700;
+        line-height: 1;
+        color: #000;
+        opacity: 0.5;
+        cursor: pointer;
+        padding: 0;
+        width: 30px;
+        height: 30px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        border-radius: 0.25rem;
+        transition: opacity 0.15s ease-in-out;
+      }
+      
+      .modal-close:hover {
+        opacity: 0.75;
+      }
+      
+      .modal-body {
+        padding: 1.5rem;
+      }
+      
+      .form-group {
+        margin-bottom: 1rem;
+      }
+      
+      .form-label {
+        display: block;
+        margin-bottom: 0.5rem;
+        font-weight: 500;
+        color: #212529;
+      }
+      
+      .form-input {
+        width: 100%;
+        padding: 0.75rem;
+        border: 1px solid #ced4da;
+        border-radius: 0.375rem;
+        font-size: 1rem;
+        transition: border-color 0.15s ease-in-out, box-shadow 0.15s ease-in-out;
+        box-sizing: border-box;
+      }
+      
+      .form-input:focus {
+        outline: 0;
+        border-color: ${this.primaryColor};
+        box-shadow: 0 0 0 0.2rem rgba(13, 110, 253, 0.25);
+      }
+      
+      .form-input.error {
+        border-color: #dc3545;
+      }
+      
+      .error-message {
+        color: #dc3545;
+        font-size: 0.875rem;
+        margin-top: 0.25rem;
+        display: none;
+      }
+      
+      .error-message.show {
+        display: block;
+      }
+      
+      .modal-footer {
+        display: flex;
+        justify-content: flex-end;
+        gap: 0.5rem;
+        padding: 1rem 1.5rem;
+        border-top: 1px solid #dee2e6;
+        border-radius: 0 0 0.5rem 0.5rem;
+      }
+      
+      .btn {
+        padding: 0.5rem 1rem;
+        border: 1px solid transparent;
+        border-radius: 0.375rem;
+        font-size: 1rem;
+        font-weight: 500;
+        text-align: center;
+        text-decoration: none;
+        cursor: pointer;
+        transition: color 0.15s ease-in-out, background-color 0.15s ease-in-out, border-color 0.15s ease-in-out;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        min-width: 80px;
+      }
+      
+      .btn-secondary {
+        color: #6c757d;
+        background-color: #f8f9fa;
+        border-color: #dee2e6;
+      }
+      
+      .btn-secondary:hover {
+        color: #5a6268;
+        background-color: #e2e6ea;
+        border-color: #dae0e5;
+      }
+      
+      .btn-primary {
+        color: #fff;
+        background-color: ${this.primaryColor};
+        border-color: ${this.primaryColor};
+      }
+      
+      .btn-primary:hover {
+        background-color: ${this.primaryColor}dd;
+        border-color: ${this.primaryColor}dd;
+      }
+      
+      .btn:disabled {
+        opacity: 0.65;
+        cursor: not-allowed;
+      }
+      
+      .current-name {
+        background-color: #f8f9fa;
+        padding: 0.75rem;
+        border-radius: 0.375rem;
+        margin-bottom: 1rem;
+        text-align: center;
+        border: 1px solid #dee2e6;
+      }
+      
+      .current-name-label {
+        font-size: 0.875rem;
+        color: #6c757d;
+        margin-bottom: 0.25rem;
+      }
+      
+      .current-name-value {
+        font-size: 1.125rem;
+        font-weight: 600;
+        color: #212529;
+      }
+    `;
+    
+    changeNameModalShadow.appendChild(changeNameModalStyles);
+    
+    // HTML del modal
+    const changeNameModalHTML = `
+      <div class="modal-overlay" id="change-name-modal">
+        <div class="modal-dialog">
+          <div class="modal-header">
+            <h5 class="modal-title">${this._getTranslation('change_name')}</h5>
+            <button type="button" class="modal-close" id="change-name-modal-close" aria-label="${this._getTranslation('close')}">×</button>
+          </div>
+          <div class="modal-body">
+            <div class="current-name">
+              <div class="current-name-label">${this._getTranslation('current_name_label')}</div>
+              <div class="current-name-value">${this.user.name || 'No establecido'}</div>
+            </div>
+            
+            <div class="form-group">
+              <label for="new-name-input" class="form-label">${this._getTranslation('new_name_label')}</label>
+              <input 
+                type="text" 
+                id="new-name-input" 
+                class="form-input" 
+                placeholder="${this._getTranslation('new_name_placeholder')}"
+                value="${this.user.name || ''}"
+                maxlength="50"
+              >
+              <div class="error-message" id="name-error">${this._getTranslation('name_validation_error')}</div>
+            </div>
+          </div>
+          <div class="modal-footer">
+            <button type="button" class="btn btn-secondary" id="change-name-cancel">${this._getTranslation('cancel')}</button>
+            <button type="button" class="btn btn-primary" id="change-name-save" disabled>${this._getTranslation('confirm')}</button>
+          </div>
+        </div>
+      </div>
+    `;
+    
+    changeNameModalShadow.innerHTML += changeNameModalHTML;
+    document.body.appendChild(changeNameModalContainer);
+    
+    // Mostrar el modal
+    const modalOverlay = changeNameModalShadow.querySelector("#change-name-modal");
+    modalOverlay.classList.add("show");
+    
+    // Referencias a elementos
+    const newNameInput = changeNameModalShadow.querySelector("#new-name-input");
+    const saveButton = changeNameModalShadow.querySelector("#change-name-save");
+    const cancelButton = changeNameModalShadow.querySelector("#change-name-cancel");
+    const closeButton = changeNameModalShadow.querySelector("#change-name-modal-close");
+    const errorMessage = changeNameModalShadow.querySelector("#name-error");
+    
+    // Función para validar el nombre
+    const validateName = (name) => {
+      const trimmedName = name.trim();
+      if (!trimmedName || trimmedName.length < 2) {
+        return false;
+      }
+      return true;
+    };
+    
+    // Función para actualizar el botón de guardar
+    const updateSaveButton = () => {
+      const isValid = validateName(newNameInput.value);
+      saveButton.disabled = !isValid;
+      
+      if (isValid) {
+        newNameInput.classList.remove("error");
+        errorMessage.classList.remove("show");
+      } else {
+        newNameInput.classList.add("error");
+        errorMessage.classList.add("show");
+      }
+    };
+    
+    // Función para cerrar el modal
+    const closeModal = () => {
+      modalOverlay.classList.remove("show");
+      setTimeout(() => {
+        document.body.removeChild(changeNameModalContainer);
+      }, 300);
+    };
+    
+    // Event listeners
+    newNameInput.addEventListener("input", updateSaveButton);
+    newNameInput.addEventListener("keyup", (e) => {
+      if (e.key === "Enter" && !saveButton.disabled) {
+        saveButton.click();
+      }
+    });
+    
+    // Botón guardar
+    saveButton.addEventListener("click", () => {
+      const newName = newNameInput.value.trim();
+      if (validateName(newName)) {
+        this._updateUserName(newName);
+        closeModal();
+      }
+    });
+    
+    // Botón cancelar
+    cancelButton.addEventListener("click", closeModal);
+    
+    // Botón cerrar
+    closeButton.addEventListener("click", closeModal);
+    
+    // Cerrar modal al hacer clic fuera
+    modalOverlay.addEventListener("click", (e) => {
+      if (e.target === modalOverlay) {
+        closeModal();
+      }
+    });
+    
+    // Cerrar modal con Escape
+    const handleEscape = (e) => {
+      if (e.key === "Escape" && modalOverlay.classList.contains("show")) {
+        closeModal();
+        document.removeEventListener("keydown", handleEscape);
+      }
+    };
+    document.addEventListener("keydown", handleEscape);
+    
+    // Enfocar el input
+    setTimeout(() => {
+      newNameInput.focus();
+      newNameInput.select();
+    }, 100);
+  }
+
   _toggleFullscreen() {
     // Solo permitir pantalla completa si está habilitado
     if (!this.fullscreenEnabled) return;
@@ -2743,30 +3140,33 @@ class ChatBot {
       welcomeWrapper.appendChild(botImage);
       welcomeWrapper.appendChild(welcomeText);
       
-      // Agregar botones si es mensaje de bienvenida avanzado
-      if (msg.showWelcomeButtons) {
-        const buttonsContainer = document.createElement("div");
-        buttonsContainer.style.marginTop = "1rem";
-        buttonsContainer.style.display = "flex";
-        buttonsContainer.style.flexDirection = "column";
-        buttonsContainer.style.gap = "0.5rem";
-        buttonsContainer.style.alignItems = "center";
+              // Agregar botones si es mensaje de bienvenida avanzado
+        if (msg.showWelcomeButtons) {
+          const buttonsContainer = document.createElement("div");
+          buttonsContainer.style.marginTop = "1rem";
+          buttonsContainer.style.display = "flex";
+          buttonsContainer.style.flexDirection = "row";
+          buttonsContainer.style.gap = "1rem";
+          buttonsContainer.style.alignItems = "center";
+          buttonsContainer.style.justifyContent = "center";
+          buttonsContainer.style.flexWrap = "wrap";
         
-        // Botón de Preguntas Frecuentes
-        const faqButton = document.createElement("button");
-        if (this.apiFaqs && this.apiFaqs.length > 0) {
-          faqButton.style.backgroundColor = this.primaryColor;
-          faqButton.style.color = "white";
-          faqButton.style.border = "none";
-          faqButton.style.borderRadius = "1.5rem";
-          // faqButton.style.padding = "0.75rem 1.5rem";
-          faqButton.style.padding = "0.75rem 0rem";
-          faqButton.style.cursor = "pointer";
-          faqButton.style.fontSize = "0.9rem";
-          faqButton.style.fontWeight = "500";
-          faqButton.style.minWidth = "200px";
-          faqButton.style.transition = "all 0.3s ease";
-          faqButton.innerHTML = this._getTranslation('faq_button');
+                  // Botón de Preguntas Frecuentes
+          const faqButton = document.createElement("button");
+          if (this.apiFaqs && this.apiFaqs.length > 0) {
+            faqButton.style.backgroundColor = this.primaryColor;
+            faqButton.style.color = "white";
+            faqButton.style.border = "none";
+            faqButton.style.borderRadius = "1.5rem";
+            faqButton.style.padding = "0.75rem 1.5rem";
+            faqButton.style.cursor = "pointer";
+            faqButton.style.fontSize = "0.9rem";
+            faqButton.style.fontWeight = "500";
+            faqButton.style.width = "calc(50% - 0.5rem)";
+            faqButton.style.minWidth = "200px";
+            faqButton.style.maxWidth = "300px";
+            faqButton.style.transition = "all 0.3s ease";
+            faqButton.innerHTML = this._getTranslation('faq_button');
           
           faqButton.addEventListener('mouseenter', () => {
             faqButton.style.backgroundColor = this._darkenColor(this.primaryColor, 10);
@@ -2783,21 +3183,22 @@ class ChatBot {
           });
         }
         
-        // Botón de Productos (solo mostrar si hay productos disponibles)
-        const productsButton = document.createElement("button");
-        if (this.products && this.products.length > 0) {
-          productsButton.style.backgroundColor = "#ff6b35";
-          productsButton.style.color = "white";
-          productsButton.style.border = "none";
-          productsButton.style.borderRadius = "1.5rem";
-          productsButton.style.padding = "0.75rem 1.5rem";
-          productsButton.style.cursor = "pointer";
-          productsButton.style.fontSize = "0.9rem";
-          productsButton.style.fontWeight = "500";
-          productsButton.style.minWidth = "300px";
-          productsButton.style.maxWidth = "450px";
-          productsButton.style.transition = "all 0.3s ease";
-          productsButton.innerHTML = this._getTranslation('products_button');
+                  // Botón de Productos (solo mostrar si hay productos disponibles)
+          const productsButton = document.createElement("button");
+          if (this.products && this.products.length > 0) {
+            productsButton.style.backgroundColor = "#ff6b35";
+            productsButton.style.color = "white";
+            productsButton.style.border = "none";
+            productsButton.style.borderRadius = "1.5rem";
+            productsButton.style.padding = "0.75rem 1.5rem";
+            productsButton.style.cursor = "pointer";
+            productsButton.style.fontSize = "0.9rem";
+            productsButton.style.fontWeight = "500";
+            productsButton.style.width = "calc(50% - 0.5rem)";
+            productsButton.style.minWidth = "200px";
+            productsButton.style.maxWidth = "300px";
+            productsButton.style.transition = "all 0.3s ease";
+            productsButton.innerHTML = this._getTranslation('products_button');
           
           productsButton.addEventListener('mouseenter', () => {
             productsButton.style.backgroundColor = "#e55a2b";
@@ -2869,9 +3270,11 @@ class ChatBot {
         const buttonsContainer = document.createElement("div");
         buttonsContainer.style.marginTop = "1rem";
         buttonsContainer.style.display = "flex";
-        buttonsContainer.style.flexDirection = "column";
-        buttonsContainer.style.gap = "0.5rem";
+        buttonsContainer.style.flexDirection = "row";
+        buttonsContainer.style.gap = "1rem";
         buttonsContainer.style.alignItems = "center";
+        buttonsContainer.style.justifyContent = "center";
+        buttonsContainer.style.flexWrap = "wrap";
         
         // Botón de Preguntas Frecuentes
         const faqButton = document.createElement("button");
@@ -2883,7 +3286,9 @@ class ChatBot {
         faqButton.style.cursor = "pointer";
         faqButton.style.fontSize = "0.9rem";
         faqButton.style.fontWeight = "500";
+        faqButton.style.width = "calc(50% - 0.5rem)";
         faqButton.style.minWidth = "200px";
+        faqButton.style.maxWidth = "300px";
         faqButton.style.transition = "all 0.3s ease";
         faqButton.innerHTML = "Preguntas Frecuentes";
         
@@ -2911,7 +3316,9 @@ class ChatBot {
         chatButton.style.cursor = "pointer";
         chatButton.style.fontSize = "0.9rem";
         chatButton.style.fontWeight = "500";
+        chatButton.style.width = "calc(50% - 0.5rem)";
         chatButton.style.minWidth = "200px";
+        chatButton.style.maxWidth = "300px";
         chatButton.style.transition = "all 0.3s ease";
         chatButton.innerHTML = "Iniciar Chat";
         
@@ -3691,6 +4098,64 @@ class ChatBot {
     }
   }
 
+  // Método para actualizar el nombre del usuario
+  _updateUserName(newName) {
+    this._log('_updateUserName - Actualizando nombre del usuario:', newName);
+    
+    // Validar el nuevo nombre
+    if (!newName || newName.trim().length < 2) {
+      this._log('_updateUserName - Nombre inválido:', newName);
+      return false;
+    }
+    
+    const oldName = this.user.name;
+    this.user.name = newName.trim();
+    
+    // Actualizar el estado de registro si es necesario
+    if (!this.registered) {
+      this.registered = true;
+      this.registrationCompleted = true;
+      this.registrationScreen = false;
+      this.statusConversation = this.STATUS_CONVERSATION.CHAT_READY;
+      
+      this._log('_updateUserName - Usuario marcado como registrado');
+    }
+    
+    // Guardar en caché si está habilitado
+    if (this.cache) {
+      this._saveSessionToCache();
+      this._log('_updateUserName - Información guardada en caché');
+    }
+    
+    // Mostrar mensaje de confirmación
+    const confirmationMessage = {
+      from: "bot",
+      text: `${this._getTranslation('name_update_success')} "${this.user.name}". ¿En qué puedo ayudarte hoy?`,
+      time: this._getCurrentTime(),
+      isSystem: true
+    };
+    
+    this.messages.push(confirmationMessage);
+    
+    // Renderizar mensajes si el contenedor existe
+    if (this.messagesContainer) {
+      this._renderMessages();
+    }
+    
+    // Actualizar placeholder del input si es necesario
+    if (this.input) {
+      this.input.placeholder = this._getTranslation('write_message_placeholder');
+    }
+    
+    // Enfocar el input
+    if (this.input) {
+      this.input.focus();
+    }
+    
+    this._log('_updateUserName - Nombre actualizado exitosamente de', oldName, 'a', this.user.name);
+    return true;
+  }
+
   // Nuevo método para mostrar la pantalla de registro
   _showRegistrationScreen() {
     this._log('_showRegistrationScreen - Mostrando pantalla de registro');
@@ -3824,6 +4289,10 @@ class ChatBot {
       
       // Guardar el nombre del usuario
       this.user.name = userMessage.trim();
+      
+      // LIMPIAR LA PANTALLA - Mantener solo el mensaje de bienvenida inicial
+      const welcomeMessage = this.messages.find(msg => msg.isWelcome && msg.showWelcomeButtons);
+      this.messages = welcomeMessage ? [welcomeMessage] : [];
       
       // Mostrar mensaje de confirmación y opciones CON BOTONES
       const optionsMessage = {
@@ -4823,12 +5292,18 @@ class ChatBot {
     
     // Limpiar mensajes
     this.messages = [];
-    this.messagesContainer.innerHTML = '';
+    if (this.messagesContainer) {
+      this.messagesContainer.innerHTML = '';
+    }
     
     // Limpiar cache si está habilitado
     if (this.cache) {
       this._clearCache();
     }
+    
+    // Reiniciar completamente el estado del usuario
+    this.user.name = '';
+    this.user.email = '';
     
     // Reiniciar estado de registro
     this.registered = false;
@@ -4843,22 +5318,17 @@ class ChatBot {
     // Reiniciar el estado del input
     if (this.input && this.sendButton) {
       this.input.disabled = true;
-      this.sendButton.disabled = true;
+      this.sendButton.disabled = false; // Habilitar botón para poder enviar
+      this.input.placeholder = this._getTranslation('select_option');
     }
     
-    this._log('clearHistory - Estado reiniciado, reinicializando sesión');
+    this._log('clearHistory - Estado reiniciado, mostrando pantalla inicial del menú');
     
-    // Reinicializar la sesión para poder mostrar la pantalla inicial correcta
-    this._initializeSession().then(() => {
-      this._log('clearHistory - Sesión reinicializada, verificando estado de registro');
-      this._checkRegistrationStatus();
-    }).catch((error) => {
-      this._logError('clearHistory - Error reinicializando sesión:', error);
-      // Si falla la reinicialización, mostrar pantalla de registro
-      this._showRegistrationScreen();
-    });
+    // Mostrar directamente la pantalla de registro con botones de opciones
+    // Esto simula el estado inicial cuando se abre el chat por primera vez
+    this._showRegistrationScreen();
     
-    this._log('clearHistory - Conversación reiniciada desde el punto inicial');
+    this._log('clearHistory - Conversación reiniciada desde el punto inicial del menú');
   }
 
   // Método público para verificar el estado del registro

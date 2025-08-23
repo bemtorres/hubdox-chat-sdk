@@ -230,14 +230,25 @@ chat.clearCache();
                 baseUrl: 'https://hubdocs.test',
                 apiKey: 'Ac7bdb20-ecdc-453f-bdca-40e90880d424',
                 tenant: 'nomed',
+                user: { 
+                    name: '', // ✅ Agregar nombre por defecto
+                    email: 'usuario@example.com', 
+                    photo: "https://res.cloudinary.com/dhqqkf4hy/image/upload/v1754206933/user_icon_wbwkja.png"
+                },
+                bot: { 
+                    name: 'Boti', 
+                    img: "../src/img/bot_icon.png"  
+                },
                 options: {
                     show: true,
                     stream: true,
-                    cache: false,
+                    cache: true,        // ✅ Habilitar caché
+                    register: true,     // ✅ Habilitar registro
+                    testMode: false,    // ✅ Usar API real
                 },
                 custom: {
                     primaryColor: "#1e1e1e",
-                    botName: "Asistente Virtual", // funciona para el nombre del bot sin conexion a la api
+                    botName: "Asistente Virtual",
                     headerBgColor: "#1e1e1e",
                     headerTextColor: "#fff",
                     sendButtonText: "",
@@ -248,10 +259,10 @@ chat.clearCache();
                     fullscreenEnabled: true,
                     messagesHeight: "350px",
                     buttonSize: "56px",
-                    showTime: true, // Mostrar hora en los mensajes
+                    showTime: true,
                     sound: true,
-                    reminderTimeout: 10000, // 10 segundos
-                    maxQuestionLength: 50, // Límite de caracteres para preguntas
+                    reminderTimeout: 10000,
+                    maxQuestionLength: 50,
                     position: {
                         bottom: "24px",
                         right: "24px"

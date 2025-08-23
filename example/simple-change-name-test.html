@@ -1,0 +1,199 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Prueba Simple - Cambio de Nombre</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 20px;
+            background-color: #f5f5f5;
+        }
+        .container {
+            max-width: 600px;
+            margin: 0 auto;
+            background: white;
+            padding: 30px;
+            border-radius: 10px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+        h1 {
+            color: #333;
+            text-align: center;
+            margin-bottom: 30px;
+        }
+        .test-info {
+            background: #e7f3ff;
+            padding: 20px;
+            border-radius: 8px;
+            margin-bottom: 20px;
+            border-left: 4px solid #007bff;
+        }
+        .test-info h3 {
+            margin-top: 0;
+            color: #007bff;
+        }
+        .instructions {
+            background: #fff3cd;
+            padding: 20px;
+            border-radius: 8px;
+            margin-bottom: 20px;
+            border-left: 4px solid #ffc107;
+        }
+        .instructions h3 {
+            margin-top: 0;
+            color: #856404;
+        }
+        .success {
+            background: #d4edda;
+            padding: 20px;
+            border-radius: 8px;
+            margin-bottom: 20px;
+            border-left: 4px solid #28a745;
+        }
+        .success h3 {
+            margin-top: 0;
+            color: #155724;
+        }
+        .init-button {
+            text-align: center;
+            margin: 30px 0;
+        }
+        .init-button button {
+            background: #007bff;
+            color: white;
+            border: none;
+            padding: 15px 30px;
+            border-radius: 8px;
+            font-size: 16px;
+            cursor: pointer;
+            font-weight: bold;
+        }
+        .init-button button:hover {
+            background: #0056b3;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🧪 Prueba Simple - Cambio de Nombre</h1>
+        
+        <div class="test-info">
+            <h3>📋 Información de la Prueba</h3>
+            <p>Esta es una prueba simple para verificar que la funcionalidad de cambio de nombre funciona correctamente después de corregir los errores.</p>
+        </div>
+
+        <div class="instructions">
+            <h3>📝 Instrucciones</h3>
+            <ol>
+                <li>Haz clic en "Inicializar ChatBot"</li>
+                <li>Espera a que se abra el chat</li>
+                <li>Haz clic en el botón de tres puntos (⋮) en el header del chat</li>
+                <li>Selecciona "Cambiar nombre"</li>
+                <li>Ingresa un nuevo nombre y haz clic en "Confirmar"</li>
+                <li>Verifica que aparezca el mensaje de confirmación</li>
+            </ol>
+        </div>
+
+        <div class="success">
+            <h3>✅ Errores Corregidos</h3>
+            <ul>
+                <li><strong>closeModal:</strong> Función movida antes de su uso</li>
+                <li><strong>_saveToCache:</strong> Cambiado por _saveSessionToCache</li>
+                <li><strong>Orden de funciones:</strong> Corregido el orden de declaración</li>
+            </ul>
+        </div>
+
+        <div class="init-button">
+            <button id="init-chat-btn">🚀 Inicializar ChatBot</button>
+        </div>
+
+        <!-- Chat Bot -->
+        <script src="../src/index.js"></script>
+        <script>
+            let chat = null;
+
+            document.getElementById('init-chat-btn').addEventListener('click', function() {
+                if (chat) {
+                    alert('El chat ya está inicializado. Cierra el panel actual primero.');
+                    return;
+                }
+
+                // Crear nueva instancia del ChatBot
+                chat = new ChatBot({
+                    baseUrl: 'https://hubdocs.test',
+                    apiKey: 'Ac7bdb20-ecdc-453f-bdca-40e90880d424',
+                    tenant: 'nomed',
+                    user: { 
+                        name: '', // Nombre vacío para forzar registro
+                        email: 'usuario@example.com', 
+                        photo: "https://res.cloudinary.com/dhqqkf4hy/image/upload/v1754206933/user_icon_wbwkja.png"
+                    },
+                    bot: { 
+                        name: 'Boti', 
+                        img: "../src/img/bot_icon.png"  
+                    },
+                    options: {
+                        show: true,
+                        stream: true,
+                        cache: true,        // ✅ Habilitar caché
+                        register: true,     // ✅ Habilitar registro
+                        testMode: false,    // ✅ Usar API real
+                    },
+                    custom: {
+                        primaryColor: "#007bff",
+                        botName: "Asistente Virtual",
+                        headerBgColor: "#007bff",
+                        headerTextColor: "#fff",
+                        sendButtonText: "Enviar",
+                        chatWidth: "400px",
+                        chatHeight: "60vh",
+                        chatMaxWidth: "90vw",
+                        chatMaxHeight: "80vh",
+                        fullscreenEnabled: true,
+                        messagesHeight: "300px",
+                        buttonSize: "56px",
+                        showTime: true,
+                        sound: true,
+                        reminderTimeout: 10000,
+                        maxQuestionLength: 50,
+                        position: {
+                            bottom: "24px",
+                            right: "24px"
+                        }
+                    }
+                });
+
+                // Inicializar el chat
+                chat.init().then(() => {
+                    console.log('✅ ChatBot inicializado correctamente');
+                    console.log('📝 Para probar el cambio de nombre:');
+                    console.log('1. Haz clic en el botón de tres puntos (⋮) en el header del chat');
+                    console.log('2. Selecciona "Cambiar nombre"');
+                    console.log('3. Ingresa un nuevo nombre y haz clic en "Confirmar"');
+                    
+                    // Cambiar el botón
+                    this.textContent = '🔄 Reinicializar ChatBot';
+                    this.style.background = '#ffc107';
+                    this.style.color = '#000';
+                }).catch((error) => {
+                    console.error('❌ Error al inicializar ChatBot:', error);
+                    alert('Error al inicializar el chat. Revisa la consola para más detalles.');
+                });
+            });
+
+            // Verificar estado después de 3 segundos
+            setTimeout(() => {
+                if (chat) {
+                    console.log('=== ESTADO DEL CHAT ===');
+                    console.log('Usuario:', chat.user);
+                    console.log('Registrado:', chat.registered);
+                    console.log('Estado de conversación:', chat.statusConversation);
+                    console.log('======================');
+                }
+            }, 3000);
+        </script>
+    </div>
+</body>
+</html>
